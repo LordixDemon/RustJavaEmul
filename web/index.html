@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RustJava</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #111;
+      color: #f2f2f2;
+      touch-action: none;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow: hidden;
+      background: #111;
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      display: grid;
+      place-items: stretch center;
+    }
+
+    .app {
+      width: min(100vw, 520px);
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 8px;
+      padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      min-width: 0;
+      color: #d8d8d8;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      padding: 7px;
+      font-size: 13px;
+    }
+
+    .fps {
+      min-width: 68px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: #9fe870;
+      font-size: 13px;
+    }
+
+    .status {
+      max-width: 92px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #cfcfcf;
+      font-size: 13px;
+    }
+
+    .screen-wrap {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      background: #050505;
+      border: 1px solid #2b2b2b;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: min(100%, calc((100dvh - 210px) * 0.75));
+      max-height: 100%;
+      aspect-ratio: 3 / 4;
+      image-rendering: pixelated;
+      background: #000;
+      display: block;
+    }
+
+    .controls {
+      display: grid;
+      gap: 8px;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    .soft-row,
+    .main-row,
+    .num-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    .soft-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .main-row {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 42px);
+      gap: 6px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .num-row {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    button {
+      min-width: 0;
+      min-height: 38px;
+      border: 1px solid #454545;
+      border-radius: 6px;
+      background: #242424;
+      color: #f0f0f0;
+      font-size: 15px;
+      font-weight: 650;
+      line-height: 1;
+      touch-action: none;
+      appearance: none;
+      -webkit-appearance: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    button:active,
+    button.active {
+      background: #3f6fcb;
+      border-color: #77a7ff;
+      color: #fff;
+    }
+
+    .empty {
+      visibility: hidden;
+    }
+
+    .log {
+      height: 104px;
+      margin: 0;
+      padding: 8px;
+      overflow: auto;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #080808;
+      color: #d4d4d4;
+      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <input id="jar" type="file" accept=".jar,application/java-archive">
+      <div id="status" class="status">ready</div>
+      <div id="fps" class="fps">0 fps</div>
+    </div>
+
+    <div class="screen-wrap">
+      <canvas id="screen" width="240" height="320"></canvas>
+    </div>
+
+    <div class="controls" id="controls">
+      <div class="soft-row">
+        <button data-key="-6">L</button>
+        <button data-key="-7">R</button>
+      </div>
+      <div class="main-row">
+        <div class="dpad">
+          <button class="empty" tabindex="-1"></button>
+          <button data-key="-1">&uarr;</button>
+          <button class="empty" tabindex="-1"></button>
+          <button data-key="-3">&larr;</button>
+          <button data-key="-5">OK</button>
+          <button data-key="-4">&rarr;</button>
+          <button class="empty" tabindex="-1"></button>
+          <button data-key="-2">&darr;</button>
+          <button class="empty" tabindex="-1"></button>
+        </div>
+        <div class="actions">
+          <button data-key="49">1</button>
+          <button data-key="51">3</button>
+          <button data-key="55">7</button>
+          <button data-key="57">9</button>
+        </div>
+      </div>
+      <div class="num-row">
+        <button data-key="48">0</button>
+        <button data-key="50">2</button>
+        <button data-key="52">4</button>
+        <button data-key="54">6</button>
+        <button data-key="56">8</button>
+      </div>
+      <pre id="log" class="log"></pre>
+    </div>
+  </main>
+
+  <script type="module" src="./app.js?v=20260622-v3-math-batch-1"></script>
+</body>
+</html>

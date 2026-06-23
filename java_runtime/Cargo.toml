@@ -1,0 +1,31 @@
+[package]
+name = "java_runtime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+async-recursion = { workspace = true }
+async-trait = { workspace = true }
+bytemuck = { workspace = true }
+dyn-clone = { workspace = true }
+hashbrown = { workspace = true }
+miniz_oxide = { workspace = true }
+parking_lot = { workspace = true }
+tracing = { workspace = true }
+
+chrono = { workspace = true }
+encoding_rs = { workspace = true }
+url = { workspace = true }
+zip = { workspace = true }
+
+java_class_proto = { workspace = true }
+java_constants = { workspace = true }
+jvm = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "time"] }
+
+jvm_rust = { workspace = true }
+test_utils = { workspace = true }

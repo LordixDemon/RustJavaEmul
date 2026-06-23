@@ -1,0 +1,353 @@
+use alloc::{collections::BTreeMap, string::String, sync::Arc, vec::Vec};
+
+use nom::{
+    IResult, Parser,
+    bytes::complete::take,
+    error::{Error, ErrorKind},
+    number::complete::{be_f32, be_f64, be_i32, be_i64, be_u16, u8},
+};
+
+fn parse_utf8(data: &[u8]) -> IResult<&[u8], Arc<String>> {
+    let (data, length) = be_u16(data)?;
+    let (data, utf8) = take(length as usize).parse(data)?;
+
+    Ok((data, Arc::new(String::from_utf8(utf8.to_vec()).unwrap())))
+}
+
+#[derive(Debug)]
+pub enum ConstantPoolItem {
+    Utf8(Arc<String>),
+    Integer(i32),
+    Float(f32),
+    Long(i64),
+    Double(f64),
+    Class { name_index: u16 },
+    String { string_index: u16 },
+    Fieldref { class_index: u16, name_and_type_index: u16 },
+    Methodref { class_index: u16, name_and_type_index: u16 },
+    InterfaceMethodref { class_index: u16, name_and_type_index: u16 },
+    NameAndType { name_index: u16, descriptor_index: u16 },
+}
+
+impl ConstantPoolItem {
+    fn parse_tagged(data: &[u8], tag: u8) -> IResult<&[u8], Self> {
+        match tag {
+            1 => {
+                let (data, utf8) = parse_utf8(data)?;
+                Ok((data, Self::Utf8(utf8)))
+            }
+            3 => {
+                let (data, value) = be_i32(data)?;
+                Ok((data, Self::Integer(value)))
+            }
+            4 => {
+                let (data, value) = be_f32(data)?;
+                Ok((data, Self::Float(value)))
+            }
+            5 => {
+                let (data, value) = be_i64(data)?;
+                Ok((data, Self::Long(value)))
+            }
+            6 => {
+                let (data, value) = be_f64(data)?;
+                Ok((data, Self::Double(value)))
+            }
+            7 => {
+                let (data, name_index) = be_u16(data)?;
+                Ok((data, Self::Class { name_index }))
+            }
+            8 => {
+                let (data, string_index) = be_u16(data)?;
+                Ok((data, Self::String { string_index }))
+            }
+            9 => {
+                let (data, class_index) = be_u16(data)?;
+                let (data, name_and_type_index) = be_u16(data)?;
+                Ok((
+                    data,
+                    Self::Fieldref {
+                        class_index,
+                        name_and_type_index,
+                    },
+                ))
+            }
+            10 => {
+                let (data, class_index) = be_u16(data)?;
+                let (data, name_and_type_index) = be_u16(data)?;
+                Ok((
+                    data,
+                    Self::Methodref {
+                        class_index,
+                        name_and_type_index,
+                    },
+                ))
+            }
+            11 => {
+                let (data, class_index) = be_u16(data)?;
+                let (data, name_and_type_index) = be_u16(data)?;
+                Ok((
+                    data,
+                    Self::InterfaceMethodref {
+                        class_index,
+                        name_and_type_index,
+                    },
+                ))
+            }
+            12 => {
+                let (data, name_index) = be_u16(data)?;
+                let (data, descriptor_index) = be_u16(data)?;
+                Ok((
+                    data,
+                    Self::NameAndType {
+                        name_index,
+                        descriptor_index,
+                    },
+                ))
+            }
+            _ => Err(nom::Err::Error(Error::new(data, ErrorKind::Switch))),
+        }
+    }
+
+    pub fn parse_all(data: &[u8]) -> IResult<&[u8], BTreeMap<u16, Self>> {
+        let (remaining, count) = be_u16(data)?;
+
+        let mut data = remaining;
+        let mut result = BTreeMap::new();
+        let mut i = 1;
+        loop {
+            let (remaining, item) = Self::parse_with_tag(data)?;
+            let is_double_entry = match &item {
+                Self::Long(_) | Self::Double(_) => {
+                    // long or double constant takes two constant pool entries....
+                    true
+                }
+                _ => false,
+            };
+            result.insert(i, item);
+
+            data = remaining;
+            i += 1;
+            if is_double_entry {
+                i += 1;
+            }
+
+            if i >= count {
+                break;
+            }
+        }
+
+        Ok((data, result))
+    }
+
+    pub fn parse_with_tag(data: &[u8]) -> IResult<&[u8], Self> {
+        let (data, tag) = u8(data)?;
+        Self::parse_tagged(data, tag)
+    }
+
+    pub fn utf8(&self) -> Arc<String> {
+        if let ConstantPoolItem::Utf8(x) = self {
+            x.clone()
+        } else {
+            panic!("Invalid constant pool item");
+        }
+    }
+
+    pub fn class_name_index(&self) -> u16 {
+        if let ConstantPoolItem::Class { name_index } = self {
+            *name_index
+        } else {
+            panic!("Invalid constant pool item");
+        }
+    }
+
+    pub fn name_and_type(&self) -> (u16, u16) {
+        if let ConstantPoolItem::NameAndType {
+            name_index,
+            descriptor_index,
+        } = self
+        {
+            (*name_index, *descriptor_index)
+        } else {
+            panic!("Invalid constant pool item");
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum ConstantPoolReference {
+    Integer(i32),
+    Float(f32),
+    Long(i64),
+    Double(f64),
+    String(Arc<String>),
+    Class(Arc<String>),
+    Method(FieldMethodref),
+    InterfaceMethodref(FieldMethodref),
+    Field(FieldMethodref),
+}
+
+impl ConstantPoolReference {
+    pub fn from_constant_pool(constant_pool: &BTreeMap<u16, ConstantPoolItem>, index: u16) -> Self {
+        match &constant_pool.get(&index).unwrap() {
+            ConstantPoolItem::Integer(x) => Self::Integer(*x),
+            ConstantPoolItem::Float(x) => Self::Float(*x),
+            ConstantPoolItem::Long(x) => Self::Long(*x),
+            ConstantPoolItem::Double(x) => Self::Double(*x),
+            ConstantPoolItem::String { string_index } => Self::String(constant_pool.get(string_index).unwrap().utf8()),
+            ConstantPoolItem::Class { name_index } => Self::Class(constant_pool.get(name_index).unwrap().utf8()),
+            ConstantPoolItem::Utf8(x) => Self::String(x.clone()),
+            ConstantPoolItem::Methodref {
+                class_index,
+                name_and_type_index,
+            } => Self::Method(FieldMethodref::from_reference_info(
+                constant_pool,
+                *class_index as _,
+                *name_and_type_index as _,
+            )),
+            ConstantPoolItem::Fieldref {
+                class_index,
+                name_and_type_index,
+            } => Self::Field(FieldMethodref::from_reference_info(
+                constant_pool,
+                *class_index as _,
+                *name_and_type_index as _,
+            )),
+            ConstantPoolItem::InterfaceMethodref {
+                class_index,
+                name_and_type_index,
+            } => Self::InterfaceMethodref(FieldMethodref::from_reference_info(
+                constant_pool,
+                *class_index as _,
+                *name_and_type_index as _,
+            )),
+            _ => panic!("Invalid constant pool item {:?}", constant_pool.get(&index).unwrap()),
+        }
+    }
+
+    pub fn as_class(&self) -> &str {
+        if let Self::Class(x) = self {
+            x
+        } else {
+            panic!("Invalid constant pool item");
+        }
+    }
+
+    pub fn as_field_ref(&self) -> &FieldMethodref {
+        if let Self::Field(x) = self {
+            x
+        } else {
+            panic!("Invalid constant pool item");
+        }
+    }
+
+    pub fn as_method_ref(&self) -> &FieldMethodref {
+        if let Self::Method(x) = self {
+            x
+        } else {
+            panic!("Invalid constant pool item");
+        }
+    }
+
+    pub fn as_interface_method_ref(&self) -> &FieldMethodref {
+        if let Self::InterfaceMethodref(x) = self {
+            x
+        } else {
+            panic!("Invalid constant pool item");
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum MethodParamKind {
+    Boolean,
+    Byte,
+    Char,
+    Short,
+    Other,
+}
+
+#[derive(Clone, Debug)]
+pub struct FieldMethodref {
+    pub class: Arc<String>,
+    pub name: Arc<String>,
+    pub descriptor: Arc<String>,
+    pub method_param_kinds: Vec<MethodParamKind>,
+}
+
+impl FieldMethodref {
+    pub fn from_reference_info(constant_pool: &BTreeMap<u16, ConstantPoolItem>, class_index: u16, name_and_type_index: u16) -> Self {
+        let class_name_index = constant_pool.get(&class_index).unwrap().class_name_index();
+        let class_name = constant_pool.get(&class_name_index).unwrap().utf8();
+
+        let (name_index, descriptor_index) = constant_pool.get(&name_and_type_index).unwrap().name_and_type();
+        let name = constant_pool.get(&name_index).unwrap().utf8();
+        let descriptor = constant_pool.get(&descriptor_index).unwrap().utf8();
+        let method_param_kinds = parse_method_param_kinds(&descriptor);
+
+        Self {
+            class: class_name,
+            name,
+            descriptor,
+            method_param_kinds,
+        }
+    }
+}
+
+fn parse_method_param_kinds(descriptor: &str) -> Vec<MethodParamKind> {
+    let bytes = descriptor.as_bytes();
+    if bytes.first() != Some(&b'(') {
+        return Vec::new();
+    }
+
+    let mut kinds = Vec::new();
+    let mut index = 1;
+
+    while bytes[index] != b')' {
+        let kind = match bytes[index] {
+            b'Z' => {
+                index += 1;
+                MethodParamKind::Boolean
+            }
+            b'B' => {
+                index += 1;
+                MethodParamKind::Byte
+            }
+            b'C' => {
+                index += 1;
+                MethodParamKind::Char
+            }
+            b'S' => {
+                index += 1;
+                MethodParamKind::Short
+            }
+            b'L' => {
+                index += 1;
+                while bytes[index] != b';' {
+                    index += 1;
+                }
+                index += 1;
+                MethodParamKind::Other
+            }
+            b'[' => {
+                while bytes[index] == b'[' {
+                    index += 1;
+                }
+                if bytes[index] == b'L' {
+                    index += 1;
+                    while bytes[index] != b';' {
+                        index += 1;
+                    }
+                }
+                index += 1;
+                MethodParamKind::Other
+            }
+            _ => {
+                index += 1;
+                MethodParamKind::Other
+            }
+        };
+        kinds.push(kind);
+    }
+
+    kinds
+}
