@@ -104,19 +104,29 @@ impl JarFile {
     async fn get_manifest(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Manifest>> {
         tracing::debug!("java.util.jar.JarFile::getManifest({:?})", &this);
 
-        let manifest_name = JavaLangString::from_rust_string(jvm, "META-INF/MANIFEST.MF").await?;
-        let manifest_file: ClassInstanceRef<JarEntry> = jvm
-            .invoke_virtual(&this, "getJarEntry", "(Ljava/lang/String;)Ljava/util/jar/JarEntry;", (manifest_name,))
-            .await?;
+        let mut manifest_file: ClassInstanceRef<JarEntry> = None.into();
+        for candidate in ["META-INF/MANIFEST.MF", "META-INF/manifest.mf", "meta-inf/manifest.mf"] {
+            let manifest_name = JavaLangString::from_rust_string(jvm, candidate).await?;
+            manifest_file = jvm
+                .invoke_virtual(&this, "getJarEntry", "(Ljava/lang/String;)Ljava/util/jar/JarEntry;", (manifest_name,))
+                .await?;
+            if !manifest_file.is_null() {
+                break;
+            }
+        }
 
-        let input_stream: ClassInstanceRef<InputStream> = jvm
-            .invoke_virtual(
+        let input_stream: ClassInstanceRef<InputStream> = if manifest_file.is_null() {
+            let empty = jvm.instantiate_array("B", 0).await?;
+            jvm.new_class("java/io/ByteArrayInputStream", "([B)V", (empty,)).await?.into()
+        } else {
+            jvm.invoke_virtual(
                 &this,
                 "getInputStream",
                 "(Ljava/util/zip/ZipEntry;)Ljava/io/InputStream;",
                 (manifest_file,),
             )
-            .await?;
+            .await?
+        };
 
         let manifest = jvm
             .new_class("java/util/jar/Manifest", "(Ljava/io/InputStream;)V", (input_stream,))

@@ -9,6 +9,8 @@ use dyn_clone::{DynClone, clone_trait_object};
 
 use jvm::{ClassDefinition, ClassInstance, Jvm, Result as JvmResult};
 
+use crate::DeviceProfile;
+
 pub use io::{File, FileDescriptorId, FileSize, FileStat, FileType, IOError, IOResult};
 
 #[async_trait::async_trait]
@@ -21,7 +23,7 @@ pub trait SpawnCallback: Sync + Send {
 }
 
 #[async_trait::async_trait]
-pub trait Runtime: Sync + Send + DynClone {
+pub trait RuntimeClock: Sync + Send {
     async fn sleep(&self, duration: Duration);
     async fn r#yield(&self);
     fn spawn(&self, jvm: &Jvm, callback: Box<dyn SpawnCallback>);
@@ -32,7 +34,10 @@ pub trait Runtime: Sync + Send + DynClone {
         None
     }
     fn set_current_java_thread(&self, _thread: Option<Box<dyn ClassInstance>>) {}
+}
 
+#[async_trait::async_trait]
+pub trait RuntimeFs: Sync + Send {
     fn stdin(&self) -> IOResult<FileDescriptorId>;
     fn stdout(&self) -> IOResult<FileDescriptorId>;
     fn stderr(&self) -> IOResult<FileDescriptorId>;
@@ -43,10 +48,13 @@ pub trait Runtime: Sync + Send + DynClone {
     async fn unlink(&self, path: &str) -> IOResult<()>;
     async fn metadata(&self, path: &str) -> IOResult<FileStat>;
 
-    async fn find_rustjar_class(&self, jvm: &Jvm, classpath: &str, class: &str) -> JvmResult<Option<Box<dyn ClassDefinition>>>;
-    async fn define_class(&self, jvm: &Jvm, data: &[u8]) -> JvmResult<Box<dyn ClassDefinition>>;
-    async fn define_array_class(&self, jvm: &Jvm, element_type_name: &str) -> JvmResult<Box<dyn ClassDefinition>>;
+    fn list_directory(&self, _path: &str) -> Vec<String> {
+        Vec::new()
+    }
+}
 
+#[async_trait::async_trait]
+pub trait RuntimeScreen: Sync + Send {
     fn decode_image(&self, _data: &[u8]) -> Option<DecodedImage> {
         None
     }
@@ -83,6 +91,21 @@ pub trait Runtime: Sync + Send + DynClone {
         self.screen_draw_pixels(x, y, width, height, &clipped, process_alpha);
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn screen_replace_pixels_strided(
+        &self,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+        pixels: &[i32],
+        source_width: i32,
+        source_x: i32,
+        source_y: i32,
+    ) {
+        self.screen_draw_pixels_strided(x, y, width, height, pixels, source_width, source_x, source_y, false);
+    }
+
     fn screen_fill_rect(&self, _x: i32, _y: i32, _width: i32, _height: i32, _argb: i32) {}
 
     fn screen_present(&self) {}
@@ -97,6 +120,13 @@ pub trait Runtime: Sync + Send + DynClone {
         0
     }
 
+    fn target_frame_rate(&self) -> u32 {
+        30
+    }
+}
+
+#[async_trait::async_trait]
+pub trait RuntimeStore: Sync + Send {
     fn rms_open_record_store(&self, _name: &str, _create_if_necessary: bool) -> bool {
         true
     }
@@ -123,6 +153,57 @@ pub trait Runtime: Sync + Send + DynClone {
 
     fn rms_list_record_stores(&self) -> Vec<String> {
         Vec::new()
+    }
+
+    fn rms_get_size(&self, name: &str) -> i32 {
+        self.rms_num_records(name) * 64
+    }
+
+    fn rms_get_size_available(&self, _name: &str) -> i32 {
+        64 * 1024
+    }
+}
+
+#[async_trait::async_trait]
+pub trait RuntimeNet: Sync + Send {
+    async fn http_request(
+        &self,
+        _method: &str,
+        _url: &str,
+        _headers: &[(String, String)],
+        _body: &[u8],
+    ) -> IOResult<(i32, Vec<(String, String)>, Vec<u8>)> {
+        Err(IOError::Unsupported)
+    }
+}
+
+#[async_trait::async_trait]
+pub trait RuntimeClassDefine: Sync + Send {
+    async fn find_rustjar_class(&self, jvm: &Jvm, classpath: &str, class: &str) -> JvmResult<Option<Box<dyn ClassDefinition>>>;
+    async fn define_class(&self, jvm: &Jvm, data: &[u8]) -> JvmResult<Box<dyn ClassDefinition>>;
+    async fn define_array_class(&self, jvm: &Jvm, element_type_name: &str) -> JvmResult<Box<dyn ClassDefinition>>;
+
+    fn allows_runtime_class(&self, _name: &str) -> bool {
+        true
+    }
+}
+
+#[async_trait::async_trait]
+pub trait Runtime: RuntimeClock + RuntimeFs + RuntimeScreen + RuntimeStore + RuntimeNet + RuntimeClassDefine + DynClone {
+    fn platform_request(&self, _url: &str) -> bool {
+        false
+    }
+
+    fn set_lights(&self, _num: i32, _level: i32) {}
+
+    fn start_vibra(&self, _freq: i32, _duration_ms: i64) {}
+
+    fn stop_vibra(&self) {}
+
+    fn play_tone(&self, _note: i32, _duration_ms: i32, _volume: i32) {}
+
+    fn device_profile(&self) -> DeviceProfile {
+        DeviceProfile::Generic
     }
 }
 

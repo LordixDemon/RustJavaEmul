@@ -11,7 +11,7 @@ use crate::{
             lang::{Object, String},
             util::Vector,
         },
-        javax::microedition::lcdui::{Command, Graphics, Image},
+        javax::microedition::lcdui::{Command, Font, Graphics, Image},
     },
 };
 
@@ -27,6 +27,12 @@ impl List {
             methods: vec![
                 JavaMethodProto::new("<clinit>", "()V", Self::clinit, MethodAccessFlags::STATIC),
                 JavaMethodProto::new("<init>", "(Ljava/lang/String;I)V", Self::init, Default::default()),
+                JavaMethodProto::new(
+                    "<init>",
+                    "(Ljava/lang/String;I[Ljava/lang/String;[Ljavax/microedition/lcdui/Image;)V",
+                    Self::init_items,
+                    Default::default(),
+                ),
                 JavaMethodProto::new(
                     "append",
                     "(Ljava/lang/String;Ljavax/microedition/lcdui/Image;)I",
@@ -52,9 +58,16 @@ impl List {
                     Default::default(),
                 ),
                 JavaMethodProto::new("setFitPolicy", "(I)V", Self::set_fit_policy, Default::default()),
+                JavaMethodProto::new("setFont", "(ILjavax/microedition/lcdui/Font;)V", Self::set_font, Default::default()),
                 JavaMethodProto::new("setSelectedFlags", "([Z)V", Self::set_selected_flags, Default::default()),
                 JavaMethodProto::new("setSelectedIndex", "(IZ)V", Self::set_selected_index, Default::default()),
                 JavaMethodProto::new("setTitle", "(Ljava/lang/String;)V", Self::set_title, Default::default()),
+                JavaMethodProto::new(
+                    "setSelectCommand",
+                    "(Ljavax/microedition/lcdui/Command;)V",
+                    Self::set_select_command,
+                    Default::default(),
+                ),
                 JavaMethodProto::new("showNotify", "()V", Self::show_notify, Default::default()),
                 JavaMethodProto::new("size", "()I", Self::size, Default::default()),
             ],
@@ -122,6 +135,46 @@ impl List {
         jvm.put_field(&mut this, "selectedIndex", "I", 0).await?;
         jvm.put_field(&mut this, "selectedFlags", "[Z", flags).await?;
         jvm.put_field(&mut this, "fitPolicy", "I", 0).await
+    }
+
+    async fn init_items(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        title: ClassInstanceRef<String>,
+        list_type: i32,
+        strings: ClassInstanceRef<Array<String>>,
+        images: ClassInstanceRef<Array<Image>>,
+    ) -> Result<()> {
+        Self::init(jvm, context, this.clone(), title, list_type).await?;
+        if strings.is_null() {
+            return Ok(());
+        }
+        let count = jvm.array_length(&strings).await?;
+        let image_count = if images.is_null() { 0 } else { jvm.array_length(&images).await? };
+        for index in 0..count {
+            let text: Vec<ClassInstanceRef<String>> = jvm.load_array(&strings, index, 1).await?;
+            let image = if !images.is_null() && index < image_count {
+                jvm.load_array(&images, index, 1)
+                    .await?
+                    .into_iter()
+                    .next()
+                    .unwrap_or_else(|| ClassInstanceRef::new(None))
+            } else {
+                ClassInstanceRef::new(None)
+            };
+            let text = text.into_iter().next().unwrap_or_else(|| ClassInstanceRef::new(None));
+            let _: i32 = Self::append(jvm, context, this.clone(), text, image).await?;
+        }
+        Ok(())
+    }
+
+    async fn set_select_command(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, command: ClassInstanceRef<Command>) -> Result<()> {
+        if command.is_null() {
+            return Ok(());
+        }
+        jvm.invoke_virtual(&this, "addCommand", "(Ljavax/microedition/lcdui/Command;)V", (command,))
+            .await
     }
 
     async fn append(
@@ -234,6 +287,10 @@ impl List {
         let _: ClassInstanceRef<Object> = jvm
             .invoke_virtual(&images, "set", "(ILjava/lang/Object;)Ljava/lang/Object;", (index, image))
             .await?;
+        Ok(())
+    }
+
+    async fn set_font(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>, _index: i32, _font: ClassInstanceRef<Font>) -> Result<()> {
         Ok(())
     }
 

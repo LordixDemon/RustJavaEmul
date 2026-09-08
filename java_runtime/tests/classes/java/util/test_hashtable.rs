@@ -51,3 +51,41 @@ async fn test_hashmap() -> Result<()> {
     assert!(value.is_null());
     Ok(())
 }
+
+#[tokio::test]
+async fn test_hashtable_size_keys() -> Result<()> {
+    let jvm = test_jvm().await?;
+    let table = jvm.new_class("java/util/Hashtable", "()V", ()).await?;
+    let size: i32 = jvm.invoke_virtual(&table, "size", "()I", ()).await?;
+    assert_eq!(size, 0);
+    let empty: bool = jvm.invoke_virtual(&table, "isEmpty", "()Z", ()).await?;
+    assert!(empty);
+
+    let key = JavaLangString::from_rust_string(&jvm, "k").await?;
+    let value = JavaLangString::from_rust_string(&jvm, "v").await?;
+    let _: ClassInstanceRef<Object> = jvm
+        .invoke_virtual(&table, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", (key, value))
+        .await?;
+    let size: i32 = jvm.invoke_virtual(&table, "size", "()I", ()).await?;
+    assert_eq!(size, 1);
+
+    let keys: ClassInstanceRef<Object> = jvm.invoke_virtual(&table, "keys", "()Ljava/util/Enumeration;", ()).await?;
+    let has: bool = jvm.invoke_virtual(&keys, "hasMoreElements", "()Z", ()).await?;
+    assert!(has);
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_hashtable_values() -> Result<()> {
+    let jvm = test_jvm().await?;
+    let table = jvm.new_class("java/util/Hashtable", "()V", ()).await?;
+    let key = JavaLangString::from_rust_string(&jvm, "k").await?;
+    let value = JavaLangString::from_rust_string(&jvm, "v").await?;
+    let _: ClassInstanceRef<Object> = jvm
+        .invoke_virtual(&table, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", (key, value))
+        .await?;
+    let values: ClassInstanceRef<Object> = jvm.invoke_virtual(&table, "values", "()Ljava/util/Collection;", ()).await?;
+    let size: i32 = jvm.invoke_virtual(&values, "size", "()I", ()).await?;
+    assert_eq!(size, 1);
+    Ok(())
+}

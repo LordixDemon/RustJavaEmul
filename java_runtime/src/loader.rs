@@ -1,194 +1,58 @@
-use alloc::boxed::Box;
+use alloc::{boxed::Box, vec::Vec};
 
+use hashbrown::HashMap;
 use jvm::{BootstrapClassLoader, ClassDefinition, Jvm, Result};
+use parking_lot::Mutex;
 
-use crate::{RT_RUSTJAR, Runtime, RuntimeClassProto};
+use crate::{RT_RUSTJAR, Runtime, RuntimeClassProto, RuntimeClassProtoFactory};
+
+fn all_proto_factories() -> Vec<RuntimeClassProtoFactory> {
+    let mut factories = Vec::new();
+    factories.extend(crate::classes::com::class_protos());
+    factories.extend(crate::classes::java::class_protos());
+    factories.extend(crate::classes::javax::class_protos());
+    factories.extend(crate::classes::org::class_protos());
+    factories.extend(crate::classes::root::class_protos());
+    factories
+}
+
+pub fn all_runtime_class_protos() -> Vec<RuntimeClassProto> {
+    let mut protos = all_proto_factories().into_iter().map(|factory| factory()).collect();
+    crate::coverage_stubs::merge_into(&mut protos);
+    protos
+}
+
+pub fn all_real_runtime_class_protos() -> Vec<RuntimeClassProto> {
+    all_proto_factories().into_iter().map(|factory| factory()).collect()
+}
+
+fn proto_index() -> HashMap<&'static str, RuntimeClassProtoFactory> {
+    let mut map = HashMap::new();
+    for factory in all_proto_factories() {
+        let proto = factory();
+        map.insert(proto.name, factory);
+    }
+    map
+}
 
 pub fn get_runtime_class_proto(name: &str) -> Option<RuntimeClassProto> {
-    let protos = [
-        crate::classes::com::mascotcapsule::micro3d::v3::ActionTable::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::AffineTrans::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::Effect3D::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::Figure::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::FigureLayout::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::Graphics3D::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::Light::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::Texture::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::Util3D::as_proto(),
-        crate::classes::com::mascotcapsule::micro3d::v3::Vector3D::as_proto(),
-        crate::classes::com::nokia::mid::ui::DeviceControl::as_proto(),
-        crate::classes::com::nokia::mid::ui::DirectGraphics::as_proto(),
-        crate::classes::com::nokia::mid::ui::DirectUtils::as_proto(),
-        crate::classes::java::io::BufferedReader::as_proto(),
-        crate::classes::java::io::ByteArrayInputStream::as_proto(),
-        crate::classes::java::io::ByteArrayOutputStream::as_proto(),
-        crate::classes::java::io::DataInput::as_proto(),
-        crate::classes::java::io::DataInputStream::as_proto(),
-        crate::classes::java::io::DataOutput::as_proto(),
-        crate::classes::java::io::DataOutputStream::as_proto(),
-        crate::classes::java::io::EOFException::as_proto(),
-        crate::classes::java::io::File::as_proto(),
-        crate::classes::java::io::FileDescriptor::as_proto(),
-        crate::classes::java::io::FileInputStream::as_proto(),
-        crate::classes::java::io::FileNotFoundException::as_proto(),
-        crate::classes::java::io::FileOutputStream::as_proto(),
-        crate::classes::java::io::FilterInputStream::as_proto(),
-        crate::classes::java::io::FilterOutputStream::as_proto(),
-        crate::classes::java::io::InputStream::as_proto(),
-        crate::classes::java::io::InputStreamReader::as_proto(),
-        crate::classes::java::io::IOException::as_proto(),
-        crate::classes::java::io::OutputStream::as_proto(),
-        crate::classes::java::io::PrintStream::as_proto(),
-        crate::classes::java::io::PrintWriter::as_proto(),
-        crate::classes::java::io::RandomAccessFile::as_proto(),
-        crate::classes::java::io::Reader::as_proto(),
-        crate::classes::java::io::Serializable::as_proto(),
-        crate::classes::java::io::StringWriter::as_proto(),
-        crate::classes::java::io::Writer::as_proto(),
-        crate::classes::java::lang::AbstractMethodError::as_proto(),
-        crate::classes::java::lang::ArithmeticException::as_proto(),
-        crate::classes::java::lang::ArrayIndexOutOfBoundsException::as_proto(),
-        crate::classes::java::lang::Class::as_proto(),
-        crate::classes::java::lang::ClassCastException::as_proto(),
-        crate::classes::java::lang::ClassLoader::as_proto(),
-        crate::classes::java::lang::ClassNotFoundException::as_proto(),
-        crate::classes::java::lang::Cloneable::as_proto(),
-        crate::classes::java::lang::CloneNotSupportedException::as_proto(),
-        crate::classes::java::lang::Comparable::as_proto(),
-        crate::classes::java::lang::Error::as_proto(),
-        crate::classes::java::lang::Exception::as_proto(),
-        crate::classes::java::lang::ExceptionInInitializerError::as_proto(),
-        crate::classes::java::lang::Float::as_proto(),
-        crate::classes::java::lang::IllegalArgumentException::as_proto(),
-        crate::classes::java::lang::InstantiationError::as_proto(),
-        crate::classes::java::lang::IncompatibleClassChangeError::as_proto(),
-        crate::classes::java::lang::IndexOutOfBoundsException::as_proto(),
-        crate::classes::java::lang::Integer::as_proto(),
-        crate::classes::java::lang::InterruptedException::as_proto(),
-        crate::classes::java::lang::LinkageError::as_proto(),
-        crate::classes::java::lang::Math::as_proto(),
-        crate::classes::java::lang::NegativeArraySizeException::as_proto(),
-        crate::classes::java::lang::NoClassDefFoundError::as_proto(),
-        crate::classes::java::lang::NoSuchFieldError::as_proto(),
-        crate::classes::java::lang::NoSuchMethodError::as_proto(),
-        crate::classes::java::lang::NullPointerException::as_proto(),
-        crate::classes::java::lang::NumberFormatException::as_proto(),
-        crate::classes::java::lang::Object::as_proto(),
-        crate::classes::java::lang::OutOfMemoryError::as_proto(),
-        crate::classes::java::lang::Runnable::as_proto(),
-        crate::classes::java::lang::Runtime::as_proto(),
-        crate::classes::java::lang::RuntimeException::as_proto(),
-        crate::classes::java::lang::SecurityException::as_proto(),
-        crate::classes::java::lang::String::as_proto(),
-        crate::classes::java::lang::StringBuffer::as_proto(),
-        crate::classes::java::lang::StringIndexOutOfBoundsException::as_proto(),
-        crate::classes::java::lang::System::as_proto(),
-        crate::classes::java::lang::Thread::as_proto(),
-        crate::classes::java::lang::Throwable::as_proto(),
-        crate::classes::java::lang::UnsupportedOperationException::as_proto(),
-        crate::classes::java::net::JarURLConnection::as_proto(),
-        crate::classes::java::net::MalformedURLException::as_proto(),
-        crate::classes::java::net::UnknownServiceException::as_proto(),
-        crate::classes::java::net::URL::as_proto(),
-        crate::classes::java::net::URLClassLoader::as_proto(),
-        crate::classes::java::net::URLConnection::as_proto(),
-        crate::classes::java::net::URLStreamHandler::as_proto(),
-        crate::classes::java::util::AbstractCollection::as_proto(),
-        crate::classes::java::util::AbstractList::as_proto(),
-        crate::classes::java::util::Calendar::as_proto(),
-        crate::classes::java::util::Date::as_proto(),
-        crate::classes::java::util::Dictionary::as_proto(),
-        crate::classes::java::util::EmptyStackException::as_proto(),
-        crate::classes::java::util::Enumeration::as_proto(),
-        crate::classes::java::util::GregorianCalendar::as_proto(),
-        crate::classes::java::util::Hashtable::as_proto(),
-        crate::classes::java::util::HashtableEntry::as_proto(),
-        crate::classes::java::util::NoSuchElementException::as_proto(),
-        crate::classes::java::util::Properties::as_proto(),
-        crate::classes::java::util::Random::as_proto(),
-        crate::classes::java::util::SimpleTimeZone::as_proto(),
-        crate::classes::java::util::Stack::as_proto(),
-        crate::classes::java::util::Timer::as_proto(),
-        crate::classes::java::util::TimerTask::as_proto(),
-        crate::classes::java::util::TimerThread::as_proto(),
-        crate::classes::java::util::TimeZone::as_proto(),
-        crate::classes::java::util::Vector::as_proto(),
-        crate::classes::java::util::jar::Attributes::as_proto(),
-        crate::classes::java::util::jar::JarEntry::as_proto(),
-        crate::classes::java::util::jar::JarFile::as_proto(),
-        crate::classes::java::util::jar::JarFileEntries::as_proto(),
-        crate::classes::java::util::jar::Manifest::as_proto(),
-        crate::classes::java::util::zip::ZipEntry::as_proto(),
-        crate::classes::java::util::zip::ZipFile::as_proto(),
-        crate::classes::java::util::zip::ZipFileEntries::as_proto(),
-        crate::classes::javax::microedition::lcdui::Alert::as_proto(),
-        crate::classes::javax::microedition::lcdui::Canvas::as_proto(),
-        crate::classes::javax::microedition::lcdui::Command::as_proto(),
-        crate::classes::javax::microedition::lcdui::CommandListener::as_proto(),
-        crate::classes::javax::microedition::lcdui::Display::as_proto(),
-        crate::classes::javax::microedition::lcdui::Displayable::as_proto(),
-        crate::classes::javax::microedition::lcdui::Font::as_proto(),
-        crate::classes::javax::microedition::lcdui::Form::as_proto(),
-        crate::classes::javax::microedition::lcdui::GameCanvas::as_proto(),
-        crate::classes::javax::microedition::lcdui::Graphics::as_proto(),
-        crate::classes::javax::microedition::lcdui::Image::as_proto(),
-        crate::classes::javax::microedition::lcdui::ImageItem::as_proto(),
-        crate::classes::javax::microedition::lcdui::Item::as_proto(),
-        crate::classes::javax::microedition::lcdui::ItemCommandListener::as_proto(),
-        crate::classes::javax::microedition::lcdui::ItemStateListener::as_proto(),
-        crate::classes::javax::microedition::lcdui::List::as_proto(),
-        crate::classes::javax::microedition::lcdui::Sprite::as_proto(),
-        crate::classes::javax::microedition::lcdui::StringItem::as_proto(),
-        crate::classes::javax::microedition::lcdui::TextBox::as_proto(),
-        crate::classes::javax::microedition::lcdui::TextField::as_proto(),
-        crate::classes::javax::microedition::m3g::AnimationController::as_proto(),
-        crate::classes::javax::microedition::m3g::AnimationTrack::as_proto(),
-        crate::classes::javax::microedition::m3g::Appearance::as_proto(),
-        crate::classes::javax::microedition::m3g::Background::as_proto(),
-        crate::classes::javax::microedition::m3g::Camera::as_proto(),
-        crate::classes::javax::microedition::m3g::CompositingMode::as_proto(),
-        crate::classes::javax::microedition::m3g::Fog::as_proto(),
-        crate::classes::javax::microedition::m3g::Graphics3D::as_proto(),
-        crate::classes::javax::microedition::m3g::Group::as_proto(),
-        crate::classes::javax::microedition::m3g::Image2D::as_proto(),
-        crate::classes::javax::microedition::m3g::IndexBuffer::as_proto(),
-        crate::classes::javax::microedition::m3g::KeyframeSequence::as_proto(),
-        crate::classes::javax::microedition::m3g::Light::as_proto(),
-        crate::classes::javax::microedition::m3g::Loader::as_proto(),
-        crate::classes::javax::microedition::m3g::Material::as_proto(),
-        crate::classes::javax::microedition::m3g::Mesh::as_proto(),
-        crate::classes::javax::microedition::m3g::Node::as_proto(),
-        crate::classes::javax::microedition::m3g::Object3D::as_proto(),
-        crate::classes::javax::microedition::m3g::PolygonMode::as_proto(),
-        crate::classes::javax::microedition::m3g::RayIntersection::as_proto(),
-        crate::classes::javax::microedition::m3g::Sprite3D::as_proto(),
-        crate::classes::javax::microedition::m3g::Texture2D::as_proto(),
-        crate::classes::javax::microedition::m3g::Transform::as_proto(),
-        crate::classes::javax::microedition::m3g::Transformable::as_proto(),
-        crate::classes::javax::microedition::m3g::TriangleStripArray::as_proto(),
-        crate::classes::javax::microedition::m3g::VertexArray::as_proto(),
-        crate::classes::javax::microedition::m3g::VertexBuffer::as_proto(),
-        crate::classes::javax::microedition::m3g::World::as_proto(),
-        crate::classes::javax::microedition::media::Control::as_proto(),
-        crate::classes::javax::microedition::media::Controllable::as_proto(),
-        crate::classes::javax::microedition::media::Manager::as_proto(),
-        crate::classes::javax::microedition::media::Player::as_proto(),
-        crate::classes::javax::microedition::media::PlayerListener::as_proto(),
-        crate::classes::javax::microedition::media::VolumeControl::as_proto(),
-        crate::classes::javax::microedition::midlet::MIDlet::as_proto(),
-        crate::classes::javax::microedition::rms::RecordComparator::as_proto(),
-        crate::classes::javax::microedition::rms::RecordEnumeration::as_proto(),
-        crate::classes::javax::microedition::rms::RecordFilter::as_proto(),
-        crate::classes::javax::microedition::rms::RecordStoreException::as_proto(),
-        crate::classes::javax::microedition::rms::RecordStoreNotFoundException::as_proto(),
-        crate::classes::javax::microedition::rms::RecordStore::as_proto(),
-        crate::classes::org::rustjava::net::FileURLConnection::as_proto(),
-        crate::classes::org::rustjava::net::FileURLHandler::as_proto(),
-        crate::classes::org::rustjava::net::JarURLConnection::as_proto(),
-        crate::classes::org::rustjava::net::JarURLHandler::as_proto(),
-    ];
+    static INDEX: Mutex<Option<HashMap<&'static str, RuntimeClassProtoFactory>>> = Mutex::new(None);
 
-    protos.into_iter().find(|proto| proto.name == name)
+    let factory = {
+        let mut index = INDEX.lock();
+        if index.is_none() {
+            *index = Some(proto_index());
+        }
+        index.as_ref().and_then(|map| map.get(name).copied())
+    };
+
+    let mut proto = if let Some(factory) = factory {
+        factory()
+    } else {
+        crate::coverage_stubs::class_proto(name)?
+    };
+    crate::coverage_stubs::apply_to(&mut proto);
+    Some(proto)
 }
 
 struct JavaRuntimeClassLoader {

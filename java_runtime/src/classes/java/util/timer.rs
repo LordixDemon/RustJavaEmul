@@ -5,7 +5,7 @@ use jvm::{ClassInstanceRef, Jvm, Result};
 
 use crate::{
     RuntimeClassProto, RuntimeContext,
-    classes::java::util::{TimerTask, Vector},
+    classes::java::util::{Date, TimerTask, Vector},
 };
 
 // class java.util.Timer
@@ -20,6 +20,14 @@ impl Timer {
             methods: vec![
                 JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
                 JavaMethodProto::new("schedule", "(Ljava/util/TimerTask;JJ)V", Self::schedule, Default::default()),
+                JavaMethodProto::new("schedule", "(Ljava/util/TimerTask;J)V", Self::schedule_once, Default::default()),
+                JavaMethodProto::new(
+                    "schedule",
+                    "(Ljava/util/TimerTask;Ljava/util/Date;J)V",
+                    Self::schedule_date_period,
+                    Default::default(),
+                ),
+                JavaMethodProto::new("cancel", "()V", Self::cancel, Default::default()),
                 JavaMethodProto::new(
                     "scheduleAtFixedRate",
                     "(Ljava/util/TimerTask;JJ)V",
@@ -30,6 +38,7 @@ impl Timer {
             fields: vec![
                 JavaFieldProto::new("tasks", "Ljava/util/Vector;", Default::default()),
                 JavaFieldProto::new("thread", "Ljava/lang/Thread;", Default::default()),
+                JavaFieldProto::new("cancelled", "Z", Default::default()),
             ],
             access_flags: Default::default(),
         }
@@ -67,6 +76,42 @@ impl Timer {
         let next_execution_time = now + delay;
 
         Self::do_schedule(jvm, this, task, next_execution_time, period).await
+    }
+
+    async fn schedule_once(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        task: ClassInstanceRef<TimerTask>,
+        delay: i64,
+    ) -> Result<()> {
+        Self::schedule(jvm, context, this, task, delay, 0).await
+    }
+
+    async fn schedule_date_period(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        task: ClassInstanceRef<TimerTask>,
+        date: ClassInstanceRef<Date>,
+        period: i64,
+    ) -> Result<()> {
+        let time: i64 = if date.is_null() {
+            context.now() as i64
+        } else {
+            jvm.invoke_virtual(&date, "getTime", "()J", ()).await?
+        };
+        let now = context.now() as i64;
+        Self::do_schedule(jvm, this, task, time.max(now), period).await
+    }
+
+    async fn cancel(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>) -> Result<()> {
+        jvm.put_field(&mut this, "cancelled", "Z", true).await?;
+        let tasks: ClassInstanceRef<Vector> = jvm.get_field(&this, "tasks", "Ljava/util/Vector;").await?;
+        if !tasks.is_null() {
+            let _: () = jvm.invoke_virtual(&tasks, "removeAllElements", "()V", ()).await?;
+        }
+        Ok(())
     }
 
     async fn schedule_at_fixed_rate(

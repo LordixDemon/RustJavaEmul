@@ -1,4 +1,5 @@
 use alloc::{boxed::Box, collections::BTreeMap, vec};
+use core::time::Duration;
 
 use java_class_proto::{JavaFieldProto, JavaMethodProto};
 use java_runtime::{
@@ -53,6 +54,17 @@ async fn test_jvm_with_runnable() -> Result<Jvm> {
     ));
     jvm.register_class(class, None).await?;
     Ok(jvm)
+}
+
+async fn wait_run_count(jvm: &Jvm, runnable: &Box<dyn jvm::ClassInstance>, expected: i32) -> Result<i32> {
+    for _ in 0..200 {
+        let run_count: i32 = jvm.get_field(runnable, "runCount", "I").await?;
+        if run_count >= expected {
+            return Ok(run_count);
+        }
+        tokio::time::sleep(Duration::from_millis(1)).await;
+    }
+    jvm.get_field(runnable, "runCount", "I").await
 }
 
 #[tokio::test]
@@ -135,14 +147,13 @@ async fn display_call_serially_runs_runnable() -> Result<()> {
     let _: () = jvm
         .invoke_virtual(&display, "callSerially", "(Ljava/lang/Runnable;)V", (runnable.clone(),))
         .await?;
-
-    let run_count: i32 = jvm.get_field(&runnable, "runCount", "I").await?;
+    let run_count = wait_run_count(&jvm, &runnable, 1).await?;
     assert_eq!(run_count, 1);
 
     let _: () = jvm
         .invoke_virtual(&display, "callSerially", "(Ljava/lang/Runnable;)V", (runnable.clone(),))
         .await?;
-    let run_count: i32 = jvm.get_field(&runnable, "runCount", "I").await?;
+    let run_count = wait_run_count(&jvm, &runnable, 2).await?;
     assert_eq!(run_count, 2);
 
     Ok(())
@@ -415,7 +426,7 @@ async fn canvas_exposes_midp_key_capabilities() -> Result<()> {
     assert_eq!(key_code, -1);
     assert_eq!(JavaLangString::to_rust_string(&jvm, &key_name).await?, "FIRE");
     assert!(double_buffered);
-    assert!(!pointer_events);
+    assert!(pointer_events);
 
     Ok(())
 }

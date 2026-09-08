@@ -45,6 +45,10 @@ impl Manifest {
     async fn read(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, is: ClassInstanceRef<InputStream>) -> Result<()> {
         tracing::debug!("java.util.jar.Manifest::read({:?}, {:?})", &this, &is);
 
+        if is.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "").await);
+        }
+
         // TODO we currently support only main attribute
 
         let main_attributes = jvm.new_class("java/util/jar/Attributes", "()V", ()).await?;

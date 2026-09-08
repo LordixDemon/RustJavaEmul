@@ -5,3 +5,7 @@ mod jar_file_entries;
 mod manifest;
 
 pub use {attributes::Attributes, jar_entry::JarEntry, jar_file::JarFile, jar_file_entries::JarFileEntries, manifest::Manifest};
+
+pub fn class_protos() -> impl IntoIterator<Item = crate::RuntimeClassProtoFactory> {
+    proto_factories![Attributes, JarEntry, JarFile, JarFileEntries, Manifest]
+}

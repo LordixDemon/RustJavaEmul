@@ -19,7 +19,7 @@ impl OutputStream {
                 JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
                 JavaMethodProto::new("write", "([B)V", Self::write_bytes, Default::default()),
                 JavaMethodProto::new("write", "([BII)V", Self::write_bytes_offset, Default::default()),
-                JavaMethodProto::new_abstract("write", "(I)V", Default::default()),
+                JavaMethodProto::new("write", "(I)V", Self::write_byte, Default::default()),
                 JavaMethodProto::new("flush", "()V", Self::flush, Default::default()),
                 JavaMethodProto::new("close", "()V", Self::close, Default::default()),
             ],
@@ -39,6 +39,10 @@ impl OutputStream {
     async fn write_bytes(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, buffer: ClassInstanceRef<Array<i8>>) -> Result<()> {
         tracing::debug!("java.io.OutputStream::write({:?}, {:?})", &this, &buffer);
 
+        if buffer.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "").await);
+        }
+
         let length = jvm.array_length(&buffer).await?;
 
         let _: () = jvm.invoke_virtual(&this, "write", "([BII)V", (buffer, 0, length as i32)).await?;
@@ -56,12 +60,20 @@ impl OutputStream {
     ) -> Result<()> {
         tracing::debug!("java.io.OutputStream::write({:?}, {:?}, {:?}, {:?})", &this, &buffer, &offset, &length);
 
-        let mut bytes = vec![0; length as usize];
+        if buffer.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "").await);
+        }
+
+        let mut bytes = vec![0; length.max(0) as usize];
         jvm.array_raw_buffer(&buffer).await?.read(offset as _, &mut bytes)?;
         for byte in bytes {
             let _: () = jvm.invoke_virtual(&this, "write", "(I)V", (byte as i32,)).await?;
         }
 
+        Ok(())
+    }
+
+    async fn write_byte(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>, _byte: i32) -> Result<()> {
         Ok(())
     }
 

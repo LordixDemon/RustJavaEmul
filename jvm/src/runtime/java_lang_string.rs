@@ -1,13 +1,21 @@
-use alloc::{boxed::Box, string::String, vec::Vec};
+use alloc::{
+    boxed::Box,
+    string::{String, ToString},
+    vec::Vec,
+};
 
-use crate::{JavaChar, Result, class_instance::ClassInstance, jvm::Jvm};
+use crate::{
+    JavaChar, Result,
+    class_instance::{ClassInstance, ClassInstanceRef},
+    jvm::Jvm,
+};
 
 pub struct JavaLangString;
 
 impl JavaLangString {
     #[allow(clippy::borrowed_box)]
     pub async fn to_rust_string(jvm: &Jvm, this: &Box<dyn ClassInstance>) -> Result<String> {
-        let value = jvm.get_field(this, "value", "[C").await?;
+        let value: ClassInstanceRef<()> = jvm.get_field(this, "value", "[C").await?;
 
         let length = jvm.array_length(&value).await?;
         let string: Vec<JavaChar> = jvm.load_array(&value, 0, length).await?;
@@ -19,6 +27,14 @@ impl JavaLangString {
         let utf16 = string.encode_utf16().collect::<Vec<_>>();
 
         Self::from_utf16(jvm, utf16).await
+    }
+
+    pub async fn intern_rust_string(jvm: &Jvm, string: &str) -> Result<Box<dyn ClassInstance>> {
+        if let Some(existing) = jvm.interned_string(string) {
+            return Ok(existing);
+        }
+        let created = Self::from_rust_string(jvm, string).await?;
+        Ok(jvm.intern_string_instance(string.to_string(), created))
     }
 
     async fn from_utf16(jvm: &Jvm, data: Vec<u16>) -> Result<Box<dyn ClassInstance>> {

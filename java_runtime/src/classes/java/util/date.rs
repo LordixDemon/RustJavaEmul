@@ -1,9 +1,9 @@
-use alloc::vec;
+use alloc::{format, vec};
 
 use java_class_proto::{JavaFieldProto, JavaMethodProto};
-use jvm::{ClassInstanceRef, Jvm, Result};
+use jvm::{ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
 
-use crate::{RuntimeClassProto, RuntimeContext};
+use crate::{RuntimeClassProto, RuntimeContext, classes::java::lang::String};
 
 // class java.util.Date
 pub struct Date;
@@ -19,6 +19,7 @@ impl Date {
                 JavaMethodProto::new("<init>", "(J)V", Self::init_with_time, Default::default()),
                 JavaMethodProto::new("getTime", "()J", Self::get_time, Default::default()),
                 JavaMethodProto::new("setTime", "(J)V", Self::set_time, Default::default()),
+                JavaMethodProto::new("toString", "()Ljava/lang/String;", Self::to_string, Default::default()),
             ],
             fields: vec![JavaFieldProto::new("value", "J", Default::default())],
             access_flags: Default::default(),
@@ -59,5 +60,10 @@ impl Date {
         jvm.put_field(&mut this, "value", "J", time).await?;
 
         Ok(())
+    }
+
+    async fn to_string(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<String>> {
+        let time: i64 = jvm.get_field(&this, "value", "J").await?;
+        JavaLangString::from_rust_string(jvm, &format!("{time}")).await.map(Into::into)
     }
 }

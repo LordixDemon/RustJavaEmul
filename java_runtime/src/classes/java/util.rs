@@ -6,12 +6,12 @@ mod abstract_list;
 mod calendar;
 mod date;
 mod dictionary;
-mod empty_stack_exception;
 mod enumeration;
+mod enumerators;
+mod exceptions;
 mod gregorian_calendar;
 mod hashtable;
 mod hashtable_entry;
-mod no_such_element_exception;
 mod properties;
 mod random;
 mod simple_time_zone;
@@ -23,9 +23,55 @@ mod timer_thread;
 mod vector;
 
 pub use self::{
-    abstract_collection::AbstractCollection, abstract_list::AbstractList, calendar::Calendar, date::Date, dictionary::Dictionary,
-    empty_stack_exception::EmptyStackException, enumeration::Enumeration, gregorian_calendar::GregorianCalendar, hashtable::Hashtable,
-    hashtable_entry::HashtableEntry, no_such_element_exception::NoSuchElementException, properties::Properties, random::Random,
-    simple_time_zone::SimpleTimeZone, stack::Stack, time_zone::TimeZone, timer::Timer, timer_task::TimerTask, timer_thread::TimerThread,
+    abstract_collection::AbstractCollection,
+    abstract_list::AbstractList,
+    calendar::Calendar,
+    date::Date,
+    dictionary::Dictionary,
+    enumeration::Enumeration,
+    enumerators::{HashtableEnumerator, VectorEnumerator},
+    exceptions::{EmptyStackException, NoSuchElementException},
+    gregorian_calendar::GregorianCalendar,
+    hashtable::Hashtable,
+    hashtable_entry::HashtableEntry,
+    properties::Properties,
+    random::Random,
+    simple_time_zone::SimpleTimeZone,
+    stack::Stack,
+    time_zone::TimeZone,
+    timer::Timer,
+    timer_task::TimerTask,
+    timer_thread::TimerThread,
     vector::Vector,
 };
+
+pub fn class_protos() -> alloc::vec::Vec<crate::RuntimeClassProtoFactory> {
+    let mut factories = alloc::vec::Vec::new();
+    factories.extend(proto_factories![
+        AbstractCollection,
+        AbstractList,
+        Calendar,
+        Date,
+        Dictionary,
+        EmptyStackException,
+        Enumeration,
+        GregorianCalendar,
+        Hashtable,
+        HashtableEntry,
+        HashtableEnumerator,
+        NoSuchElementException,
+        Properties,
+        Random,
+        SimpleTimeZone,
+        Stack,
+        Timer,
+        TimerTask,
+        TimerThread,
+        TimeZone,
+        Vector,
+        VectorEnumerator,
+    ]);
+    factories.extend(jar::class_protos());
+    factories.extend(zip::class_protos());
+    factories
+}

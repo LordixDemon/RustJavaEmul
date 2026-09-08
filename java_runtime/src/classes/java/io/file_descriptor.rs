@@ -78,6 +78,9 @@ impl FileDescriptor {
     }
 
     pub async fn file(jvm: &Jvm, runtime: &RuntimeContext, this: ClassInstanceRef<Self>) -> Result<Box<dyn crate::File>> {
+        if this.is_null() {
+            return Err(jvm.exception("java/io/IOException", "Invalid file descriptor").await);
+        }
         let fd: i32 = jvm.get_field(&this, "fd", "I").await?;
         if fd <= 0 {
             return Err(jvm.exception("java/io/IOException", "Invalid file descriptor").await);

@@ -1,7 +1,7 @@
 use alloc::vec;
 
 use java_class_proto::{JavaFieldProto, JavaMethodProto};
-use jvm::{ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
+use jvm::{Array, ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
 
 use crate::{
     RuntimeClassProto, RuntimeContext,
@@ -22,6 +22,12 @@ impl Form {
             interfaces: vec![],
             methods: vec![
                 JavaMethodProto::new("<init>", "(Ljava/lang/String;)V", Self::init, Default::default()),
+                JavaMethodProto::new(
+                    "<init>",
+                    "(Ljava/lang/String;[Ljavax/microedition/lcdui/Item;)V",
+                    Self::init_with_items,
+                    Default::default(),
+                ),
                 JavaMethodProto::new("append", "(Ljava/lang/String;)I", Self::append, Default::default()),
                 JavaMethodProto::new("append", "(Ljavax/microedition/lcdui/Image;)I", Self::append_image, Default::default()),
                 JavaMethodProto::new("append", "(Ljavax/microedition/lcdui/Item;)I", Self::append_item, Default::default()),
@@ -67,6 +73,29 @@ impl Form {
             ClassInstanceRef::<ItemStateListener>::new(None),
         )
         .await
+    }
+
+    async fn init_with_items(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        title: ClassInstanceRef<String>,
+        items: ClassInstanceRef<Array<Item>>,
+    ) -> Result<()> {
+        Self::init(jvm, context, this.clone(), title).await?;
+        if items.is_null() {
+            return Ok(());
+        }
+        let len = jvm.array_length(&items).await?;
+        for i in 0..len {
+            let item: alloc::vec::Vec<ClassInstanceRef<Item>> = jvm.load_array(&items, i, 1).await?;
+            if let Some(item) = item.into_iter().next() {
+                if !item.is_null() {
+                    let _: i32 = Self::append_item(jvm, context, this.clone(), item).await?;
+                }
+            }
+        }
+        Ok(())
     }
 
     async fn append(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>, text: ClassInstanceRef<String>) -> Result<i32> {

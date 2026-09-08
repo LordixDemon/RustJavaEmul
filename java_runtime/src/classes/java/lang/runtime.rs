@@ -21,6 +21,9 @@ impl Runtime {
                 JavaMethodProto::new("totalMemory", "()J", Self::total_memory, Default::default()),
                 JavaMethodProto::new("freeMemory", "()J", Self::free_memory, Default::default()),
                 JavaMethodProto::new("gc", "()V", Self::gc, Default::default()),
+                JavaMethodProto::new("exit", "(I)V", Self::exit, Default::default()),
+                JavaMethodProto::new("halt", "(I)V", Self::halt, Default::default()),
+                JavaMethodProto::new("availableProcessors", "()I", Self::available_processors, Default::default()),
             ],
             fields: vec![],
             access_flags: Default::default(),
@@ -53,11 +56,25 @@ impl Runtime {
         Ok(0x100000) // TODO: hardcoded
     }
 
-    async fn gc(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Runtime>) -> Result<()> {
+    async fn gc(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Runtime>) -> Result<()> {
         tracing::debug!("java.lang.Runtime::gc({:?})", &this);
 
-        System::explicit_gc(jvm)?;
+        System::explicit_gc(jvm, context.now())?;
 
         Ok(())
+    }
+
+    async fn exit(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Runtime>, status: i32) -> Result<()> {
+        tracing::debug!("java.lang.Runtime::exit({this:?}, {status})");
+        jvm.invoke_static("java/lang/System", "exit", "(I)V", (status,)).await
+    }
+
+    async fn halt(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Runtime>, status: i32) -> Result<()> {
+        tracing::debug!("java.lang.Runtime::halt({this:?}, {status})");
+        Self::exit(jvm, context, this, status).await
+    }
+
+    async fn available_processors(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Runtime>) -> Result<i32> {
+        Ok(1)
     }
 }

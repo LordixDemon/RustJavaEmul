@@ -10,24 +10,20 @@ use java_constants::ClassAccessFlags;
 
 use crate::{attribute::AttributeInfo, constant_pool::ConstantPoolItem, field::FieldInfo, interface::parse_interface, method::MethodInfo};
 
-fn parse_this_class<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Arc<String>> {
-    let (data, this_class) = be_u16(data)?;
-    let class_name_index = constant_pool.get(&this_class).unwrap().class_name_index();
+type ConstantParse = (BTreeMap<u16, ConstantPoolItem>, Option<Arc<String>>);
 
-    Ok((data, constant_pool.get(&class_name_index).unwrap().utf8()))
+fn parse_this_class<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Arc<String>> {
+    crate::constant_pool::parse_class_name_index(data, constant_pool)
 }
 
 fn parse_super_class<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Option<Arc<String>>> {
     let (data, super_class) = be_u16(data)?;
-
-    let super_class = if super_class != 0 {
-        let class_name_index = constant_pool.get(&super_class).unwrap().class_name_index();
-        Some(constant_pool.get(&class_name_index).unwrap().utf8())
+    if super_class == 0 {
+        Ok((data, None))
     } else {
-        None
-    };
-
-    Ok((data, super_class))
+        let (data, name) = crate::constant_pool::resolve_class_name(data, constant_pool, super_class)?;
+        Ok((data, Some(name)))
+    }
 }
 
 pub struct ClassInfo {
@@ -81,11 +77,24 @@ impl ClassInfo {
     }
 
     pub fn parse(file: &[u8]) -> Option<Self> {
-        let (remaining, result) = Self::parse_info(file).ok()?;
-        if !remaining.is_empty() {
-            return None;
-        }
+        Self::parse_info(file).ok().map(|(_, result)| result)
+    }
 
-        Some(result)
+    pub fn parse_constants(file: &[u8]) -> Option<ConstantParse> {
+        Self::parse_constants_info(file).ok().map(|(_, result)| result)
+    }
+
+    fn parse_constants_info(file: &[u8]) -> IResult<&[u8], ConstantParse> {
+        let (data, magic) = be_u32(file)?;
+        if magic != 0xCAFEBABE {
+            return Err(nom::Err::Error(nom::error::Error::new(data, nom::error::ErrorKind::Verify)));
+        }
+        let (data, _) = be_u16(data)?;
+        let (data, _) = be_u16(data)?;
+        let (data, constant_pool) = ConstantPoolItem::parse_all(data)?;
+        let (data, _) = be_u16(data)?;
+        let (data, this_class) = be_u16(data)?;
+        let this_name = crate::constant_pool::class_name_at(&constant_pool, this_class);
+        Ok((data, (constant_pool, this_name)))
     }
 }

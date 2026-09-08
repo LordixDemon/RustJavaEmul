@@ -19,6 +19,7 @@ static EXPLICIT_GC_CALLS: AtomicU64 = AtomicU64::new(0);
 static EXPLICIT_GC_SKIPPED: AtomicU64 = AtomicU64::new(0);
 static EXPLICIT_GC_RAN: AtomicU64 = AtomicU64::new(0);
 static EXPLICIT_GC_COLLECTED: AtomicU64 = AtomicU64::new(0);
+static LAST_EXPLICIT_GC_TIMESTAMP: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Clone, Copy, Default)]
 pub(crate) struct ExplicitGcStats {
@@ -56,12 +57,33 @@ impl System {
                     MethodAccessFlags::STATIC,
                 ),
                 JavaMethodProto::new(
+                    "getProperty",
+                    "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+                    Self::get_property_default,
+                    MethodAccessFlags::STATIC,
+                ),
+                JavaMethodProto::new(
+                    "getProperties",
+                    "()Ljava/util/Properties;",
+                    Self::get_properties,
+                    MethodAccessFlags::STATIC,
+                ),
+                JavaMethodProto::new(
                     "setProperty",
                     "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;",
                     Self::set_property,
                     MethodAccessFlags::STATIC,
                 ),
                 JavaMethodProto::new("exit", "(I)V", Self::exit, MethodAccessFlags::STATIC),
+                JavaMethodProto::new(
+                    "identityHashCode",
+                    "(Ljava/lang/Object;)I",
+                    Self::identity_hash_code,
+                    MethodAccessFlags::STATIC,
+                ),
+                JavaMethodProto::new("nanoTime", "()J", Self::nano_time, MethodAccessFlags::NATIVE | MethodAccessFlags::STATIC),
+                JavaMethodProto::new("setOut", "(Ljava/io/PrintStream;)V", Self::set_out, MethodAccessFlags::STATIC),
+                JavaMethodProto::new("setErr", "(Ljava/io/PrintStream;)V", Self::set_err, MethodAccessFlags::STATIC),
             ],
             fields: vec![
                 JavaFieldProto::new("out", "Ljava/io/PrintStream;", FieldAccessFlags::STATIC),
@@ -108,26 +130,35 @@ impl System {
         Ok(context.now() as _)
     }
 
-    async fn gc(jvm: &Jvm, _: &mut RuntimeContext) -> Result<()> {
+    async fn gc(jvm: &Jvm, context: &mut RuntimeContext) -> Result<()> {
         tracing::debug!("java.lang.System::gc()");
 
-        Self::explicit_gc(jvm)?;
+        Self::explicit_gc(jvm, context.now())?;
 
         Ok(())
     }
 
-    pub(crate) fn explicit_gc(jvm: &Jvm) -> Result<()> {
+    pub(crate) fn explicit_gc(jvm: &Jvm, now_ms: u64) -> Result<()> {
         EXPLICIT_GC_CALLS.fetch_add(1, Ordering::Relaxed);
 
         #[cfg(target_arch = "wasm32")]
         {
-            let _ = jvm;
+            let _ = (jvm, now_ms);
             EXPLICIT_GC_SKIPPED.fetch_add(1, Ordering::Relaxed);
             Ok(())
         }
 
         #[cfg(not(target_arch = "wasm32"))]
         {
+            if now_ms != 0 {
+                let last = LAST_EXPLICIT_GC_TIMESTAMP.load(Ordering::Relaxed);
+                if last != 0 && now_ms.saturating_sub(last) < 500 {
+                    EXPLICIT_GC_SKIPPED.fetch_add(1, Ordering::Relaxed);
+                    return Ok(());
+                }
+                LAST_EXPLICIT_GC_TIMESTAMP.store(now_ms, Ordering::Relaxed);
+            }
+
             let collected = jvm.collect_garbage()?;
             EXPLICIT_GC_RAN.fetch_add(1, Ordering::Relaxed);
             EXPLICIT_GC_COLLECTED.fetch_add(collected as u64, Ordering::Relaxed);
@@ -162,6 +193,10 @@ impl System {
             length
         );
 
+        if src.is_null() || dest.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "arraycopy").await);
+        }
+
         jvm.copy_array(&src, src_pos as _, &mut dest, dest_pos as _, length as _).await?;
 
         Ok(())
@@ -176,6 +211,32 @@ impl System {
             .await?;
 
         Ok(value)
+    }
+
+    async fn get_property_default(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        key: ClassInstanceRef<String>,
+        default: ClassInstanceRef<String>,
+    ) -> Result<ClassInstanceRef<String>> {
+        let value = Self::get_property(jvm, context, key).await?;
+        if value.is_null() { Ok(default) } else { Ok(value) }
+    }
+
+    async fn get_properties(jvm: &Jvm, _: &mut RuntimeContext) -> Result<ClassInstanceRef<crate::classes::java::util::Properties>> {
+        jvm.get_static_field("java/lang/System", "props", "Ljava/util/Properties;").await
+    }
+
+    async fn nano_time(_: &Jvm, context: &mut RuntimeContext) -> Result<i64> {
+        Ok((context.now() as i64).saturating_mul(1_000_000))
+    }
+
+    async fn set_out(jvm: &Jvm, _: &mut RuntimeContext, out: ClassInstanceRef<crate::classes::java::io::PrintStream>) -> Result<()> {
+        jvm.put_static_field("java/lang/System", "out", "Ljava/io/PrintStream;", out).await
+    }
+
+    async fn set_err(jvm: &Jvm, _: &mut RuntimeContext, err: ClassInstanceRef<crate::classes::java::io::PrintStream>) -> Result<()> {
+        jvm.put_static_field("java/lang/System", "err", "Ljava/io/PrintStream;", err).await
     }
 
     async fn set_property(
@@ -203,6 +264,13 @@ impl System {
         tracing::warn!("stub java.lang.System::exit({status})");
 
         Ok(())
+    }
+
+    async fn identity_hash_code(jvm: &Jvm, _: &mut RuntimeContext, obj: ClassInstanceRef<crate::classes::java::lang::Object>) -> Result<i32> {
+        if obj.is_null() {
+            return Ok(0);
+        }
+        jvm.invoke_special(&obj, "java/lang/Object", "hashCode", "()I", ()).await
     }
 
     pub async fn get_charset(jvm: &Jvm) -> Result<RustString> {

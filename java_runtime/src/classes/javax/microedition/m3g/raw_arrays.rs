@@ -36,6 +36,9 @@ pub(super) async fn raw_i32_array(jvm: &Jvm, array: &ClassInstanceRef<Array<i32>
 }
 
 pub(super) async fn raw_f32_array(jvm: &Jvm, array: &ClassInstanceRef<Array<f32>>, count: usize) -> Result<Vec<f32>> {
+    if array.is_null() {
+        return Err(jvm.exception("java/lang/NullPointerException", "").await);
+    }
     let count = count.min(jvm.array_length(array).await?);
     let mut values = vec![0.0; count];
     jvm.array_raw_buffer(array)

@@ -188,6 +188,62 @@ pub(super) fn invert_matrix(matrix: [f32; 16]) -> Option<[f32; 16]> {
     Some(result)
 }
 
+pub(super) fn quaternion_to_axis_angle(qx: f32, qy: f32, qz: f32, qw: f32) -> (f32, f32, f32, f32) {
+    let len = (qx * qx + qy * qy + qz * qz + qw * qw).sqrt();
+    if len <= f32::EPSILON {
+        return (0.0, 0.0, 0.0, 1.0);
+    }
+    let mut w = (qw / len).clamp(-1.0, 1.0);
+    let mut x = qx / len;
+    let mut y = qy / len;
+    let mut z = qz / len;
+    if w < 0.0 {
+        w = -w;
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+    let half_angle = w.acos();
+    let sin_half = half_angle.sin();
+    if sin_half.abs() <= 1e-4 {
+        return (0.0, 0.0, 0.0, 1.0);
+    }
+    let angle_deg = half_angle * 2.0 * 180.0 / core::f32::consts::PI;
+    (angle_deg, x / sin_half, y / sin_half, z / sin_half)
+}
+
+pub(super) fn axis_angle_to_quaternion(angle: f32, ax: f32, ay: f32, az: f32) -> [f32; 4] {
+    let axis = normalize3([ax, ay, az]).unwrap_or([0.0, 0.0, 1.0]);
+    let half = (angle * core::f32::consts::PI / 180.0) * 0.5;
+    let sin = half.sin();
+    [axis[0] * sin, axis[1] * sin, axis[2] * sin, half.cos()]
+}
+
+pub(super) fn nlerp_quaternion(left: [f32; 4], right: [f32; 4], t: f32) -> [f32; 4] {
+    let dot = left[0] * right[0] + left[1] * right[1] + left[2] * right[2] + left[3] * right[3];
+    let sign = if dot < 0.0 { -1.0 } else { 1.0 };
+    let mixed = [
+        left[0] + (right[0] * sign - left[0]) * t,
+        left[1] + (right[1] * sign - left[1]) * t,
+        left[2] + (right[2] * sign - left[2]) * t,
+        left[3] + (right[3] * sign - left[3]) * t,
+    ];
+    let len = (mixed[0] * mixed[0] + mixed[1] * mixed[1] + mixed[2] * mixed[2] + mixed[3] * mixed[3]).sqrt();
+    if len <= f32::EPSILON {
+        left
+    } else {
+        [mixed[0] / len, mixed[1] / len, mixed[2] / len, mixed[3] / len]
+    }
+}
+
+pub(super) fn transform_direction(matrix: [f32; 16], direction: [f32; 3]) -> [f32; 3] {
+    [
+        matrix[0] * direction[0] + matrix[1] * direction[1] + matrix[2] * direction[2],
+        matrix[4] * direction[0] + matrix[5] * direction[1] + matrix[6] * direction[2],
+        matrix[8] * direction[0] + matrix[9] * direction[1] + matrix[10] * direction[2],
+    ]
+}
+
 pub(super) fn quaternion_matrix(qx: f32, qy: f32, qz: f32, qw: f32) -> Option<[f32; 16]> {
     let len = (qx * qx + qy * qy + qz * qz + qw * qw).sqrt();
     if len <= f32::EPSILON {
@@ -264,8 +320,11 @@ pub(super) fn perspective_projection_matrix(fovy: f32, aspect: f32, near: f32, f
 pub(super) fn parallel_projection_matrix(height: f32, aspect: f32, near: f32, far: f32) -> [f32; 16] {
     let height = height.max(0.001);
     let aspect = aspect.max(0.001);
-    let near = near.max(0.001);
-    let far = far.max(near + 0.001);
+    let range = if (far - near).abs() < 0.001 {
+        if far >= near { 0.001 } else { -0.001 }
+    } else {
+        far - near
+    };
     let width = height * aspect;
     [
         2.0 / width,
@@ -278,8 +337,8 @@ pub(super) fn parallel_projection_matrix(height: f32, aspect: f32, near: f32, fa
         0.0,
         0.0,
         0.0,
-        1.0 / (far - near),
-        -near / (far - near),
+        1.0 / range,
+        -near / range,
         0.0,
         0.0,
         0.0,
@@ -307,11 +366,11 @@ fn sub3(left: [f32; 3], right: [f32; 3]) -> [f32; 3] {
     [left[0] - right[0], left[1] - right[1], left[2] - right[2]]
 }
 
-fn dot3(left: [f32; 3], right: [f32; 3]) -> f32 {
+pub(super) fn dot3(left: [f32; 3], right: [f32; 3]) -> f32 {
     left[0] * right[0] + left[1] * right[1] + left[2] * right[2]
 }
 
-fn cross3(left: [f32; 3], right: [f32; 3]) -> [f32; 3] {
+pub(super) fn cross3(left: [f32; 3], right: [f32; 3]) -> [f32; 3] {
     [
         left[1] * right[2] - left[2] * right[1],
         left[2] * right[0] - left[0] * right[2],

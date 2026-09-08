@@ -13,13 +13,13 @@ pub enum JavaError {
 impl Display for JavaError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            JavaError::JavaException(e) => write!(f, "Java exception: {e:?}"),
+            JavaError::JavaException(e) => write!(f, "Java exception: {}", e.class_definition().name()),
         }
     }
 }
 
 impl From<JavaError> for anyhow::Error {
     fn from(e: JavaError) -> Self {
-        anyhow::anyhow!("{e:?}")
+        anyhow::anyhow!("{e}")
     }
 }

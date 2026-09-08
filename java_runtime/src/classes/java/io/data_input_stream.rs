@@ -1,12 +1,11 @@
-use alloc::{string::String as RustString, vec};
+use alloc::{boxed::Box, string::String as RustString, vec};
 
 use java_class_proto::JavaMethodProto;
-use jvm::{Array, ClassInstanceRef, JavaChar, Jvm, Result, runtime::JavaLangString};
+use jvm::{Array, ClassInstance, ClassInstanceRef, JavaChar, Jvm, Result, runtime::JavaLangString};
 
-use crate::{
-    RuntimeClassProto, RuntimeContext,
-    classes::java::{io::InputStream, lang::String},
-};
+use crate::{RuntimeClassProto, RuntimeContext, classes::java::lang::String};
+
+use super::{data_input::DataInput, input_stream::InputStream};
 
 // class java.io.DataInputStream
 pub struct DataInputStream;
@@ -32,6 +31,12 @@ impl DataInputStream {
                 JavaMethodProto::new("readUnsignedByte", "()I", Self::read_unsigned_byte, Default::default()),
                 JavaMethodProto::new("readUnsignedShort", "()I", Self::read_unsigned_short, Default::default()),
                 JavaMethodProto::new("readUTF", "()Ljava/lang/String;", Self::read_utf, Default::default()),
+                JavaMethodProto::new(
+                    "readUTF",
+                    "(Ljava/io/DataInput;)Ljava/lang/String;",
+                    Self::read_utf_from,
+                    java_constants::MethodAccessFlags::STATIC,
+                ),
                 JavaMethodProto::new("skipBytes", "(I)I", Self::skip_bytes, Default::default()),
             ],
             fields: vec![],
@@ -49,11 +54,22 @@ impl DataInputStream {
         Ok(())
     }
 
+    async fn input(jvm: &Jvm, this: &ClassInstanceRef<Self>) -> Result<Box<dyn ClassInstance>> {
+        let r#in: ClassInstanceRef<InputStream> = jvm.get_field(this, "in", "Ljava/io/InputStream;").await?;
+        match r#in.instance {
+            Some(instance) => Ok(instance),
+            None => Err(jvm.exception("java/lang/NullPointerException", "").await),
+        }
+    }
+
     async fn read_byte(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i8> {
         tracing::debug!("java.io.DataInputStream::readByte({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
         let result: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
+        if result < 0 {
+            return Err(jvm.exception("java/io/EOFException", "End of stream reached").await);
+        }
 
         Ok(result as _)
     }
@@ -61,8 +77,11 @@ impl DataInputStream {
     async fn read_boolean(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
         tracing::debug!("java.io.DataInputStream::readBoolean({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
         let byte: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
+        if byte < 0 {
+            return Err(jvm.exception("java/io/EOFException", "End of stream reached").await);
+        }
 
         Ok(byte != 0)
     }
@@ -70,7 +89,7 @@ impl DataInputStream {
     async fn read_unsigned_byte(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
         tracing::debug!("java.io.DataInputStream::readUnsignedByte({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
         let result: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         if result < 0 {
             return Err(jvm.exception("java/io/EOFException", "End of stream reached").await);
@@ -82,10 +101,13 @@ impl DataInputStream {
     async fn read_char(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<JavaChar> {
         tracing::debug!("java.io.DataInputStream::readChar({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
 
         let byte1: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte2: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
+        if byte1 < 0 || byte2 < 0 {
+            return Err(jvm.exception("java/io/EOFException", "End of stream reached").await);
+        }
 
         Ok(((byte1 as JavaChar) << 8) | (byte2 as JavaChar))
     }
@@ -93,10 +115,13 @@ impl DataInputStream {
     async fn read_short(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i16> {
         tracing::debug!("java.io.DataInputStream::readShort({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
 
         let byte1: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte2: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
+        if byte1 < 0 || byte2 < 0 {
+            return Err(jvm.exception("java/io/EOFException", "End of stream reached").await);
+        }
 
         Ok(((byte1 as i16) << 8) | (byte2 as i16))
     }
@@ -104,10 +129,13 @@ impl DataInputStream {
     async fn read_unsigned_short(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
         tracing::debug!("java.io.DataInputStream::readUnsignedShort({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
 
         let byte1: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte2: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
+        if byte1 < 0 || byte2 < 0 {
+            return Err(jvm.exception("java/io/EOFException", "End of stream reached").await);
+        }
 
         Ok(((byte1 << 8) | byte2) & 0xffff)
     }
@@ -115,12 +143,15 @@ impl DataInputStream {
     async fn read_int(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
         tracing::debug!("java.io.DataInputStream::readInt({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
 
         let byte1: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte2: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte3: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte4: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
+        if byte1 < 0 || byte2 < 0 || byte3 < 0 || byte4 < 0 {
+            return Err(jvm.exception("java/io/EOFException", "End of stream reached").await);
+        }
 
         Ok((byte1 << 24) | (byte2 << 16) | (byte3 << 8) | byte4)
     }
@@ -128,7 +159,7 @@ impl DataInputStream {
     async fn read_long(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i64> {
         tracing::debug!("java.io.DataInputStream::readLong({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
 
         let byte1: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte2: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
@@ -152,7 +183,7 @@ impl DataInputStream {
     async fn read_float(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<f32> {
         tracing::debug!("java.io.DataInputStream::readFloat({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
 
         let byte1: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte2: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
@@ -165,7 +196,7 @@ impl DataInputStream {
     async fn read_double(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<f64> {
         tracing::debug!("java.io.DataInputStream::readDouble({:?})", &this);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
 
         let byte1: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
         let byte2: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
@@ -199,8 +230,27 @@ impl DataInputStream {
         jvm.array_raw_buffer(&java_array).await?.read(0, &mut buf)?;
 
         // TODO handle modified utf-8
-        let string = RustString::from_utf8(buf).unwrap();
+        let string = RustString::from_utf8_lossy(&buf).into_owned();
 
+        Ok(JavaLangString::from_rust_string(jvm, &string).await?.into())
+    }
+
+    async fn read_utf_from(jvm: &Jvm, _: &mut RuntimeContext, input: ClassInstanceRef<DataInput>) -> Result<ClassInstanceRef<String>> {
+        tracing::debug!("java.io.DataInputStream::readUTF({:?})", &input);
+        if input.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "").await);
+        }
+        let length: i32 = jvm.invoke_virtual(&input, "readUnsignedShort", "()I", ()).await?;
+        if length < 0 {
+            return Err(jvm.exception("java/io/UTFDataFormatException", "negative UTF length").await);
+        }
+        let java_array = jvm.instantiate_array("B", length as _).await?;
+        let _: () = jvm
+            .invoke_virtual(&input, "readFully", "([BII)V", (java_array.clone(), 0, length))
+            .await?;
+        let mut buf = vec![0; length as _];
+        jvm.array_raw_buffer(&java_array).await?.read(0, &mut buf)?;
+        let string = RustString::from_utf8_lossy(&buf).into_owned();
         Ok(JavaLangString::from_rust_string(jvm, &string).await?.into())
     }
 
@@ -239,7 +289,7 @@ impl DataInputStream {
     async fn skip_bytes(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, n: i32) -> Result<i32> {
         tracing::debug!("java.io.DataInputStream::skipBytes({:?}, {:?})", &this, n);
 
-        let r#in = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        let r#in = Self::input(jvm, &this).await?;
         let skipped: i64 = jvm.invoke_virtual(&r#in, "skip", "(J)J", (n as i64,)).await?;
 
         Ok(skipped as _)

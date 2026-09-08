@@ -3,7 +3,8 @@ use alloc::{collections::BTreeMap, string::String, sync::Arc, vec::Vec};
 use nom::{
     IResult, Parser,
     bytes::complete::take,
-    combinator::{flat_map, map, map_res},
+    combinator::flat_map,
+    error::{Error, ErrorKind},
     multi::length_count,
     number::complete::{be_u16, be_u32},
 };
@@ -19,22 +20,25 @@ pub struct CodeAttributeExceptionTable {
 
 impl CodeAttributeExceptionTable {
     pub fn parse<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Self> {
-        map((be_u16, be_u16, be_u16, be_u16), |(start_pc, end_pc, handler_pc, catch_type)| {
-            let catch_type = if catch_type != 0 {
-                let index = constant_pool.get(&catch_type).unwrap().class_name_index();
-                Some(constant_pool.get(&index).unwrap().utf8())
-            } else {
-                None
-            };
+        let (data, start_pc) = be_u16(data)?;
+        let (data, end_pc) = be_u16(data)?;
+        let (data, handler_pc) = be_u16(data)?;
+        let (data, catch_type) = be_u16(data)?;
+        let catch_type = if catch_type != 0 {
+            Some(crate::constant_pool::resolve_class_name(data, constant_pool, catch_type)?.1)
+        } else {
+            None
+        };
 
+        Ok((
+            data,
             Self {
                 start_pc,
                 end_pc,
                 handler_pc,
                 catch_type,
-            }
-        })
-        .parse(data)
+            },
+        ))
     }
 }
 
@@ -50,29 +54,26 @@ pub struct AttributeInfoCode {
 
 impl AttributeInfoCode {
     pub fn parse<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Self> {
-        map(
-            (
-                be_u16,
-                be_u16,
-                map(flat_map(be_u32, take), |x: &[u8]| Self::parse_code(x, constant_pool)),
-                length_count(be_u16, |x| CodeAttributeExceptionTable::parse(x, constant_pool)),
-                length_count(be_u16, |x| AttributeInfo::parse(x, constant_pool)),
-            ),
-            |(max_stack, max_locals, code, exception_table, attributes)| {
-                let code_offsets = code.keys().copied().collect();
-                let code_sequence = code.iter().map(|(offset, opcode)| (*offset, opcode.clone())).collect();
-                Self {
-                    max_stack,
-                    max_locals,
-                    code,
-                    code_offsets,
-                    code_sequence,
-                    exception_table,
-                    attributes,
-                }
+        let (data, max_stack) = be_u16(data)?;
+        let (data, max_locals) = be_u16(data)?;
+        let (data, code_bytes): (_, &[u8]) = flat_map(be_u32, take).parse(data)?;
+        let code = Self::parse_code(code_bytes, constant_pool);
+        let (data, exception_table) = length_count(be_u16, |x| CodeAttributeExceptionTable::parse(x, constant_pool)).parse(data)?;
+        let (data, attributes) = length_count(be_u16, |x| AttributeInfo::parse(x, constant_pool)).parse(data)?;
+        let code_offsets = code.keys().copied().collect();
+        let code_sequence = code.iter().map(|(offset, opcode)| (*offset, opcode.clone())).collect();
+        Ok((
+            data,
+            Self {
+                max_stack,
+                max_locals,
+                code,
+                code_offsets,
+                code_sequence,
+                exception_table,
+                attributes,
             },
-        )
-        .parse(data)
+        ))
     }
 
     fn parse_code(code: &[u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> BTreeMap<u32, Opcode> {
@@ -118,23 +119,21 @@ pub struct LocalVariableTableEntry {
 
 impl LocalVariableTableEntry {
     pub fn parse<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Self> {
-        map(
-            (
-                be_u16,
-                be_u16,
-                map(be_u16, |x| constant_pool.get(&x).unwrap().utf8()),
-                map(be_u16, |x| constant_pool.get(&x).unwrap().utf8()),
-                be_u16,
-            ),
-            |(start_pc, length, name, descriptor, index)| Self {
+        let (data, start_pc) = be_u16(data)?;
+        let (data, length) = be_u16(data)?;
+        let (data, name) = crate::constant_pool::parse_utf8_index(data, constant_pool)?;
+        let (data, descriptor) = crate::constant_pool::parse_utf8_index(data, constant_pool)?;
+        let (data, index) = be_u16(data)?;
+        Ok((
+            data,
+            Self {
                 start_pc,
                 length,
                 name,
                 descriptor,
                 index,
             },
-        )
-        .parse(data)
+        ))
     }
 }
 
@@ -154,43 +153,43 @@ pub enum AttributeInfo {
     MethodParameters(Vec<u8>), // TODO
     NestMembers(Vec<u8>),      // TODO
     NestHost(Vec<u8>),         // TODO
+    Other(Vec<u8>),
 }
 
 impl AttributeInfo {
     pub fn parse<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Self> {
-        map_res(
-            (map(be_u16, |x| constant_pool.get(&x).unwrap().utf8()), flat_map(be_u32, take)),
-            |(name, info): (_, &[u8])| {
-                Ok::<_, nom::Err<_>>(match name.as_str() {
-                    "ConstantValue" => AttributeInfo::ConstantValue(Self::parse_constant_value(info, constant_pool)?.1),
-                    "Code" => AttributeInfo::Code(AttributeInfoCode::parse(info, constant_pool)?.1),
-                    "LineNumberTable" => {
-                        AttributeInfo::LineNumberTable(length_count(be_u16, AttributeInfoLineNumberTableEntry::parse).parse(info)?.1)
-                    }
-                    "SourceFile" => AttributeInfo::SourceFile(Self::parse_source_file(info, constant_pool)?.1),
-                    "LocalVariableTable" => AttributeInfo::LocalVariableTable(Self::parse_local_variable_table(info, constant_pool)?.1),
-                    "StackMap" => AttributeInfo::StackMap(info.to_vec()),
-                    "StackMapTable" => AttributeInfo::StackMapTable(info.to_vec()),
-                    "Exceptions" => AttributeInfo::Exceptions(info.to_vec()),
-                    "InnerClasses" => AttributeInfo::InnerClasses(info.to_vec()),
-                    "Synthetic" => AttributeInfo::Synthetic(info.to_vec()),
-                    "BootstrapMethods" => AttributeInfo::BootstrapMethods(info.to_vec()),
-                    "MethodParameters" => AttributeInfo::MethodParameters(info.to_vec()),
-                    "NestMembers" => AttributeInfo::NestMembers(info.to_vec()),
-                    "NestHost" => AttributeInfo::NestHost(info.to_vec()),
-                    _ => return Err(nom::Err::Error(nom::error_position!(info, nom::error::ErrorKind::Switch))),
-                })
-            },
-        )
-        .parse(data)
+        let (data, name) = crate::constant_pool::parse_utf8_index(data, constant_pool)?;
+        let (data, info): (_, &[u8]) = flat_map(be_u32, take).parse(data)?;
+        let attr = match name.as_str() {
+            "ConstantValue" => AttributeInfo::ConstantValue(Self::parse_constant_value(info, constant_pool)?.1),
+            "Code" => AttributeInfo::Code(AttributeInfoCode::parse(info, constant_pool)?.1),
+            "LineNumberTable" => AttributeInfo::LineNumberTable(length_count(be_u16, AttributeInfoLineNumberTableEntry::parse).parse(info)?.1),
+            "SourceFile" => AttributeInfo::SourceFile(Self::parse_source_file(info, constant_pool)?.1),
+            "LocalVariableTable" => AttributeInfo::LocalVariableTable(Self::parse_local_variable_table(info, constant_pool)?.1),
+            "StackMap" => AttributeInfo::StackMap(info.to_vec()),
+            "StackMapTable" => AttributeInfo::StackMapTable(info.to_vec()),
+            "Exceptions" => AttributeInfo::Exceptions(info.to_vec()),
+            "InnerClasses" => AttributeInfo::InnerClasses(info.to_vec()),
+            "Synthetic" => AttributeInfo::Synthetic(info.to_vec()),
+            "BootstrapMethods" => AttributeInfo::BootstrapMethods(info.to_vec()),
+            "MethodParameters" => AttributeInfo::MethodParameters(info.to_vec()),
+            "NestMembers" => AttributeInfo::NestMembers(info.to_vec()),
+            "NestHost" => AttributeInfo::NestHost(info.to_vec()),
+            _ => AttributeInfo::Other(info.to_vec()),
+        };
+        Ok((data, attr))
     }
 
     fn parse_source_file<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Arc<String>> {
-        map(be_u16, |x| constant_pool.get(&x).unwrap().utf8()).parse(data)
+        crate::constant_pool::parse_utf8_index(data, constant_pool)
     }
 
     fn parse_constant_value<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], ConstantPoolReference> {
-        map(be_u16, |x| ConstantPoolReference::from_constant_pool(constant_pool, x as _)).parse(data)
+        let (data, index) = be_u16(data)?;
+        match ConstantPoolReference::try_from_constant_pool(constant_pool, index) {
+            Some(value) => Ok((data, value)),
+            None => Err(nom::Err::Error(Error::new(data, ErrorKind::Verify))),
+        }
     }
 
     fn parse_local_variable_table<'a>(

@@ -111,7 +111,8 @@ impl From<JavaValue> for Option<Box<dyn ClassInstance>> {
 impl From<JavaValue> for Box<dyn ClassInstance> {
     fn from(x: JavaValue) -> Self {
         match x {
-            JavaValue::Object(x) => x.unwrap(),
+            JavaValue::Object(Some(x)) => x,
+            JavaValue::Object(None) => Box::new(crate::class_instance::NullInstance),
             _ => panic!("Expected object, got {:?}", x),
         }
     }

@@ -1,7 +1,7 @@
 use alloc::vec;
 
 use java_class_proto::JavaMethodProto;
-use java_constants::{ClassAccessFlags, MethodAccessFlags};
+use java_constants::ClassAccessFlags;
 use jvm::{ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
 
 use crate::{RuntimeClassProto, RuntimeContext, classes::java::lang::String};
@@ -17,9 +17,9 @@ impl MIDlet {
             interfaces: vec![],
             methods: vec![
                 JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
-                JavaMethodProto::new_abstract("startApp", "()V", MethodAccessFlags::ABSTRACT),
-                JavaMethodProto::new_abstract("pauseApp", "()V", MethodAccessFlags::ABSTRACT),
-                JavaMethodProto::new_abstract("destroyApp", "(Z)V", MethodAccessFlags::ABSTRACT),
+                JavaMethodProto::new("startApp", "()V", Self::start_app, Default::default()),
+                JavaMethodProto::new("pauseApp", "()V", Self::pause_app, Default::default()),
+                JavaMethodProto::new("destroyApp", "(Z)V", Self::destroy_app, Default::default()),
                 JavaMethodProto::new("notifyDestroyed", "()V", Self::notify_destroyed, Default::default()),
                 JavaMethodProto::new("notifyPaused", "()V", Self::notify_paused, Default::default()),
                 JavaMethodProto::new(
@@ -29,6 +29,7 @@ impl MIDlet {
                     Default::default(),
                 ),
                 JavaMethodProto::new("platformRequest", "(Ljava/lang/String;)Z", Self::platform_request, Default::default()),
+                JavaMethodProto::new("checkPermission", "(Ljava/lang/String;)I", Self::check_permission, Default::default()),
             ],
             fields: vec![],
             access_flags: ClassAccessFlags::ABSTRACT,
@@ -41,6 +42,12 @@ impl MIDlet {
         let _: () = jvm.invoke_special(&this, "java/lang/Object", "<init>", "()V", ()).await?;
 
         Ok(())
+    }
+
+    stub_void! {
+        start_app();
+        pause_app();
+        destroy_app(_unconditional: bool);
     }
 
     async fn notify_destroyed(_: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<()> {
@@ -74,14 +81,28 @@ impl MIDlet {
         Ok(value)
     }
 
-    async fn platform_request(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, url: ClassInstanceRef<String>) -> Result<bool> {
+    async fn platform_request(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>, url: ClassInstanceRef<String>) -> Result<bool> {
         let url = if url.is_null() {
             "null".into()
         } else {
             JavaLangString::to_rust_string(jvm, &url).await?
         };
-        tracing::warn!("stub javax.microedition.midlet.MIDlet::platformRequest({this:?}, {url:?})");
-
-        Ok(false)
+        tracing::debug!("javax.microedition.midlet.MIDlet::platformRequest({this:?}, {url:?})");
+        Ok(context.platform_request(&url))
     }
+
+    async fn check_permission(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>, _permission: ClassInstanceRef<String>) -> Result<i32> {
+        Ok(1)
+    }
+}
+
+simple_exception!(
+    MIDletStateChangeException,
+    "javax/microedition/midlet/MIDletStateChangeException",
+    "java/lang/Exception",
+    "javax.microedition.midlet.MIDletStateChangeException"
+);
+
+pub fn class_protos() -> impl IntoIterator<Item = crate::RuntimeClassProtoFactory> {
+    proto_factories![MIDlet, MIDletStateChangeException]
 }

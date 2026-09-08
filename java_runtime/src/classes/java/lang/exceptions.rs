@@ -1,0 +1,183 @@
+simple_exception!(Error, "java/lang/Error", "java/lang/Throwable", "java.lang.Error");
+simple_exception!(
+    AbstractMethodError,
+    "java/lang/AbstractMethodError",
+    "java/lang/IncompatibleClassChangeError",
+    "java.lang.AbstractMethodError"
+);
+simple_exception!(
+    ArithmeticException,
+    "java/lang/ArithmeticException",
+    "java/lang/RuntimeException",
+    "java.lang.ArithmeticException"
+);
+simple_exception!(
+    ArrayStoreException,
+    "java/lang/ArrayStoreException",
+    "java/lang/RuntimeException",
+    "java.lang.ArrayStoreException"
+);
+simple_exception!(
+    ClassCastException,
+    "java/lang/ClassCastException",
+    "java/lang/Exception",
+    "java.lang.ClassCastException"
+);
+simple_exception!(
+    ClassFormatError,
+    "java/lang/ClassFormatError",
+    "java/lang/LinkageError",
+    "java.lang.ClassFormatError"
+);
+simple_exception!(
+    ClassNotFoundException,
+    "java/lang/ClassNotFoundException",
+    "java/lang/Exception",
+    "java.lang.ClassNotFoundException"
+);
+simple_exception!(
+    CloneNotSupportedException,
+    "java/lang/CloneNotSupportedException",
+    "java/lang/Exception",
+    "java.lang.CloneNotSupportedException"
+);
+simple_exception!(
+    IllegalAccessException,
+    "java/lang/IllegalAccessException",
+    "java/lang/Exception",
+    "java.lang.IllegalAccessException"
+);
+simple_exception!(
+    IllegalArgumentException,
+    "java/lang/IllegalArgumentException",
+    "java/lang/RuntimeException",
+    "java.lang.IllegalArgumentException"
+);
+simple_exception!(
+    IllegalMonitorStateException,
+    "java/lang/IllegalMonitorStateException",
+    "java/lang/RuntimeException",
+    "java.lang.IllegalMonitorStateException"
+);
+simple_exception!(
+    IllegalStateException,
+    "java/lang/IllegalStateException",
+    "java/lang/RuntimeException",
+    "java.lang.IllegalStateException"
+);
+simple_exception!(
+    IncompatibleClassChangeError,
+    "java/lang/IncompatibleClassChangeError",
+    "java/lang/LinkageError",
+    "java.lang.IncompatibleClassChangeError"
+);
+simple_exception!(
+    IndexOutOfBoundsException,
+    "java/lang/IndexOutOfBoundsException",
+    "java/lang/RuntimeException",
+    "java.lang.IndexOutOfBoundsException"
+);
+simple_exception!(
+    InstantiationError,
+    "java/lang/InstantiationError",
+    "java/lang/IncompatibleClassChangeError",
+    "java.lang.InstantiationError"
+);
+simple_exception!(
+    InstantiationException,
+    "java/lang/InstantiationException",
+    "java/lang/Exception",
+    "java.lang.InstantiationException"
+);
+simple_exception!(
+    InternalError,
+    "java/lang/InternalError",
+    "java/lang/VirtualMachineError",
+    "java.lang.InternalError"
+);
+simple_exception!(
+    InterruptedException,
+    "java/lang/InterruptedException",
+    "java/lang/Exception",
+    "java.lang.InterruptedException"
+);
+simple_exception!(LinkageError, "java/lang/LinkageError", "java/lang/Error", "java.lang.LinkageError");
+simple_exception!(
+    NegativeArraySizeException,
+    "java/lang/NegativeArraySizeException",
+    "java/lang/RuntimeException",
+    "java.lang.NegativeArraySizeException"
+);
+simple_exception!(
+    NoClassDefFoundError,
+    "java/lang/NoClassDefFoundError",
+    "java/lang/LinkageError",
+    "java.lang.NoClassDefFoundError"
+);
+simple_exception!(
+    NoSuchFieldError,
+    "java/lang/NoSuchFieldError",
+    "java/lang/IncompatibleClassChangeError",
+    "java.lang.NoSuchFieldError"
+);
+simple_exception!(
+    NoSuchMethodError,
+    "java/lang/NoSuchMethodError",
+    "java/lang/IncompatibleClassChangeError",
+    "java.lang.NoSuchMethodError"
+);
+simple_exception!(
+    NullPointerException,
+    "java/lang/NullPointerException",
+    "java/lang/RuntimeException",
+    "java.lang.NullPointerException"
+);
+simple_exception!(
+    NumberFormatException,
+    "java/lang/NumberFormatException",
+    "java/lang/IllegalArgumentException",
+    "java.lang.NumberFormatException"
+);
+simple_exception!(
+    OutOfMemoryError,
+    "java/lang/OutOfMemoryError",
+    "java/lang/Error",
+    "java.lang.OutOfMemoryError"
+);
+simple_exception!(
+    SecurityException,
+    "java/lang/SecurityException",
+    "java/lang/RuntimeException",
+    "java.lang.SecurityException"
+);
+simple_exception!(
+    StringIndexOutOfBoundsException,
+    "java/lang/StringIndexOutOfBoundsException",
+    "java/lang/IndexOutOfBoundsException",
+    "java.lang.StringIndexOutOfBoundsException"
+);
+simple_exception!(
+    UnknownError,
+    "java/lang/UnknownError",
+    "java/lang/VirtualMachineError",
+    "java.lang.UnknownError"
+);
+simple_exception!(
+    UnsatisfiedLinkError,
+    "java/lang/UnsatisfiedLinkError",
+    "java/lang/LinkageError",
+    "java.lang.UnsatisfiedLinkError"
+);
+simple_exception!(
+    UnsupportedOperationException,
+    "java/lang/UnsupportedOperationException",
+    "java/lang/RuntimeException",
+    "java.lang.UnsupportedOperationException"
+);
+simple_exception!(VerifyError, "java/lang/VerifyError", "java/lang/LinkageError", "java.lang.VerifyError");
+simple_exception!(
+    VirtualMachineError,
+    "java/lang/VirtualMachineError",
+    "java/lang/Error",
+    "java.lang.VirtualMachineError"
+);

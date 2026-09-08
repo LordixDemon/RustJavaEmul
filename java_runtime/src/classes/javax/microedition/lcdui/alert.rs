@@ -6,7 +6,10 @@ use jvm::{ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
 
 use crate::{
     RuntimeClassProto, RuntimeContext,
-    classes::{java::lang::String, javax::microedition::lcdui::Graphics},
+    classes::{
+        java::lang::String,
+        javax::microedition::lcdui::{AlertType, Graphics, Image},
+    },
 };
 
 // class javax.microedition.lcdui.Alert
@@ -21,24 +24,48 @@ impl Alert {
             methods: vec![
                 JavaMethodProto::new("<clinit>", "()V", Self::clinit, MethodAccessFlags::STATIC),
                 JavaMethodProto::new("<init>", "(Ljava/lang/String;)V", Self::init, Default::default()),
+                JavaMethodProto::new(
+                    "<init>",
+                    "(Ljava/lang/String;Ljava/lang/String;Ljavax/microedition/lcdui/Image;Ljavax/microedition/lcdui/AlertType;)V",
+                    Self::init_full,
+                    Default::default(),
+                ),
                 JavaMethodProto::new("getString", "()Ljava/lang/String;", Self::get_string, Default::default()),
                 JavaMethodProto::new("getTimeout", "()I", Self::get_timeout, Default::default()),
                 JavaMethodProto::new("setString", "(Ljava/lang/String;)V", Self::set_string, Default::default()),
                 JavaMethodProto::new("setTimeout", "(I)V", Self::set_timeout, Default::default()),
+                JavaMethodProto::new("setType", "(Ljavax/microedition/lcdui/AlertType;)V", Self::set_type, Default::default()),
                 JavaMethodProto::new("showNotify", "()V", Self::show_notify, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("title", "Ljava/lang/String;", Default::default()),
                 JavaFieldProto::new("text", "Ljava/lang/String;", Default::default()),
                 JavaFieldProto::new("timeout", "I", Default::default()),
+                JavaFieldProto::new("alertType", "Ljavax/microedition/lcdui/AlertType;", Default::default()),
                 JavaFieldProto::new("FOREVER", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
+                JavaFieldProto::new(
+                    "DISMISS_COMMAND",
+                    "Ljavax/microedition/lcdui/Command;",
+                    FieldAccessFlags::STATIC | FieldAccessFlags::FINAL,
+                ),
             ],
             access_flags: Default::default(),
         }
     }
 
     async fn clinit(jvm: &Jvm, _: &mut RuntimeContext) -> Result<()> {
-        jvm.put_static_field("javax/microedition/lcdui/Alert", "FOREVER", "I", -2).await
+        jvm.put_static_field("javax/microedition/lcdui/Alert", "FOREVER", "I", -2).await?;
+        let label = JavaLangString::from_rust_string(jvm, "Done").await?;
+        let command = jvm
+            .new_class("javax/microedition/lcdui/Command", "(Ljava/lang/String;II)V", (label, 4, 0))
+            .await?;
+        jvm.put_static_field(
+            "javax/microedition/lcdui/Alert",
+            "DISMISS_COMMAND",
+            "Ljavax/microedition/lcdui/Command;",
+            command,
+        )
+        .await
     }
 
     async fn init(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, title: ClassInstanceRef<String>) -> Result<()> {
@@ -51,6 +78,26 @@ impl Alert {
         jvm.put_field(&mut this, "text", "Ljava/lang/String;", ClassInstanceRef::<String>::new(None))
             .await?;
         jvm.put_field(&mut this, "timeout", "I", 2000).await
+    }
+
+    async fn init_full(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        mut this: ClassInstanceRef<Self>,
+        title: ClassInstanceRef<String>,
+        text: ClassInstanceRef<String>,
+        _image: ClassInstanceRef<Image>,
+        alert_type: ClassInstanceRef<AlertType>,
+    ) -> Result<()> {
+        Self::init(jvm, context, this.clone(), title).await?;
+        jvm.put_field(&mut this, "text", "Ljava/lang/String;", text).await?;
+        jvm.put_field(&mut this, "alertType", "Ljavax/microedition/lcdui/AlertType;", alert_type)
+            .await
+    }
+
+    async fn set_type(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, alert_type: ClassInstanceRef<AlertType>) -> Result<()> {
+        jvm.put_field(&mut this, "alertType", "Ljavax/microedition/lcdui/AlertType;", alert_type)
+            .await
     }
 
     async fn get_string(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<String>> {

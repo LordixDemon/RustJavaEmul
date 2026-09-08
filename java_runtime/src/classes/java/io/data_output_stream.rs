@@ -25,6 +25,8 @@ impl DataOutputStream {
                 JavaMethodProto::new("writeShort", "(I)V", Self::write_short, Default::default()),
                 JavaMethodProto::new("writeChar", "(I)V", Self::write_char, Default::default()),
                 JavaMethodProto::new("writeLong", "(J)V", Self::write_long, Default::default()),
+                JavaMethodProto::new("writeFloat", "(F)V", Self::write_float, Default::default()),
+                JavaMethodProto::new("writeDouble", "(D)V", Self::write_double, Default::default()),
                 JavaMethodProto::new("writeChars", "(Ljava/lang/String;)V", Self::write_chars, Default::default()),
                 JavaMethodProto::new("writeUTF", "(Ljava/lang/String;)V", Self::write_utf, Default::default()),
                 JavaMethodProto::new("close", "()V", Self::close, Default::default()),
@@ -113,6 +115,14 @@ impl DataOutputStream {
         let _: () = jvm.invoke_virtual(&out, "write", "([B)V", (byte_array,)).await?;
 
         Ok(())
+    }
+
+    async fn write_float(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>, value: f32) -> Result<()> {
+        Self::write_int(jvm, context, this, value.to_bits() as i32).await
+    }
+
+    async fn write_double(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>, value: f64) -> Result<()> {
+        Self::write_long(jvm, context, this, value.to_bits() as i64).await
     }
 
     async fn write_chars(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, s: ClassInstanceRef<JavaChar>) -> Result<()> {

@@ -1,12 +1,19 @@
 import init, { RustJavaWeb } from "./pkg/rust_java.js";
 
-const BUILD_ID = "20260622-v3-math-batch-1";
+const BUILD_ID = "20260902-221345";
 const canvas = document.getElementById("screen");
 const fileInput = document.getElementById("jar");
 const fpsNode = document.getElementById("fps");
 const statusNode = document.getElementById("status");
 const controls = document.getElementById("controls");
 const logNode = document.getElementById("log");
+const logWrap = document.getElementById("log-wrap");
+const emptyHint = document.getElementById("empty-hint");
+const errorPanel = document.getElementById("error-panel");
+const httpsBanner = document.getElementById("https-banner");
+const led = document.getElementById("led");
+
+const DIAG = new URLSearchParams(location.search).has("diag") || location.hash.includes("diag");
 
 let wasmReady = false;
 let wasmPromise = null;
@@ -31,27 +38,73 @@ let keyCallbackPending = 0;
 const pressedKeys = new Set();
 const activePointers = new Map();
 let keyEventChain = Promise.resolve();
+let currentKeyLayout = {
+  up: -1,
+  down: -2,
+  left: -3,
+  right: -4,
+  fire: -5,
+  softLeft: -6,
+  softRight: -7,
+};
+
+function applyKeyLayout(layout) {
+  if (!layout) {
+    return;
+  }
+  currentKeyLayout = {
+    up: Number(layout.up),
+    down: Number(layout.down),
+    left: Number(layout.left),
+    right: Number(layout.right),
+    fire: Number(layout.fire),
+    softLeft: Number(layout.softLeft),
+    softRight: Number(layout.softRight),
+  };
+  const roles = {
+    up: currentKeyLayout.up,
+    down: currentKeyLayout.down,
+    left: currentKeyLayout.left,
+    right: currentKeyLayout.right,
+    fire: currentKeyLayout.fire,
+    softLeft: currentKeyLayout.softLeft,
+    softRight: currentKeyLayout.softRight,
+  };
+  for (const [role, keyCode] of Object.entries(roles)) {
+    const button = controls?.querySelector(`[data-role="${role}"]`);
+    if (button) {
+      button.dataset.key = String(keyCode);
+    }
+  }
+}
 
 function appendLog(message) {
   const now = new Date();
   const time = now.toTimeString().slice(0, 8);
   const line = `[${time}] ${message}`;
   console.log(line);
+  if (!logNode) {
+    return;
+  }
   logNode.textContent = `${logNode.textContent}${line}\n`.slice(-24000);
   logNode.scrollTop = logNode.scrollHeight;
 }
 
-window.__rustjavaLog = appendLog;
+window.__rustjavaLog = (message) => {
+  if (DIAG || /error|failed|exception/i.test(String(message))) {
+    appendLog(message);
+  }
+};
 
 function formatError(error) {
   if (!error) {
-    return "unknown error";
-  }
-  if (error.stack) {
-    return error.stack;
+    return "Unknown error";
   }
   if (error.message) {
     return error.message;
+  }
+  if (error.stack) {
+    return error.stack;
   }
   return String(error);
 }
@@ -59,6 +112,23 @@ function formatError(error) {
 function setStatus(text) {
   statusNode.textContent = text;
   statusNode.title = text;
+}
+
+function setEmpty(visible) {
+  emptyHint.classList.toggle("visible", visible);
+}
+
+function setError(text) {
+  if (!text) {
+    errorPanel.classList.remove("visible");
+    errorPanel.textContent = "";
+    return;
+  }
+  errorPanel.textContent = text;
+  errorPanel.classList.add("visible");
+  setEmpty(false);
+  logWrap.open = true;
+  appendLog(text);
 }
 
 function browserRenderInfo() {
@@ -72,35 +142,50 @@ function browserRenderInfo() {
   return `browser secure=${window.isSecureContext} webgpu=${Boolean(navigator.gpu)} webgl2=${webgl2}`;
 }
 
+if (!window.isSecureContext) {
+  httpsBanner.classList.add("visible");
+}
+
 async function ensureEmulator() {
   if (!wasmPromise) {
-    setStatus("wasm");
-    appendLog("wasm init begin");
+    setStatus("Loading emulator");
+    if (DIAG) {
+      appendLog("wasm init begin");
+    }
     wasmPromise = init({ module_or_path: `./pkg/rust_java_bg.wasm?v=${BUILD_ID}` }).then(() => {
       wasmReady = true;
-      appendLog("wasm init complete");
+      if (DIAG) {
+        appendLog("wasm init complete");
+      }
     });
   }
   if (!wasmReady) {
     await wasmPromise;
   }
   if (!emulatorPromise) {
-    setStatus("renderer");
-    appendLog(browserRenderInfo());
-    appendLog("renderer create begin");
+    setStatus("Starting renderer");
+    if (DIAG) {
+      appendLog(browserRenderInfo());
+      appendLog("renderer create begin");
+    }
     emulatorPromise = RustJavaWeb.create(canvas, 240, 320)
       .then((created) => {
         emulator = created;
         requestAnimationFrame(frameLoop);
-        setStatus("ready");
-        appendLog("renderer create complete");
-        if (typeof created.rendererInfo === "function") {
-          appendLog(created.rendererInfo());
+        setStatus("Ready — choose a JAR");
+        led.classList.add("on");
+        if (DIAG) {
+          appendLog("renderer create complete");
+          if (typeof created.rendererInfo === "function") {
+            appendLog(created.rendererInfo());
+          }
         }
         return created;
       })
       .catch((error) => {
-        appendLog(`renderer create error\n${formatError(error)}`);
+        const formatted = formatError(error);
+        setError(formatted);
+        setStatus("Renderer failed");
         emulatorPromise = null;
         throw error;
       });
@@ -114,17 +199,26 @@ async function ensureEmulator() {
 
 async function loadJarFile(file) {
   fileInput.disabled = true;
-  setStatus("read");
-  appendLog(`file selected name=${file.name} size=${file.size}`);
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  appendLog(`file read complete bytes=${bytes.length}`);
-  const emu = await ensureEmulator();
-  setStatus("start");
-  appendLog("game start begin");
-  await emu.loadJar(file.name || "game.jar", bytes);
-  setStatus("running");
-  appendLog("game start complete");
-  fileInput.disabled = false;
+  setError("");
+  try {
+    setStatus(`Reading ${file.name}`);
+    if (DIAG) {
+      appendLog(`file selected name=${file.name} size=${file.size}`);
+    }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const emu = await ensureEmulator();
+    setStatus(`Starting ${file.name}`);
+    await emu.loadJar(file.name || "game.jar", bytes);
+    if (typeof emu.keyLayout === "function") {
+      applyKeyLayout(emu.keyLayout());
+    }
+    const label = typeof emu.sessionLabel === "function" ? emu.sessionLabel() : file.name;
+    setEmpty(false);
+    setStatus(`Running ${label}`);
+    led.classList.add("on");
+  } finally {
+    fileInput.disabled = false;
+  }
 }
 
 function frameLoop(time) {
@@ -145,15 +239,17 @@ function frameLoop(time) {
       presentMaxMs = Math.max(presentMaxMs, lastPresentMs);
       if (changed) {
         presentChanged++;
+        setEmpty(false);
       } else {
         presentUnchanged++;
       }
-      if (changed && time - lastFpsTime < 20) {
+      if (DIAG && changed && time - lastFpsTime < 20) {
         appendRenderDiagnostic();
       }
     } catch (error) {
-      appendLog(`present error\n${formatError(error)}`);
-      setStatus("present error");
+      const formatted = formatError(error);
+      setError(formatted);
+      setStatus("Present failed");
     }
   }
 
@@ -162,8 +258,10 @@ function frameLoop(time) {
   if (elapsed >= 500) {
     const fps = Math.round((frameCount * 1000) / elapsed);
     fpsNode.textContent = `${fps} fps`;
-    appendRenderDiagnostic();
-    appendWebDiagnostic(time, fps);
+    if (DIAG) {
+      appendRenderDiagnostic();
+      appendWebDiagnostic(time, fps);
+    }
     frameCount = 0;
     lastFpsTime = time;
   }
@@ -213,7 +311,7 @@ function sendKey(keyCode, pressed) {
   keyEventChain = keyEventChain
     .then(() => emu.key(keyCode, pressed))
     .catch((error) => {
-      appendLog(`key event error\n${formatError(error)}`);
+      setError(formatError(error));
     })
     .finally(() => {
       keyCallbackPending = Math.max(0, keyCallbackPending - 1);
@@ -221,31 +319,38 @@ function sendKey(keyCode, pressed) {
 }
 
 function isContinuousGameKey(keyCode) {
-  return keyCode === -1 || keyCode === -2 || keyCode === -3 || keyCode === -4;
+  return (
+    keyCode === currentKeyLayout.up ||
+    keyCode === currentKeyLayout.down ||
+    keyCode === currentKeyLayout.left ||
+    keyCode === currentKeyLayout.right
+  );
 }
 
 function keyboardToMidp(event) {
   switch (event.code) {
     case "ArrowUp":
     case "KeyW":
-      return -1;
+      return currentKeyLayout.up;
     case "ArrowDown":
     case "KeyS":
-      return -2;
+      return currentKeyLayout.down;
     case "ArrowLeft":
     case "KeyA":
-      return -3;
+      return currentKeyLayout.left;
     case "ArrowRight":
     case "KeyD":
-      return -4;
+      return currentKeyLayout.right;
     case "Enter":
     case "Space":
-      return -5;
+      return currentKeyLayout.fire;
     case "ShiftLeft":
-      return -6;
+    case "KeyQ":
+      return currentKeyLayout.softLeft;
     case "ShiftRight":
+    case "KeyE":
     case "Backspace":
-      return -7;
+      return currentKeyLayout.softRight;
     default:
       if (/^Digit[0-9]$/.test(event.code)) {
         return event.code.charCodeAt(5);
@@ -262,9 +367,8 @@ fileInput.addEventListener("change", () => {
   if (file) {
     loadJarFile(file).catch((error) => {
       const formatted = formatError(error);
-      appendLog(`load error\n${formatted}`);
-      setStatus(error?.message || String(error));
-      fileInput.disabled = false;
+      setError(formatted);
+      setStatus("Could not start JAR");
     });
   }
 });
@@ -293,13 +397,14 @@ function appendRenderDiagnostic() {
 }
 
 window.addEventListener("error", (event) => {
-  appendLog(`window error\n${event.message}\n${event.filename}:${event.lineno}:${event.colno}`);
-  setStatus("js error");
+  const formatted = `${event.message}\n${event.filename}:${event.lineno}:${event.colno}`;
+  setError(formatted);
+  setStatus("Script error");
 });
 
 window.addEventListener("unhandledrejection", (event) => {
-  appendLog(`unhandled rejection\n${formatError(event.reason)}`);
-  setStatus("promise error");
+  setError(formatError(event.reason));
+  setStatus("Unhandled error");
 });
 
 window.addEventListener("keydown", (event) => {
@@ -353,6 +458,6 @@ controls.addEventListener("contextmenu", (event) => event.preventDefault());
 controls.addEventListener("pointermove", (event) => event.preventDefault(), { passive: false });
 
 ensureEmulator().catch((error) => {
-  appendLog(`initialization error\n${formatError(error)}`);
-  setStatus("init error");
+  setError(formatError(error));
+  setStatus("Could not start emulator");
 });

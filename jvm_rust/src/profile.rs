@@ -39,6 +39,8 @@ static VECTOR_DOT_INTRINSIC_CALLS: AtomicU64 = AtomicU64::new(0);
 static VECTOR_NORMALIZE_INTRINSIC_CALLS: AtomicU64 = AtomicU64::new(0);
 static INT_ARRAY_RADIUS_INTRINSIC_CALLS: AtomicU64 = AtomicU64::new(0);
 static MATRIX_INVERSE_TRANSFORM_INTRINSIC_CALLS: AtomicU64 = AtomicU64::new(0);
+static INT_COMPILER_INSTALLED: AtomicU64 = AtomicU64::new(0);
+static INT_COMPILER_CALLS: AtomicU64 = AtomicU64::new(0);
 static ARRAY_LOAD_ONE_BY_TYPE: [AtomicU64; ARRAY_TYPE_COUNT] = [const { AtomicU64::new(0) }; ARRAY_TYPE_COUNT];
 static ARRAY_STORE_ONE_BY_TYPE: [AtomicU64; ARRAY_TYPE_COUNT] = [const { AtomicU64::new(0) }; ARRAY_TYPE_COUNT];
 static METHOD_OPCODE_COUNTERS: Mutex<Vec<MethodOpcodeCounter>> = Mutex::new(Vec::new());
@@ -166,6 +168,8 @@ pub fn intrinsic_report_and_reset() -> String {
     let vector_normalize = VECTOR_NORMALIZE_INTRINSIC_CALLS.swap(0, Ordering::Relaxed);
     let int_array_radius = INT_ARRAY_RADIUS_INTRINSIC_CALLS.swap(0, Ordering::Relaxed);
     let matrix_inverse_transform = MATRIX_INVERSE_TRANSFORM_INTRINSIC_CALLS.swap(0, Ordering::Relaxed);
+    let int_compiler_installed = INT_COMPILER_INSTALLED.load(Ordering::Relaxed);
+    let int_compiler_calls = INT_COMPILER_CALLS.swap(0, Ordering::Relaxed);
 
     if installed == 0
         && fixed_sqrt == 0
@@ -176,17 +180,30 @@ pub fn intrinsic_report_and_reset() -> String {
         && vector_normalize == 0
         && int_array_radius == 0
         && matrix_inverse_transform == 0
+        && int_compiler_installed == 0
+        && int_compiler_calls == 0
     {
         return "jvm intrinsics none".to_string();
     }
 
     alloc::format!(
-        "jvm intrinsics installed={installed} fixedSqrtLongToIntCalls={fixed_sqrt} vectorArrayTransformCalls={vector_array_transform} matrixComposeCalls={matrix_compose} inverseSqrtCalls={inverse_sqrt} vectorDotCalls={vector_dot} vectorNormalizeCalls={vector_normalize} intArrayRadiusCalls={int_array_radius} matrixInverseTransformCalls={matrix_inverse_transform}"
+        "jvm intrinsics installed={installed} intCompilerInstalled={int_compiler_installed} intCompilerCalls={int_compiler_calls} fixedSqrtLongToIntCalls={fixed_sqrt} vectorArrayTransformCalls={vector_array_transform} matrixComposeCalls={matrix_compose} inverseSqrtCalls={inverse_sqrt} vectorDotCalls={vector_dot} vectorNormalizeCalls={vector_normalize} intArrayRadiusCalls={int_array_radius} matrixInverseTransformCalls={matrix_inverse_transform}"
     )
 }
 
 pub(crate) fn record_bytecode_intrinsic_install() {
     inc(&BYTECODE_INTRINSICS_INSTALLED);
+}
+
+pub(crate) fn record_int_compiler_install() {
+    inc(&INT_COMPILER_INSTALLED);
+}
+
+#[inline(always)]
+pub(crate) fn int_compiler_call() {
+    if enabled() {
+        inc(&INT_COMPILER_CALLS);
+    }
 }
 
 pub(crate) fn fixed_point_sqrt_intrinsic_call() {
@@ -242,7 +259,7 @@ pub(crate) fn record_method_opcodes(name: Arc<str>, opcodes: u64) {
     });
 }
 
-fn counters() -> [&'static AtomicU64; 28] {
+fn counters() -> [&'static AtomicU64; 30] {
     [
         &INTERPRETER_RUNS,
         &OPCODES,
@@ -272,6 +289,8 @@ fn counters() -> [&'static AtomicU64; 28] {
         &VECTOR_NORMALIZE_INTRINSIC_CALLS,
         &INT_ARRAY_RADIUS_INTRINSIC_CALLS,
         &MATRIX_INVERSE_TRANSFORM_INTRINSIC_CALLS,
+        &INT_COMPILER_INSTALLED,
+        &INT_COMPILER_CALLS,
     ]
 }
 

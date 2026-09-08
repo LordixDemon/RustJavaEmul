@@ -1,6 +1,6 @@
 use alloc::{collections::BTreeMap, string::String, sync::Arc, vec::Vec};
 
-use nom::{IResult, Parser, combinator::map, multi::length_count, number::complete::be_u16};
+use nom::{IResult, Parser, multi::length_count, number::complete::be_u16};
 
 use java_constants::MethodAccessFlags;
 
@@ -15,20 +15,18 @@ pub struct MethodInfo {
 
 impl MethodInfo {
     pub fn parse<'a>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Self> {
-        map(
-            (
-                be_u16,
-                map(be_u16, |x| constant_pool.get(&x).unwrap().utf8()),
-                map(be_u16, |x| constant_pool.get(&x).unwrap().utf8()),
-                length_count(be_u16, |x| AttributeInfo::parse(x, constant_pool)),
-            ),
-            |(access_flags, name, descriptor, attributes)| Self {
-                access_flags: MethodAccessFlags::from_bits(access_flags).unwrap(),
+        let (data, access_flags) = be_u16(data)?;
+        let (data, name) = crate::constant_pool::parse_utf8_index(data, constant_pool)?;
+        let (data, descriptor) = crate::constant_pool::parse_utf8_index(data, constant_pool)?;
+        let (data, attributes) = length_count(be_u16, |x| AttributeInfo::parse(x, constant_pool)).parse(data)?;
+        Ok((
+            data,
+            Self {
+                access_flags: MethodAccessFlags::from_bits_truncate(access_flags),
                 name,
                 descriptor,
                 attributes,
             },
-        )
-        .parse(data)
+        ))
     }
 }

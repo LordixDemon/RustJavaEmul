@@ -439,10 +439,10 @@ impl TextureWalk {
 
 #[inline]
 fn sample_texture(texture: &NativeTexture, u_num: i64, v_num: i64, area: i64, use_color_key: bool) -> i32 {
-    let u = (u_num / area).clamp(0, 255) as i32;
-    let v = (v_num / area).clamp(0, 255) as i32;
-    let tx = (u * (texture.width - 1).max(0) / 255).clamp(0, texture.width - 1);
-    let ty = (v * (texture.height - 1).max(0) / 255).clamp(0, texture.height - 1);
+    let u = (u_num / area) as i32;
+    let v = (v_num / area) as i32;
+    let tx = u.clamp(0, (texture.width - 1).max(0));
+    let ty = v.clamp(0, (texture.height - 1).max(0));
     let index = (ty * texture.width + tx) as usize;
     if !texture.indices.is_empty() && !texture.palette.is_empty() {
         let palette_index = texture.indices.get(index).copied().unwrap_or(0);

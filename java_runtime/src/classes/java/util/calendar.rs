@@ -31,12 +31,15 @@ impl Calendar {
                 JavaMethodProto::new("getTime", "()Ljava/util/Date;", Self::get_time, Default::default()),
                 JavaMethodProto::new("set", "(II)V", Self::set, Default::default()),
                 JavaMethodProto::new("get", "(I)I", Self::get, Default::default()),
+                JavaMethodProto::new("setTimeZone", "(Ljava/util/TimeZone;)V", Self::set_time_zone, Default::default()),
+                JavaMethodProto::new("getTimeZone", "()Ljava/util/TimeZone;", Self::get_time_zone, Default::default()),
                 JavaMethodProto::new_abstract("computeTime", "()V", Default::default()),
                 JavaMethodProto::new_abstract("computeFields", "()V", Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("time", "J", Default::default()),
                 JavaFieldProto::new("fields", "[I", Default::default()),
+                JavaFieldProto::new("zone", "Ljava/util/TimeZone;", Default::default()),
             ],
             access_flags: ClassAccessFlags::ABSTRACT,
         }
@@ -100,6 +103,10 @@ impl Calendar {
         tracing::debug!("java.util.Calendar::set({:?}, {:?}, {:?})", &this, field, value);
 
         let mut fields = jvm.get_field(&this, "fields", "[I").await?;
+        let length = jvm.array_length(&fields).await?;
+        if field < 0 || field as usize >= length {
+            return Err(jvm.exception("java/lang/ArrayIndexOutOfBoundsException", "").await);
+        }
         jvm.store_array(&mut fields, field as usize, vec![value]).await?;
 
         let _: () = jvm.invoke_virtual(&this, "computeTime", "()V", ()).await?;
@@ -112,8 +119,25 @@ impl Calendar {
         tracing::debug!("java.util.Calendar::get({:?}, {:?})", &this, field);
 
         let fields = jvm.get_field(&this, "fields", "[I").await?;
+        let length = jvm.array_length(&fields).await?;
+        if field < 0 || field as usize >= length {
+            return Err(jvm.exception("java/lang/ArrayIndexOutOfBoundsException", "").await);
+        }
         let value = jvm.load_array(&fields, field as usize, 1).await?[0];
 
         Ok(value)
+    }
+
+    async fn set_time_zone(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, zone: ClassInstanceRef<TimeZone>) -> Result<()> {
+        jvm.put_field(&mut this, "zone", "Ljava/util/TimeZone;", zone).await
+    }
+
+    async fn get_time_zone(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<TimeZone>> {
+        let zone: ClassInstanceRef<TimeZone> = jvm.get_field(&this, "zone", "Ljava/util/TimeZone;").await?;
+        if zone.is_null() {
+            jvm.invoke_static("java/util/TimeZone", "getDefault", "()Ljava/util/TimeZone;", ()).await
+        } else {
+            Ok(zone)
+        }
     }
 }

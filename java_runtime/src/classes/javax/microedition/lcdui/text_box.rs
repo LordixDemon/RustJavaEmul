@@ -31,6 +31,7 @@ impl TextBox {
                 JavaMethodProto::new("setString", "(Ljava/lang/String;)V", Self::set_string, Default::default()),
                 JavaMethodProto::new("setTitle", "(Ljava/lang/String;)V", Self::set_title, Default::default()),
                 JavaMethodProto::new("size", "()I", Self::size, Default::default()),
+                JavaMethodProto::new("getCaretPosition", "()I", Self::get_caret_position, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("title", "Ljava/lang/String;", Default::default()),
@@ -208,6 +209,10 @@ impl TextBox {
     async fn size(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
         tracing::debug!("javax.microedition.lcdui.TextBox::size({this:?})");
 
+        Ok(Self::text_chars(jvm, &this).await?.len() as i32)
+    }
+
+    async fn get_caret_position(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
         Ok(Self::text_chars(jvm, &this).await?.len() as i32)
     }
 

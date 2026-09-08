@@ -3,7 +3,7 @@ use alloc::{vec, vec::Vec};
 use java_class_proto::{JavaFieldProto, JavaMethodProto};
 use java_constants::MethodAccessFlags;
 use jvm::{
-    Array, ClassInstanceRef, Jvm, Result,
+    Array, ClassInstanceRef, JavaValue, Jvm, Result,
     runtime::{JavaIoInputStream, JavaLangString},
 };
 
@@ -100,7 +100,7 @@ impl Image {
         jvm.put_field(&mut this, "height", "I", height).await?;
         jvm.put_field(&mut this, "mutable", "Z", true).await?;
 
-        let argb = vec![0; (width * height) as usize];
+        let argb = vec![0xffff_ffffu32 as i32; (width * height) as usize];
         Self::put_pixels(jvm, &mut this, argb).await?;
 
         Ok(())
@@ -120,6 +120,10 @@ impl Image {
         image_length: i32,
     ) -> Result<ClassInstanceRef<Self>> {
         tracing::debug!("javax.microedition.lcdui.Image::createImage({image_data:?}, {image_offset:?}, {image_length:?})");
+
+        if image_data.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "").await);
+        }
 
         let mut data = vec![0; image_length.max(0) as usize];
         jvm.array_raw_buffer(&image_data).await?.read(image_offset.max(0) as _, &mut data)?;
@@ -343,7 +347,23 @@ impl Image {
         Ok(image)
     }
 
+    pub fn pixels_fast(this: &ClassInstanceRef<Self>) -> Option<(i32, i32, ClassInstanceRef<Array<i32>>)> {
+        let JavaValue::Int(width) = this.get_named_field("width", "I")? else {
+            return None;
+        };
+        let JavaValue::Int(height) = this.get_named_field("height", "I")? else {
+            return None;
+        };
+        let JavaValue::Object(pixels) = this.get_named_field("argb", "[I")? else {
+            return None;
+        };
+        Some((width, height, pixels.into()))
+    }
+
     pub async fn pixels(jvm: &Jvm, this: &ClassInstanceRef<Self>) -> Result<(i32, i32, ClassInstanceRef<Array<i32>>)> {
+        if let Some(pixels) = Self::pixels_fast(this) {
+            return Ok(pixels);
+        }
         let width = jvm.get_field(this, "width", "I").await?;
         let height = jvm.get_field(this, "height", "I").await?;
         let pixels = jvm.get_field(this, "argb", "[I").await?;

@@ -65,6 +65,10 @@ pub struct ClassDefinitionImpl {
 }
 
 impl ClassDefinitionImpl {
+    pub(crate) fn field_impl(&self, name: &str, descriptor: &str, is_static: bool) -> Option<&FieldImpl> {
+        self.inner.field_lookup.get(&MemberLookup { name, descriptor, is_static })
+    }
+
     pub fn new(
         name: &str,
         super_class_name: Option<String>,
@@ -153,9 +157,8 @@ impl ClassDefinitionImpl {
         )
     }
 
-    pub fn from_classfile(data: &[u8]) -> Result<Self> {
-        let class = ClassInfo::parse(data).unwrap(); // TODO ClassFormatError
-        assert_eq!(class.magic, 0xCAFEBABE);
+    pub fn from_classfile(data: &[u8]) -> core::result::Result<Self, &'static str> {
+        let class = ClassInfo::parse(data).ok_or("Invalid class file")?;
 
         let mut constant_values = Vec::new();
         let fields = class
@@ -237,7 +240,7 @@ impl ClassDefinition for ClassDefinitionImpl {
                 ConstantPoolReference::Long(x) => JavaValue::Long(*x),
                 ConstantPoolReference::Float(x) => JavaValue::Float(*x),
                 ConstantPoolReference::Double(x) => JavaValue::Double(*x),
-                ConstantPoolReference::String(x) => JavaValue::Object(Some(JavaLangString::from_rust_string(jvm, x).await?)),
+                ConstantPoolReference::String(x) => JavaValue::Object(Some(JavaLangString::intern_rust_string(jvm, x).await?)),
                 _ => continue,
             };
 
@@ -278,7 +281,7 @@ impl ClassDefinition for ClassDefinitionImpl {
         }
     }
 
-    fn put_static_field(&mut self, field: &dyn Field, value: JavaValue) -> Result<()> {
+    fn put_static_field(&self, field: &dyn Field, value: JavaValue) -> Result<()> {
         let field = field.as_any().downcast_ref::<FieldImpl>().unwrap();
 
         self.inner.storage.write().insert(field.clone(), value);

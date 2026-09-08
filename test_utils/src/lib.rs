@@ -15,8 +15,8 @@ use jvm::{ClassDefinition, Jvm, Result};
 use jvm_rust::{ArrayClassDefinitionImpl, ClassDefinitionImpl};
 
 use java_runtime::{
-    File, FileDescriptorId, FileSize, FileStat, FileType, IOError, IOResult, RT_RUSTJAR, Runtime, SpawnCallback, get_bootstrap_class_loader,
-    get_runtime_class_proto,
+    File, FileDescriptorId, FileSize, FileStat, FileType, IOError, IOResult, RT_RUSTJAR, Runtime, RuntimeClassDefine, RuntimeClock, RuntimeFs,
+    RuntimeNet, RuntimeScreen, RuntimeStore, SpawnCallback, filesystem_path_candidates, get_bootstrap_class_loader, get_runtime_class_proto,
 };
 
 pub struct TestRuntime {
@@ -58,7 +58,7 @@ tokio::task_local! {
 static LAST_TASK_ID: AtomicU64 = AtomicU64::new(1);
 
 #[async_trait::async_trait]
-impl Runtime for TestRuntime {
+impl RuntimeClock for TestRuntime {
     async fn sleep(&self, duration: Duration) {
         tokio::time::sleep(duration).await;
     }
@@ -85,7 +85,10 @@ impl Runtime for TestRuntime {
     fn current_task_id(&self) -> u64 {
         TASK_ID.try_with(|x| *x).unwrap_or(0)
     }
+}
 
+#[async_trait::async_trait]
+impl RuntimeFs for TestRuntime {
     fn stdin(&self) -> IOResult<FileDescriptorId> {
         Err(IOError::NotFound)
     }
@@ -99,13 +102,13 @@ impl Runtime for TestRuntime {
     }
 
     async fn open(&self, path: &str, _write: bool) -> IOResult<FileDescriptorId> {
-        let entry = self.filesystem.get(path);
-        if let Some(data) = entry {
-            let file = Box::new(DummyFile::new(data.clone())) as Box<dyn File>;
-            Ok(self.register_file(file))
-        } else {
-            Err(IOError::NotFound)
+        for candidate in filesystem_path_candidates(path) {
+            if let Some(data) = self.filesystem.get(&candidate) {
+                let file = Box::new(DummyFile::new(data.clone())) as Box<dyn File>;
+                return Ok(self.register_file(file));
+            }
         }
+        Err(IOError::NotFound)
     }
 
     fn get_file(&self, fd: FileDescriptorId) -> IOResult<Box<dyn File>> {
@@ -121,17 +124,41 @@ impl Runtime for TestRuntime {
     }
 
     async fn metadata(&self, path: &str) -> IOResult<FileStat> {
-        let entry = self.filesystem.get(path);
-        if let Some(data) = entry {
-            Ok(FileStat {
-                size: data.len() as FileSize,
-                r#type: FileType::File,
-            })
-        } else {
-            Err(IOError::NotFound)
+        let clean = path.replace('\\', "/");
+        if clean == "." || clean == "/" || clean.is_empty() {
+            return Ok(FileStat {
+                size: 0,
+                r#type: FileType::Directory,
+            });
         }
+        for candidate in filesystem_path_candidates(path) {
+            if let Some(data) = self.filesystem.get(&candidate) {
+                return Ok(FileStat {
+                    size: data.len() as FileSize,
+                    r#type: FileType::File,
+                });
+            }
+        }
+        let dir_prefix = if clean.ends_with('/') {
+            clean
+        } else {
+            format!("{clean}/")
+        };
+        for k in self.filesystem.keys() {
+            let k_clean = k.replace('\\', "/");
+            if k_clean.starts_with(&dir_prefix) {
+                return Ok(FileStat {
+                    size: 0,
+                    r#type: FileType::Directory,
+                });
+            }
+        }
+        Err(IOError::NotFound)
     }
+}
 
+#[async_trait::async_trait]
+impl RuntimeClassDefine for TestRuntime {
     async fn find_rustjar_class(&self, _jvm: &Jvm, classpath: &str, class: &str) -> jvm::Result<Option<Box<dyn ClassDefinition>>> {
         if classpath == RT_RUSTJAR {
             let proto = get_runtime_class_proto(class);
@@ -146,14 +173,22 @@ impl Runtime for TestRuntime {
         Ok(None)
     }
 
-    async fn define_class(&self, _jvm: &Jvm, data: &[u8]) -> jvm::Result<Box<dyn ClassDefinition>> {
-        ClassDefinitionImpl::from_classfile(data).map(|x| Box::new(x) as Box<_>)
+    async fn define_class(&self, jvm: &Jvm, data: &[u8]) -> jvm::Result<Box<dyn ClassDefinition>> {
+        match ClassDefinitionImpl::from_classfile(data) {
+            Ok(x) => Ok(Box::new(x) as Box<_>),
+            Err(message) => Err(jvm.exception("java/lang/ClassFormatError", message).await),
+        }
     }
 
     async fn define_array_class(&self, _jvm: &Jvm, element_type_name: &str) -> jvm::Result<Box<dyn ClassDefinition>> {
         Ok(Box::new(ArrayClassDefinitionImpl::new(element_type_name)))
     }
 }
+
+impl RuntimeScreen for TestRuntime {}
+impl RuntimeStore for TestRuntime {}
+impl RuntimeNet for TestRuntime {}
+impl Runtime for TestRuntime {}
 
 #[derive(Clone)]
 struct DummyFile {
@@ -216,9 +251,13 @@ where
 {
     let bootstrap_class_loader = get_bootstrap_class_loader(Box::new(runtime.clone()));
 
-    let properties = [("java.class.path", RT_RUSTJAR)].into_iter().collect();
+    let properties = [("java.class.path", RT_RUSTJAR), ("microedition.m3g.version", "1.1")]
+        .into_iter()
+        .collect();
 
-    Jvm::new(bootstrap_class_loader, move || runtime.current_task_id(), properties).await
+    let jvm = Jvm::new(bootstrap_class_loader, move || runtime.current_task_id(), properties).await?;
+    jvm.set_now_millis(|| SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or(Duration::from_secs(0)).as_millis() as i64);
+    Ok(jvm)
 }
 
 pub async fn test_jvm() -> Result<Jvm> {

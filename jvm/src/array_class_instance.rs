@@ -21,6 +21,15 @@ pub trait ArrayClassInstance: ClassInstance {
     fn raw_buffer(&self) -> Result<Box<dyn ArrayRawBuffer>>;
     fn raw_buffer_mut(&mut self) -> Result<Box<dyn ArrayRawBufferMut>>;
     fn length(&self) -> usize;
+    fn is_object_array(&self) -> bool {
+        false
+    }
+    fn i32_slice(&self) -> Option<&[i32]> {
+        None
+    }
+    fn i32_slice_mut(&mut self) -> Option<&mut [i32]> {
+        None
+    }
 }
 
 #[async_trait::async_trait]
@@ -55,8 +64,31 @@ impl<T: ArrayClassInstance> ClassInstance for T {
 
 pub trait ArrayRawBuffer: Send {
     fn read(&self, offset: usize, buffer: &mut [u8]) -> Result<()>;
+    fn i32_slice(&self) -> Option<&[i32]> {
+        None
+    }
 }
 
 pub trait ArrayRawBufferMut: ArrayRawBuffer {
     fn write(&mut self, offset: usize, buffer: &[u8]) -> Result<()>;
+    fn i32_slice_mut(&mut self) -> Option<&mut [i32]> {
+        None
+    }
+    fn fill_i32(&mut self, offset: usize, count: usize, value: i32) -> Result<()> {
+        if let Some(slice) = self.i32_slice_mut() {
+            let end = offset.saturating_add(count);
+            if end <= slice.len() {
+                slice[offset..end].fill(value);
+                return Ok(());
+            }
+        }
+        if count == 0 {
+            return Ok(());
+        }
+        let bytes = value.to_ne_bytes();
+        for index in 0..count {
+            self.write(offset + index, &bytes)?;
+        }
+        Ok(())
+    }
 }

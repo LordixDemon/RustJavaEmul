@@ -1,7 +1,7 @@
 use alloc::vec;
 
 use java_class_proto::{JavaFieldProto, JavaMethodProto};
-use jvm::{ClassInstanceRef, Jvm, Result};
+use jvm::{ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
 
 use crate::{RuntimeClassProto, RuntimeContext, classes::java::lang::Object};
 
@@ -18,10 +18,12 @@ impl Hashtable {
         RuntimeClassProto {
             name: "java/util/Hashtable",
             parent_class: Some("java/util/Dictionary"),
-            interfaces: vec![],
+            interfaces: vec!["java/lang/Cloneable"],
             methods: vec![
                 JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
+                JavaMethodProto::new("<init>", "(I)V", Self::init_capacity, Default::default()),
                 JavaMethodProto::new("clear", "()V", Self::clear, Default::default()),
+                JavaMethodProto::new("contains", "(Ljava/lang/Object;)Z", Self::contains, Default::default()),
                 JavaMethodProto::new("containsKey", "(Ljava/lang/Object;)Z", Self::contains_key, Default::default()),
                 JavaMethodProto::new(
                     "put",
@@ -31,6 +33,12 @@ impl Hashtable {
                 ),
                 JavaMethodProto::new("get", "(Ljava/lang/Object;)Ljava/lang/Object;", Self::get, Default::default()),
                 JavaMethodProto::new("remove", "(Ljava/lang/Object;)Ljava/lang/Object;", Self::remove, Default::default()),
+                JavaMethodProto::new("size", "()I", Self::size, Default::default()),
+                JavaMethodProto::new("isEmpty", "()Z", Self::is_empty, Default::default()),
+                JavaMethodProto::new("keys", "()Ljava/util/Enumeration;", Self::keys, Default::default()),
+                JavaMethodProto::new("elements", "()Ljava/util/Enumeration;", Self::elements, Default::default()),
+                JavaMethodProto::new("values", "()Ljava/util/Collection;", Self::values, Default::default()),
+                JavaMethodProto::new("rehash", "()V", Self::rehash_public, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("table", "[Ljava/util/Hashtable$Entry;", Default::default()),
@@ -60,6 +68,77 @@ impl Hashtable {
         .await?;
 
         Ok(())
+    }
+
+    async fn init_capacity(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, capacity: i32) -> Result<()> {
+        tracing::debug!("java.util.Hashtable::<init>({this:?}, {capacity:?})");
+        let _: () = jvm.invoke_special(&this, "java/util/Dictionary", "<init>", "()V", ()).await?;
+        let capacity = capacity.max(1);
+        let table = jvm.instantiate_array("Ljava/util/Hashtable$Entry;", capacity as _).await?;
+        jvm.put_field(&mut this, "table", "[Ljava/util/Hashtable$Entry;", table).await?;
+        jvm.put_field(&mut this, "count", "I", 0).await?;
+        jvm.put_field(&mut this, "threshold", "I", (capacity as f32 * DEFAULT_LOAD_FACTOR) as i32)
+            .await
+    }
+
+    async fn size(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
+        jvm.get_field(&this, "count", "I").await
+    }
+
+    async fn is_empty(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
+        Ok(jvm.get_field::<i32>(&this, "count", "I").await? == 0)
+    }
+
+    async fn contains(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, value: ClassInstanceRef<Object>) -> Result<bool> {
+        let table = jvm.get_field(&this, "table", "[Ljava/util/Hashtable$Entry;").await?;
+        let capacity = jvm.array_length(&table).await?;
+        for i in 0..capacity {
+            let mut entry: ClassInstanceRef<HashtableEntry> = jvm.load_array(&table, i, 1).await?.into_iter().next().unwrap();
+            while !entry.is_null() {
+                let entry_value: ClassInstanceRef<Object> = jvm.get_field(&entry, "value", "Ljava/lang/Object;").await?;
+                if value.is_null() && entry_value.is_null() {
+                    return Ok(true);
+                }
+                if !value.is_null() && !entry_value.is_null() {
+                    let equals: bool = jvm
+                        .invoke_virtual(&entry_value, "equals", "(Ljava/lang/Object;)Z", (value.clone(),))
+                        .await?;
+                    if equals {
+                        return Ok(true);
+                    }
+                }
+                entry = jvm.get_field(&entry, "next", "Ljava/util/Hashtable$Entry;").await?;
+            }
+        }
+        Ok(false)
+    }
+
+    async fn keys(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Object>> {
+        Ok(jvm
+            .new_class("java/util/Hashtable$Enumerator", "(Ljava/util/Hashtable;Z)V", (this, true))
+            .await?
+            .into())
+    }
+
+    async fn elements(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Object>> {
+        Ok(jvm
+            .new_class("java/util/Hashtable$Enumerator", "(Ljava/util/Hashtable;Z)V", (this, false))
+            .await?
+            .into())
+    }
+
+    async fn values(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Object>> {
+        let vector = jvm.new_class("java/util/Vector", "()V", ()).await?;
+        let elements: ClassInstanceRef<Object> = jvm.invoke_virtual(&this, "elements", "()Ljava/util/Enumeration;", ()).await?;
+        while jvm.invoke_virtual(&elements, "hasMoreElements", "()Z", ()).await? {
+            let value: ClassInstanceRef<Object> = jvm.invoke_virtual(&elements, "nextElement", "()Ljava/lang/Object;", ()).await?;
+            let _: () = jvm.invoke_virtual(&vector, "addElement", "(Ljava/lang/Object;)V", (value,)).await?;
+        }
+        Ok(vector.into())
+    }
+
+    async fn rehash_public(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>) -> Result<()> {
+        Self::rehash(jvm, &mut this).await
     }
 
     async fn clear(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>) -> Result<()> {
@@ -97,6 +176,10 @@ impl Hashtable {
     }
 
     async fn get(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, key: ClassInstanceRef<Object>) -> Result<ClassInstanceRef<Object>> {
+        let key_str = JavaLangString::to_rust_string(jvm, &key).await.unwrap_or_default();
+        if key_str.starts_with("JAD_") || key_str.starts_with("CFG_") {
+            tracing::info!(target: "rustjava_hash", "Hashtable::get key='{key_str}'");
+        }
         tracing::debug!("java.util.Hashtable::get({this:?}, {key:?})");
 
         let key_hash: i32 = jvm.invoke_virtual(&key, "hashCode", "()I", ()).await?;
@@ -169,6 +252,10 @@ impl Hashtable {
         key: ClassInstanceRef<Object>,
         value: ClassInstanceRef<Object>,
     ) -> Result<ClassInstanceRef<Object>> {
+        let key_str = JavaLangString::to_rust_string(jvm, &key).await.unwrap_or_default();
+        if key_str.starts_with("JAD_") || key_str.starts_with("CFG_") {
+            tracing::info!(target: "rustjava_hash", "Hashtable::put key='{key_str}'");
+        }
         tracing::debug!("java.util.Hashtable::put({this:?}, {key:?}, {value:?})");
 
         let key_hash: i32 = jvm.invoke_virtual(&key, "hashCode", "()I", ()).await?;

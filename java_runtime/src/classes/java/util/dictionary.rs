@@ -1,7 +1,7 @@
 use alloc::vec;
 
 use java_class_proto::JavaMethodProto;
-use java_constants::ClassAccessFlags;
+use java_constants::{ClassAccessFlags, MethodAccessFlags};
 use jvm::{ClassInstanceRef, Jvm, Result};
 
 use crate::{RuntimeClassProto, RuntimeContext};
@@ -15,7 +15,20 @@ impl Dictionary {
             name: "java/util/Dictionary",
             parent_class: Some("java/lang/Object"),
             interfaces: vec![],
-            methods: vec![JavaMethodProto::new("<init>", "()V", Self::init, Default::default())],
+            methods: vec![
+                JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
+                JavaMethodProto::new_abstract("get", "(Ljava/lang/Object;)Ljava/lang/Object;", MethodAccessFlags::ABSTRACT),
+                JavaMethodProto::new_abstract(
+                    "put",
+                    "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+                    MethodAccessFlags::ABSTRACT,
+                ),
+                JavaMethodProto::new_abstract("remove", "(Ljava/lang/Object;)Ljava/lang/Object;", MethodAccessFlags::ABSTRACT),
+                JavaMethodProto::new_abstract("size", "()I", MethodAccessFlags::ABSTRACT),
+                JavaMethodProto::new_abstract("isEmpty", "()Z", MethodAccessFlags::ABSTRACT),
+                JavaMethodProto::new_abstract("keys", "()Ljava/util/Enumeration;", MethodAccessFlags::ABSTRACT),
+                JavaMethodProto::new_abstract("elements", "()Ljava/util/Enumeration;", MethodAccessFlags::ABSTRACT),
+            ],
             fields: vec![],
             access_flags: ClassAccessFlags::ABSTRACT,
         }

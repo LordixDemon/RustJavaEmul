@@ -25,6 +25,12 @@ impl Font {
                     MethodAccessFlags::STATIC,
                 ),
                 JavaMethodProto::new(
+                    "getFont",
+                    "(I)Ljavax/microedition/lcdui/Font;",
+                    Self::get_font_specifier,
+                    MethodAccessFlags::STATIC,
+                ),
+                JavaMethodProto::new(
                     "getDefaultFont",
                     "()Ljavax/microedition/lcdui/Font;",
                     Self::get_default_font,
@@ -58,6 +64,8 @@ impl Font {
                 JavaFieldProto::new("SIZE_SMALL", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
                 JavaFieldProto::new("SIZE_MEDIUM", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
                 JavaFieldProto::new("SIZE_LARGE", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
+                JavaFieldProto::new("FONT_STATIC_TEXT", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
+                JavaFieldProto::new("FONT_INPUT_TEXT", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
             ],
             access_flags: Default::default(),
         }
@@ -74,7 +82,9 @@ impl Font {
         jvm.put_static_field(class, "STYLE_UNDERLINED", "I", 4).await?;
         jvm.put_static_field(class, "SIZE_SMALL", "I", 8).await?;
         jvm.put_static_field(class, "SIZE_MEDIUM", "I", 0).await?;
-        jvm.put_static_field(class, "SIZE_LARGE", "I", 16).await
+        jvm.put_static_field(class, "SIZE_LARGE", "I", 16).await?;
+        jvm.put_static_field(class, "FONT_STATIC_TEXT", "I", 0).await?;
+        jvm.put_static_field(class, "FONT_INPUT_TEXT", "I", 32).await
     }
 
     async fn init(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, face: i32, style: i32, size: i32) -> Result<()> {
@@ -95,6 +105,10 @@ impl Font {
             .new_class("javax/microedition/lcdui/Font", "(III)V", (face, style, size))
             .await?
             .into())
+    }
+
+    async fn get_font_specifier(jvm: &Jvm, _: &mut RuntimeContext, _specifier: i32) -> Result<ClassInstanceRef<Self>> {
+        Ok(jvm.new_class("javax/microedition/lcdui/Font", "(III)V", (0, 0, 0)).await?.into())
     }
 
     async fn get_default_font(jvm: &Jvm, _: &mut RuntimeContext) -> Result<ClassInstanceRef<Self>> {

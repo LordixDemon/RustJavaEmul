@@ -3,7 +3,7 @@ use alloc::{collections::BTreeMap, vec::Vec};
 use nom::{
     IResult, Parser,
     bytes::complete::take,
-    combinator::{flat_map, map, success},
+    combinator::{flat_map, map, map_opt, success},
     multi::count,
     number::complete::{be_i16, be_i32, be_u16, i8, u8},
 };
@@ -164,11 +164,19 @@ pub enum Opcode {
     Swap,
     Tableswitch(i32, Vec<(i32, i32)>),
     Wide,
+    Unknown(u8),
 }
 
 impl Opcode {
     pub fn parse<'a>(data: &'a [u8], offset: usize, constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Self> {
         flat_map(u8, |x| move |i| Self::parse_opcode(x, offset, i, constant_pool)).parse(data)
+    }
+
+    fn parse_cp16<'a, F>(data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>, ctor: F) -> IResult<&'a [u8], Self>
+    where
+        F: Fn(ConstantPoolReference) -> Self,
+    {
+        map_opt(be_u16, |x| ConstantPoolReference::try_from_constant_pool(constant_pool, x).map(&ctor)).parse(data)
     }
 
     fn parse_opcode<'a>(opcode: u8, offset: usize, data: &'a [u8], constant_pool: &BTreeMap<u16, ConstantPoolItem>) -> IResult<&'a [u8], Self> {
@@ -181,10 +189,7 @@ impl Opcode {
             0x2b => success(Opcode::Aload(1)).parse(data),
             0x2c => success(Opcode::Aload(2)).parse(data),
             0x2d => success(Opcode::Aload(3)).parse(data),
-            0xbd => map(be_u16, |x| {
-                Opcode::Anewarray(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
+            0xbd => Self::parse_cp16(data, constant_pool, Opcode::Anewarray),
             0xb0 => success(Opcode::Areturn).parse(data),
             0xbe => success(Opcode::Arraylength).parse(data),
             0x3a => map(u8, |x| Opcode::Astore(x as u16)).parse(data),
@@ -198,10 +203,7 @@ impl Opcode {
             0x10 => map(i8, Opcode::Bipush).parse(data),
             0x34 => success(Opcode::Caload).parse(data),
             0x55 => success(Opcode::Castore).parse(data),
-            0xc0 => map(be_u16, |x| {
-                Opcode::Checkcast(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
+            0xc0 => Self::parse_cp16(data, constant_pool, Opcode::Checkcast),
             0x90 => success(Opcode::D2f).parse(data),
             0x8e => success(Opcode::D2i).parse(data),
             0x8f => success(Opcode::D2l).parse(data),
@@ -261,14 +263,8 @@ impl Opcode {
             0x45 => success(Opcode::Fstore(2)).parse(data),
             0x46 => success(Opcode::Fstore(3)).parse(data),
             0x66 => success(Opcode::Fsub).parse(data),
-            0xb4 => map(be_u16, |x| {
-                Opcode::Getfield(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
-            0xb2 => map(be_u16, |x| {
-                Opcode::Getstatic(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
+            0xb4 => Self::parse_cp16(data, constant_pool, Opcode::Getfield),
+            0xb2 => Self::parse_cp16(data, constant_pool, Opcode::Getstatic),
             0xa7 => map(be_i16, Opcode::Goto).parse(data),
             0xc8 => map(be_i32, Opcode::GotoW).parse(data),
             0x91 => success(Opcode::I2b).parse(data),
@@ -313,30 +309,18 @@ impl Opcode {
             0x1d => success(Opcode::Iload(3)).parse(data),
             0x68 => success(Opcode::Imul).parse(data),
             0x74 => success(Opcode::Ineg).parse(data),
-            0xc1 => map(be_u16, |x| {
-                Opcode::Instanceof(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
+            0xc1 => Self::parse_cp16(data, constant_pool, Opcode::Instanceof),
+            0xba => map_opt((be_u16, be_u16), |(x, _)| {
+                ConstantPoolReference::try_from_constant_pool(constant_pool, x).map(Opcode::Invokedynamic)
             })
             .parse(data),
-            0xba => map((be_u16, be_u16), |(x, _)| {
-                Opcode::Invokedynamic(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
+            0xb9 => map_opt((be_u16, u8, u8), |(x, count, zero)| {
+                ConstantPoolReference::try_from_constant_pool(constant_pool, x).map(|r| Opcode::Invokeinterface(r, count, zero))
             })
             .parse(data),
-            0xb9 => map((be_u16, u8, u8), |(x, count, zero)| {
-                Opcode::Invokeinterface(ConstantPoolReference::from_constant_pool(constant_pool, x as _), count, zero)
-            })
-            .parse(data),
-            0xb7 => map(be_u16, |x| {
-                Opcode::Invokespecial(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
-            0xb8 => map(be_u16, |x| {
-                Opcode::Invokestatic(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
-            0xb6 => map(be_u16, |x| {
-                Opcode::Invokevirtual(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
+            0xb7 => Self::parse_cp16(data, constant_pool, Opcode::Invokespecial),
+            0xb8 => Self::parse_cp16(data, constant_pool, Opcode::Invokestatic),
+            0xb6 => Self::parse_cp16(data, constant_pool, Opcode::Invokevirtual),
             0x80 => success(Opcode::Ior).parse(data),
             0x70 => success(Opcode::Irem).parse(data),
             0xac => success(Opcode::Ireturn).parse(data),
@@ -362,12 +346,12 @@ impl Opcode {
             0x94 => success(Opcode::Lcmp).parse(data),
             0x09 => success(Opcode::Lconst(0)).parse(data),
             0x0a => success(Opcode::Lconst(1)).parse(data),
-            0x12 => map(u8, |x| Opcode::Ldc(ConstantPoolReference::from_constant_pool(constant_pool, x as _))).parse(data),
-            0x13 => map(be_u16, |x| Opcode::LdcW(ConstantPoolReference::from_constant_pool(constant_pool, x as _))).parse(data),
-            0x14 => map(be_u16, |x| {
-                Opcode::Ldc2W(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
+            0x12 => map_opt(u8, |x| {
+                ConstantPoolReference::try_from_constant_pool(constant_pool, x as u16).map(Opcode::Ldc)
             })
             .parse(data),
+            0x13 => Self::parse_cp16(data, constant_pool, Opcode::LdcW),
+            0x14 => Self::parse_cp16(data, constant_pool, Opcode::Ldc2W),
             0x6d => success(Opcode::Ldiv).parse(data),
             0x16 => map(u8, |x| Opcode::Lload(x as u16)).parse(data),
             0x1e => success(Opcode::Lload(0)).parse(data),
@@ -395,23 +379,17 @@ impl Opcode {
             0x83 => success(Opcode::Lxor).parse(data),
             0xc2 => success(Opcode::Monitorenter).parse(data),
             0xc3 => success(Opcode::Monitorexit).parse(data),
-            0xc5 => map((be_u16, u8), |(index, dimensions)| {
-                Opcode::Multianewarray(ConstantPoolReference::from_constant_pool(constant_pool, index as _), dimensions)
+            0xc5 => map_opt((be_u16, u8), |(index, dimensions)| {
+                ConstantPoolReference::try_from_constant_pool(constant_pool, index).map(|r| Opcode::Multianewarray(r, dimensions))
             })
             .parse(data),
-            0xbb => map(be_u16, |x| Opcode::New(ConstantPoolReference::from_constant_pool(constant_pool, x as _))).parse(data),
+            0xbb => Self::parse_cp16(data, constant_pool, Opcode::New),
             0xbc => map(u8, Opcode::Newarray).parse(data),
             0x00 => success(Opcode::Nop).parse(data),
             0x57 => success(Opcode::Pop).parse(data),
             0x58 => success(Opcode::Pop2).parse(data),
-            0xb5 => map(be_u16, |x| {
-                Opcode::Putfield(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
-            0xb3 => map(be_u16, |x| {
-                Opcode::Putstatic(ConstantPoolReference::from_constant_pool(constant_pool, x as _))
-            })
-            .parse(data),
+            0xb5 => Self::parse_cp16(data, constant_pool, Opcode::Putfield),
+            0xb3 => Self::parse_cp16(data, constant_pool, Opcode::Putstatic),
             0xa9 => map(u8, |x| Opcode::Ret(x as u16)).parse(data),
             0xb1 => success(Opcode::Return).parse(data),
             0x35 => success(Opcode::Saload).parse(data),
@@ -428,7 +406,7 @@ impl Opcode {
             })
             .parse(data),
             0xc4 => flat_map(u8, Self::parse_wide_opcode).parse(data),
-            _ => success(Opcode::Nop).parse(data),
+            other => success(Opcode::Unknown(other)).parse(data),
         }
     }
 

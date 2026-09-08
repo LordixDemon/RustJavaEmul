@@ -1,5 +1,5 @@
 use java_runtime::classes::java::lang::String as JavaString;
-use jvm::{ClassInstanceRef, JavaError, Result, runtime::JavaLangString};
+use jvm::{ClassInstance, ClassInstanceRef, JavaError, Result, runtime::JavaLangString};
 
 use test_utils::test_jvm;
 
@@ -357,7 +357,7 @@ async fn test_substring_invalid_range() -> Result<()> {
         let result: Result<ClassInstanceRef<JavaString>> = jvm.invoke_virtual(&string, "substring", "(II)Ljava/lang/String;", (begin, end)).await;
 
         let Err(JavaError::JavaException(exception)) = result else {
-            panic!("Expected JavaException for ({begin}, {end}), got {:?}", result);
+            panic!("Expected JavaException for ({begin}, {end}), got {result:?}");
         };
         assert!(jvm.is_instance(&*exception, "java/lang/StringIndexOutOfBoundsException"));
     }
@@ -410,6 +410,52 @@ async fn test_get_bytes_ascii_replaces_non_ascii() -> Result<()> {
     let bytes = jvm.load_array::<i8>(&bytes, 0, 3).await?;
 
     assert_eq!(bytes, [0x61, 0x3f, 0x3f]);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_string_intern_shares_identity() -> Result<()> {
+    let jvm = test_jvm().await?;
+
+    let first = JavaLangString::intern_rust_string(&jvm, "endOfMedia").await?;
+    let second = JavaLangString::intern_rust_string(&jvm, "endOfMedia").await?;
+    assert!(first.equals(&*second).unwrap());
+
+    let created = JavaLangString::from_rust_string(&jvm, "endOfMedia").await?;
+    let interned: ClassInstanceRef<JavaString> = jvm.invoke_virtual(&created, "intern", "()Ljava/lang/String;", ()).await?;
+    let interned: Box<dyn ClassInstance> = interned.into();
+    assert!(first.equals(&*interned).unwrap());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_string_format_and_search() -> Result<()> {
+    let jvm = test_jvm().await?;
+    let empty = JavaLangString::from_rust_string(&jvm, "").await?;
+    let is_empty: bool = jvm.invoke_virtual(&empty, "isEmpty", "()Z", ()).await?;
+    assert!(is_empty);
+
+    let hay = JavaLangString::from_rust_string(&jvm, "ababa").await?;
+    let needle = JavaLangString::from_rust_string(&jvm, "ba").await?;
+    let last: i32 = jvm.invoke_virtual(&hay, "lastIndexOf", "(Ljava/lang/String;)I", (needle,)).await?;
+    assert_eq!(last, 3);
+
+    let fmt = JavaLangString::from_rust_string(&jvm, "%s-%d").await?;
+    let arg = JavaLangString::from_rust_string(&jvm, "x").await?;
+    let boxed = jvm.new_class("java/lang/Integer", "(I)V", (7,)).await?;
+    let mut args = jvm.instantiate_array("Ljava/lang/Object;", 2).await?;
+    jvm.store_array(&mut args, 0, vec![arg, boxed]).await?;
+    let formatted: ClassInstanceRef<JavaString> = jvm
+        .invoke_static(
+            "java/lang/String",
+            "format",
+            "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;",
+            (fmt, args),
+        )
+        .await?;
+    assert_eq!(JavaLangString::to_rust_string(&jvm, &formatted).await?, "x-7");
 
     Ok(())
 }

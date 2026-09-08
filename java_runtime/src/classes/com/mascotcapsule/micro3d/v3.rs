@@ -30,6 +30,21 @@ pub use self::util::Util3D;
 
 pub use self::diagnostics::latest_render_diagnostics;
 pub use self::gpu_scene::{
-    V3GpuFrame, V3GpuTexture, V3GpuTriangle, V3GpuVertex, invalidate_gpu_image, latest_gpu_frame_after, publish_gpu_image_to_screen,
-    set_gpu_scene_enabled,
+    V3GpuFrame, V3GpuTexture, V3GpuTriangle, V3GpuVertex, gpu_scene_enabled, invalidate_gpu_image, latest_gpu_frame_after,
+    publish_gpu_image_to_screen, set_gpu_scene_enabled,
 };
+
+pub fn class_protos() -> impl IntoIterator<Item = crate::RuntimeClassProtoFactory> {
+    proto_factories![
+        ActionTable,
+        AffineTrans,
+        Effect3D,
+        Figure,
+        FigureLayout,
+        Graphics3D,
+        Light,
+        Texture,
+        Util3D,
+        Vector3D,
+    ]
+}

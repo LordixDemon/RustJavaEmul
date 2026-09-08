@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "classfile",
+    "compat_scan",
     "java_class_proto",
     "java_constants",
     "java_runtime",
@@ -12,8 +13,9 @@ members = [
 default-members = ["."]
 
 [profile.release]
-codegen-units = 1
-lto = "thin"
+codegen-units = 32
+lto = "off"
+opt-level = 2
 
 [profile.dev]
 opt-level = 1
@@ -23,6 +25,19 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT"
 rust-version = "1.88"
+
+[workspace.lints.clippy]
+too_many_arguments = "allow"
+borrowed_box = "allow"
+needless_borrow = "allow"
+manual_strip = "allow"
+needless_range_loop = "allow"
+type_complexity = "allow"
+manual_range_contains = "allow"
+unnecessary_cast = "allow"
+explicit_auto_deref = "allow"
+precedence = "allow"
+needless_lifetimes = "allow"
 
 [workspace.dependencies]
 anyhow = { version = "1.0.102", default-features = false }
@@ -41,18 +56,16 @@ miniz_oxide = { version = "0.8.9", default-features = false, features = ["with-a
 nom = { version = "8.0.0", default-features = false, features = ["alloc"] }
 parking_lot = { version = "0.12.5", default-features = false }
 png = "0.18.1"
+jpeg-decoder = { version = "0.3.2", default-features = false }
 pollster = "0.4.0"
 js-sys = { version = "0.3.102", default-features = false }
 tokio = { version = "1.52.3", features = ["macros"] }
 tracing = { version = "0.1.44", default-features = false }
-tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-url = { version = "2.5.8", default-features = false }
 wasm-bindgen = { version = "0.2.125", default-features = false }
 wasm-bindgen-futures = { version = "0.4.75", default-features = false }
 web-sys = { version = "0.3.102", default-features = false }
-wgpu = "29.0.3"
+wgpu = { version = "29.0.3", default-features = false, features = ["std", "parking_lot", "dx12", "vulkan", "wgsl"] }
 winit = "0.30.13"
-zip = { version = "9.0.0-pre2", default-features = false, features = ["deflate"] }
 
 classfile = { path = "classfile" }
 java_class_proto = { path = "java_class_proto" }
@@ -68,6 +81,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
+default-run = "rust_java"
+
+[lints]
+workspace = true
 
 [features]
 default = ["desktop-window"]
@@ -97,15 +114,16 @@ bytemuck = { workspace = true }
 console_error_panic_hook = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
 png = { workspace = true }
+jpeg-decoder = { workspace = true }
+parking_lot = { workspace = true }
 pollster = { workspace = true, optional = true }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
 wasm-bindgen = { workspace = true, optional = true }
 wasm-bindgen-futures = { workspace = true, optional = true }
 wgpu = { workspace = true, optional = true }
 winit = { workspace = true, optional = true }
-zip = { workspace = true }
 
+classfile = { workspace = true }
 jvm = { workspace = true }
 jvm_rust = { workspace = true }
 java_class_proto = { workspace = true }
@@ -132,9 +150,10 @@ features = [
 [dev-dependencies]
 test_utils = { workspace = true }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies.tokio]
-workspace = true
-features = ["rt-multi-thread", "time"]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "time", "process", "io-util"] }
+tracing-subscriber = { version = "0.3.20", default-features = false, features = ["fmt", "env-filter", "std", "ansi"] }
+test_utils = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.tokio]
 workspace = true

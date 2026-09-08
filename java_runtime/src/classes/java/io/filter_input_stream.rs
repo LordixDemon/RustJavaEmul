@@ -23,6 +23,9 @@ impl FilterInputStream {
                 JavaMethodProto::new("read", "([B)I", Self::read, Default::default()),
                 JavaMethodProto::new("read", "([BII)I", Self::read_with_offset_length, Default::default()),
                 JavaMethodProto::new("reset", "()V", Self::reset, Default::default()),
+                JavaMethodProto::new("skip", "(J)J", Self::skip, Default::default()),
+                JavaMethodProto::new("mark", "(I)V", Self::mark, Default::default()),
+                JavaMethodProto::new("markSupported", "()Z", Self::mark_supported, Default::default()),
             ],
             fields: vec![JavaFieldProto::new("in", "Ljava/io/InputStream;", FieldAccessFlags::PROTECTED)],
             access_flags: Default::default(),
@@ -44,7 +47,7 @@ impl FilterInputStream {
 
         let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
         if r#in.is_null() {
-            return Ok(0);
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
         }
         let available: i32 = jvm.invoke_virtual(&r#in, "available", "()I", ()).await?;
 
@@ -56,7 +59,7 @@ impl FilterInputStream {
 
         let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
         if r#in.is_null() {
-            return Ok(());
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
         }
         let _: () = jvm.invoke_virtual(&r#in, "close", "()V", ()).await?;
 
@@ -68,7 +71,7 @@ impl FilterInputStream {
 
         let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
         if r#in.is_null() {
-            return Ok(());
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
         }
         let _: () = jvm.invoke_virtual(&r#in, "reset", "()V", ()).await?;
 
@@ -80,7 +83,7 @@ impl FilterInputStream {
 
         let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
         if r#in.is_null() {
-            return Ok(-1);
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
         }
         let result: i32 = jvm.invoke_virtual(&r#in, "read", "([B)I", (b,)).await?;
 
@@ -99,7 +102,7 @@ impl FilterInputStream {
 
         let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
         if r#in.is_null() {
-            return Ok(-1);
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
         }
         let result: i32 = jvm.invoke_virtual(&r#in, "read", "([BII)I", (b, off, len)).await?;
 
@@ -111,10 +114,36 @@ impl FilterInputStream {
 
         let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
         if r#in.is_null() {
-            return Ok(-1);
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
         }
         let result: i32 = jvm.invoke_virtual(&r#in, "read", "()I", ()).await?;
 
         Ok(result)
+    }
+}
+
+impl FilterInputStream {
+    async fn skip(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, n: i64) -> Result<i64> {
+        let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        if r#in.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
+        }
+        jvm.invoke_virtual(&r#in, "skip", "(J)J", (n,)).await
+    }
+
+    async fn mark(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, readlimit: i32) -> Result<()> {
+        let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        if r#in.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
+        }
+        jvm.invoke_virtual(&r#in, "mark", "(I)V", (readlimit,)).await
+    }
+
+    async fn mark_supported(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
+        let r#in: ClassInstanceRef<InputStream> = jvm.get_field(&this, "in", "Ljava/io/InputStream;").await?;
+        if r#in.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "in is null").await);
+        }
+        jvm.invoke_virtual(&r#in, "markSupported", "()Z", ()).await
     }
 }

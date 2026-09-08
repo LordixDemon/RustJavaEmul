@@ -1,6 +1,8 @@
 use alloc::boxed::Box;
 use core::{
+    any::Any,
     fmt::{self, Debug, Formatter},
+    hash::{Hash, Hasher},
     marker::PhantomData,
     ops::{Deref, DerefMut},
 };
@@ -23,6 +25,23 @@ pub trait ClassInstance: Sync + Send + AsAny + Debug + DynHash + DynClone + 'sta
     fn as_array_instance_mut(&mut self) -> Option<&mut dyn ArrayClassInstance> {
         None
     }
+    fn get_named_field(&self, name: &str, descriptor: &str) -> Option<JavaValue> {
+        let field = self.class_definition().field(name, descriptor, false)?;
+        self.get_field(&*field).ok()
+    }
+    fn put_named_field(&mut self, name: &str, descriptor: &str, value: JavaValue) -> bool {
+        let Some(field) = self.class_definition().field(name, descriptor, false) else {
+            return false;
+        };
+        self.put_field(&*field, value).is_ok()
+    }
+    fn with_native_scratch(&self, _f: &mut dyn FnMut(&mut Option<Box<dyn Any + Send + Sync>>)) {}
+    fn native_epoch(&self) -> u32 {
+        0
+    }
+    fn clear_native_scratch(&self) {
+        self.with_native_scratch(&mut |slot| *slot = None);
+    }
 }
 
 clone_trait_object!(ClassInstance);
@@ -41,7 +60,7 @@ pub struct Array<T>(PhantomData<T>);
 // typesafe wrapper for ClassInstance
 pub struct ClassInstanceRef<T> {
     pub instance: Option<Box<dyn ClassInstance>>,
-    _phantom: PhantomData<T>,
+    _phantom: PhantomData<fn() -> T>,
 }
 
 impl<T> ClassInstanceRef<T> {
@@ -64,7 +83,9 @@ impl<T> Clone for ClassInstanceRef<T> {
 
 impl<T> ClassInstanceRef<T> {
     pub fn is_null(&self) -> bool {
-        self.instance.is_none()
+        self.instance
+            .as_ref()
+            .is_none_or(|instance| instance.as_any().downcast_ref::<NullInstance>().is_some())
     }
 }
 
@@ -81,19 +102,26 @@ impl<T> Debug for ClassInstanceRef<T> {
 impl<T> Deref for ClassInstanceRef<T> {
     type Target = Box<dyn ClassInstance>;
     fn deref(&self) -> &Self::Target {
-        self.instance.as_ref().unwrap()
+        match self.instance.as_ref() {
+            Some(instance) => instance,
+            None => java_null_box(),
+        }
     }
 }
 
 impl<T> DerefMut for ClassInstanceRef<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
+        if self.instance.is_none() {
+            self.instance = Some(Box::new(NullInstance));
+        }
         self.instance.as_mut().unwrap()
     }
 }
 
 impl<T> From<ClassInstanceRef<T>> for JavaValue {
     fn from(value: ClassInstanceRef<T>) -> Self {
-        value.instance.into()
+        let instance: Option<Box<dyn ClassInstance>> = value.into();
+        instance.into()
     }
 }
 
@@ -126,12 +154,57 @@ impl<T> From<JavaValue> for ClassInstanceRef<T> {
 
 impl<T> From<ClassInstanceRef<T>> for Box<dyn ClassInstance> {
     fn from(value: ClassInstanceRef<T>) -> Self {
-        value.instance.unwrap()
+        value.instance.unwrap_or_else(|| Box::new(NullInstance))
     }
 }
 
 impl<T> From<ClassInstanceRef<T>> for Option<Box<dyn ClassInstance>> {
     fn from(value: ClassInstanceRef<T>) -> Self {
-        value.instance
+        match value.instance {
+            Some(instance) if instance.as_any().downcast_ref::<NullInstance>().is_some() => None,
+            instance => instance,
+        }
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct NullInstance;
+
+impl Hash for NullInstance {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        0u8.hash(state);
+    }
+}
+
+#[async_trait::async_trait]
+impl ClassInstance for NullInstance {
+    fn destroy(self: Box<Self>) {}
+
+    fn class_definition(&self) -> Box<dyn ClassDefinition> {
+        panic!("java null");
+    }
+
+    fn equals(&self, other: &dyn ClassInstance) -> Result<bool> {
+        Ok(other.as_any().downcast_ref::<NullInstance>().is_some())
+    }
+
+    fn get_field(&self, _: &dyn Field) -> Result<JavaValue> {
+        panic!("java null");
+    }
+
+    fn put_field(&mut self, _: &dyn Field, _: JavaValue) -> Result<()> {
+        panic!("java null");
+    }
+}
+
+#[allow(clippy::borrowed_box)]
+fn java_null_box() -> &'static Box<dyn ClassInstance> {
+    use parking_lot::Mutex;
+    static SLOT: Mutex<Option<&'static Box<dyn ClassInstance>>> = Mutex::new(None);
+    let mut slot = SLOT.lock();
+    if slot.is_none() {
+        let boxed: Box<dyn ClassInstance> = Box::new(NullInstance);
+        *slot = Some(Box::leak(Box::new(boxed)));
+    }
+    slot.as_ref().copied().unwrap()
 }

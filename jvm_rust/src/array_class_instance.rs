@@ -1,8 +1,9 @@
 use alloc::{boxed::Box, sync::Arc, vec, vec::Vec};
 use core::{
+    cell::UnsafeCell,
     fmt::{self, Debug, Formatter},
     hash::{Hash, Hasher},
-    sync::atomic::{AtomicU8, Ordering},
+    mem,
 };
 
 use parking_lot::RwLock;
@@ -12,9 +13,16 @@ use jvm::{ArrayClassDefinition, ArrayClassInstance, ArrayRawBuffer, ArrayRawBuff
 use crate::{array_class_definition::ArrayClassDefinitionImpl, profile};
 
 enum ArrayElements {
-    Primitive(Vec<AtomicU8>),
-    NonPrimitive(RwLock<Vec<JavaValue>>),
+    I32(UnsafeCell<Vec<i32>>),
+    I64(UnsafeCell<Vec<i64>>),
+    F32(UnsafeCell<Vec<f32>>),
+    F64(UnsafeCell<Vec<f64>>),
+    U8(UnsafeCell<Vec<u8>>),
+    U16(UnsafeCell<Vec<u16>>),
+    Objects(RwLock<Vec<JavaValue>>),
 }
+
+unsafe impl Sync for ArrayElements {}
 
 struct ArrayClassInstanceInner {
     class: Box<dyn ClassDefinition>,
@@ -33,13 +41,18 @@ impl ArrayClassInstanceImpl {
         profile::array_new();
 
         let element_type = JavaType::parse(&class.element_type_name());
-
-        let elements = if matches!(element_type, JavaType::Class(_) | JavaType::Array(_)) {
-            let default_value = element_type.default();
-            ArrayElements::NonPrimitive(RwLock::new(vec![default_value; length]))
-        } else {
-            let element_size = Self::primitive_element_size(&element_type);
-            ArrayElements::Primitive((0..length * element_size).map(|_| AtomicU8::new(0)).collect())
+        let elements = match &element_type {
+            JavaType::Int => ArrayElements::I32(UnsafeCell::new(vec![0; length])),
+            JavaType::Long => ArrayElements::I64(UnsafeCell::new(vec![0; length])),
+            JavaType::Float => ArrayElements::F32(UnsafeCell::new(vec![0.0; length])),
+            JavaType::Double => ArrayElements::F64(UnsafeCell::new(vec![0.0; length])),
+            JavaType::Boolean | JavaType::Byte => ArrayElements::U8(UnsafeCell::new(vec![0; length])),
+            JavaType::Char | JavaType::Short => ArrayElements::U16(UnsafeCell::new(vec![0; length])),
+            JavaType::Class(_) | JavaType::Array(_) => {
+                let default_value = element_type.default();
+                ArrayElements::Objects(RwLock::new(vec![default_value; length]))
+            }
+            JavaType::Void | JavaType::Method(_, _) => unreachable!(),
         };
 
         Self {
@@ -49,67 +62,6 @@ impl ArrayClassInstanceImpl {
                 element_type,
                 elements,
             }),
-        }
-    }
-
-    fn primitive_element_size(element_type: &JavaType) -> usize {
-        match element_type {
-            JavaType::Boolean => 1,
-            JavaType::Byte => 1,
-            JavaType::Char => 2,
-            JavaType::Short => 2,
-            JavaType::Int => 4,
-            JavaType::Long => 8,
-            JavaType::Float => 4,
-            JavaType::Double => 8,
-            _ => unreachable!(),
-        }
-    }
-
-    fn load_primitive_value(values: &[AtomicU8], element_type: &JavaType, byte_offset: usize) -> JavaValue {
-        match element_type {
-            JavaType::Boolean => JavaValue::Boolean(values[byte_offset].load(Ordering::Relaxed) != 0),
-            JavaType::Byte => JavaValue::Byte(values[byte_offset].load(Ordering::Relaxed) as i8),
-            JavaType::Char => JavaValue::Char(u16::from_le_bytes(load_bytes_array(&values[byte_offset..byte_offset + 2]))),
-            JavaType::Short => JavaValue::Short(i16::from_le_bytes(load_bytes_array(&values[byte_offset..byte_offset + 2]))),
-            JavaType::Int => JavaValue::Int(i32::from_le_bytes(load_bytes_array(&values[byte_offset..byte_offset + 4]))),
-            JavaType::Long => JavaValue::Long(i64::from_le_bytes(load_bytes_array(&values[byte_offset..byte_offset + 8]))),
-            JavaType::Float => JavaValue::Float(f32::from_le_bytes(load_bytes_array(&values[byte_offset..byte_offset + 4]))),
-            JavaType::Double => JavaValue::Double(f64::from_le_bytes(load_bytes_array(&values[byte_offset..byte_offset + 8]))),
-            _ => unreachable!(),
-        }
-    }
-
-    fn store_primitive_value(values: &[AtomicU8], element_type: &JavaType, byte_offset: usize, value: JavaValue) {
-        match element_type {
-            JavaType::Boolean => {
-                values[byte_offset].store((int_value(value) & 1 != 0) as u8, Ordering::Relaxed);
-            }
-            JavaType::Byte => {
-                values[byte_offset].store(int_value(value) as i8 as u8, Ordering::Relaxed);
-            }
-            JavaType::Char => {
-                store_bytes(&values[byte_offset..byte_offset + 2], &(int_value(value) as u16).to_le_bytes());
-            }
-            JavaType::Short => {
-                store_bytes(&values[byte_offset..byte_offset + 2], &(int_value(value) as i16).to_le_bytes());
-            }
-            JavaType::Int => {
-                store_bytes(&values[byte_offset..byte_offset + 4], &int_value(value).to_le_bytes());
-            }
-            JavaType::Long => {
-                let value: i64 = value.into();
-                store_bytes(&values[byte_offset..byte_offset + 8], &value.to_le_bytes());
-            }
-            JavaType::Float => {
-                let value: f32 = value.into();
-                store_bytes(&values[byte_offset..byte_offset + 4], &value.to_le_bytes());
-            }
-            JavaType::Double => {
-                let value: f64 = value.into();
-                store_bytes(&values[byte_offset..byte_offset + 8], &value.to_le_bytes());
-            }
-            _ => unreachable!(),
         }
     }
 
@@ -123,49 +75,101 @@ impl ArrayClassInstanceImpl {
             JavaType::Long => 5,
             JavaType::Float => 6,
             JavaType::Double => 7,
-            JavaType::Class(_) | JavaType::Array(_) | JavaType::Method(_, _) => 8,
-            JavaType::Void => 8,
+            JavaType::Class(_) | JavaType::Array(_) | JavaType::Method(_, _) | JavaType::Void => 8,
         }
     }
 
     pub(crate) fn load_one_stack(&self, offset: usize) -> JavaValue {
         profile::array_load_one_typed(Self::profile_array_type_index(&self.inner.element_type));
-
-        match &self.inner.elements {
-            ArrayElements::Primitive(x) => {
-                let offset = offset * Self::primitive_element_size(&self.inner.element_type);
-                match self.inner.element_type {
-                    JavaType::Boolean => JavaValue::Int((x[offset].load(Ordering::Relaxed) != 0) as i32),
-                    JavaType::Byte => JavaValue::Int(x[offset].load(Ordering::Relaxed) as i8 as i32),
-                    JavaType::Char => JavaValue::Int(u16::from_le_bytes(load_bytes_array(&x[offset..offset + 2])) as i32),
-                    JavaType::Short => JavaValue::Int(i16::from_le_bytes(load_bytes_array(&x[offset..offset + 2])) as i32),
-                    JavaType::Int => JavaValue::Int(i32::from_le_bytes(load_bytes_array(&x[offset..offset + 4]))),
-                    JavaType::Long => JavaValue::Long(i64::from_le_bytes(load_bytes_array(&x[offset..offset + 8]))),
-                    JavaType::Float => JavaValue::Float(f32::from_le_bytes(load_bytes_array(&x[offset..offset + 4]))),
-                    JavaType::Double => JavaValue::Double(f64::from_le_bytes(load_bytes_array(&x[offset..offset + 8]))),
-                    _ => unreachable!(),
-                }
-            }
-            ArrayElements::NonPrimitive(x) => x.read()[offset].clone(),
-        }
+        Self::to_stack_value(self.load_at(offset))
     }
 
     pub(crate) fn store_one_stack(&mut self, offset: usize, value: JavaValue) {
         profile::array_store_one_typed(Self::profile_array_type_index(&self.inner.element_type));
-
-        match &self.inner.elements {
-            ArrayElements::Primitive(x) => {
-                let offset = offset * Self::primitive_element_size(&self.inner.element_type);
-                Self::store_primitive_value(x, &self.inner.element_type, offset, value);
-            }
-            ArrayElements::NonPrimitive(x) => {
-                x.write()[offset] = value;
-            }
-        }
+        self.store_at(offset, value);
     }
 
     pub(crate) fn len(&self) -> usize {
         self.inner.length
+    }
+
+    pub fn i32_ptr_mut(&self) -> Option<(*mut i32, usize)> {
+        match &self.inner.elements {
+            ArrayElements::I32(values) => {
+                let values = unsafe { &mut *values.get() };
+                Some((values.as_mut_ptr(), values.len()))
+            }
+            _ => None,
+        }
+    }
+
+    fn load_at(&self, offset: usize) -> JavaValue {
+        match &self.inner.elements {
+            ArrayElements::I32(values) => JavaValue::Int(unsafe { &*values.get() }[offset]),
+            ArrayElements::I64(values) => JavaValue::Long(unsafe { &*values.get() }[offset]),
+            ArrayElements::F32(values) => JavaValue::Float(unsafe { &*values.get() }[offset]),
+            ArrayElements::F64(values) => JavaValue::Double(unsafe { &*values.get() }[offset]),
+            ArrayElements::U8(values) => {
+                let value = unsafe { &*values.get() }[offset];
+                match self.inner.element_type {
+                    JavaType::Boolean => JavaValue::Boolean(value != 0),
+                    _ => JavaValue::Byte(value as i8),
+                }
+            }
+            ArrayElements::U16(values) => {
+                let value = unsafe { &*values.get() }[offset];
+                match self.inner.element_type {
+                    JavaType::Char => JavaValue::Char(value),
+                    _ => JavaValue::Short(value as i16),
+                }
+            }
+            ArrayElements::Objects(values) => values.read()[offset].clone(),
+        }
+    }
+
+    fn store_at(&self, offset: usize, value: JavaValue) {
+        match &self.inner.elements {
+            ArrayElements::I32(values) => {
+                let dest = unsafe { &mut *values.get() };
+                dest[offset] = int_value(value);
+            }
+            ArrayElements::I64(values) => {
+                let dest = unsafe { &mut *values.get() };
+                dest[offset] = value.into();
+            }
+            ArrayElements::F32(values) => {
+                let dest = unsafe { &mut *values.get() };
+                dest[offset] = value.into();
+            }
+            ArrayElements::F64(values) => {
+                let dest = unsafe { &mut *values.get() };
+                dest[offset] = value.into();
+            }
+            ArrayElements::U8(values) => {
+                let stored = if matches!(self.inner.element_type, JavaType::Boolean) {
+                    (int_value(value) & 1) as u8
+                } else {
+                    int_value(value) as i8 as u8
+                };
+                let dest = unsafe { &mut *values.get() };
+                dest[offset] = stored;
+            }
+            ArrayElements::U16(values) => {
+                let dest = unsafe { &mut *values.get() };
+                dest[offset] = int_value(value) as u16;
+            }
+            ArrayElements::Objects(values) => values.write()[offset] = value,
+        }
+    }
+
+    fn to_stack_value(value: JavaValue) -> JavaValue {
+        match value {
+            JavaValue::Boolean(value) => JavaValue::Int(i32::from(value)),
+            JavaValue::Byte(value) => JavaValue::Int(i32::from(value)),
+            JavaValue::Char(value) => JavaValue::Int(i32::from(value)),
+            JavaValue::Short(value) => JavaValue::Int(i32::from(value)),
+            other => other,
+        }
     }
 }
 
@@ -191,16 +195,49 @@ impl ArrayClassInstance for ArrayClassInstanceImpl {
         profile::array_store_bulk();
 
         match &self.inner.elements {
-            ArrayElements::Primitive(x) => {
-                let element_size = Self::primitive_element_size(&self.inner.element_type);
-                let start = offset * element_size;
-
+            ArrayElements::I32(storage) => {
+                let dest = unsafe { &mut *storage.get() };
                 for (index, value) in values.into_vec().into_iter().enumerate() {
-                    Self::store_primitive_value(x, &self.inner.element_type, start + index * element_size, value);
+                    dest[offset + index] = int_value(value);
                 }
             }
-            ArrayElements::NonPrimitive(x) => {
-                x.write().splice(offset..offset + values.len(), values.into_vec());
+            ArrayElements::I64(storage) => {
+                let dest = unsafe { &mut *storage.get() };
+                for (index, value) in values.into_vec().into_iter().enumerate() {
+                    dest[offset + index] = value.into();
+                }
+            }
+            ArrayElements::F32(storage) => {
+                let dest = unsafe { &mut *storage.get() };
+                for (index, value) in values.into_vec().into_iter().enumerate() {
+                    dest[offset + index] = value.into();
+                }
+            }
+            ArrayElements::F64(storage) => {
+                let dest = unsafe { &mut *storage.get() };
+                for (index, value) in values.into_vec().into_iter().enumerate() {
+                    dest[offset + index] = value.into();
+                }
+            }
+            ArrayElements::U8(storage) => {
+                let dest = unsafe { &mut *storage.get() };
+                let boolean = matches!(self.inner.element_type, JavaType::Boolean);
+                for (index, value) in values.into_vec().into_iter().enumerate() {
+                    dest[offset + index] = if boolean {
+                        (int_value(value) & 1) as u8
+                    } else {
+                        int_value(value) as i8 as u8
+                    };
+                }
+            }
+            ArrayElements::U16(storage) => {
+                let dest = unsafe { &mut *storage.get() };
+                for (index, value) in values.into_vec().into_iter().enumerate() {
+                    dest[offset + index] = int_value(value) as u16;
+                }
+            }
+            ArrayElements::Objects(storage) => {
+                storage.write().splice(offset..offset + values.len(), values.into_vec());
             }
         }
 
@@ -209,48 +246,23 @@ impl ArrayClassInstance for ArrayClassInstanceImpl {
 
     fn store_one(&mut self, offset: usize, value: JavaValue) -> Result<()> {
         profile::array_store_one_typed(Self::profile_array_type_index(&self.inner.element_type));
-
-        match &self.inner.elements {
-            ArrayElements::Primitive(x) => {
-                let offset = offset * Self::primitive_element_size(&self.inner.element_type);
-                Self::store_primitive_value(x, &self.inner.element_type, offset, value);
-            }
-            ArrayElements::NonPrimitive(x) => {
-                x.write()[offset] = value;
-            }
-        }
-
+        self.store_at(offset, value);
         Ok(())
     }
 
     fn load(&self, offset: usize, length: usize) -> Result<Vec<JavaValue>> {
         profile::array_load_bulk();
 
-        Ok(match &self.inner.elements {
-            ArrayElements::Primitive(x) => {
-                let element_size = Self::primitive_element_size(&self.inner.element_type);
-                let start = offset * element_size;
-                let mut values = Vec::with_capacity(length);
-                for index in 0..length {
-                    values.push(Self::load_primitive_value(x, &self.inner.element_type, start + index * element_size));
-                }
-
-                values
-            }
-            ArrayElements::NonPrimitive(x) => x.read()[offset..offset + length].to_vec(),
-        })
+        let mut values = Vec::with_capacity(length);
+        for index in 0..length {
+            values.push(self.load_at(offset + index));
+        }
+        Ok(values)
     }
 
     fn load_one(&self, offset: usize) -> Result<JavaValue> {
         profile::array_load_one_typed(Self::profile_array_type_index(&self.inner.element_type));
-
-        Ok(match &self.inner.elements {
-            ArrayElements::Primitive(x) => {
-                let offset = offset * Self::primitive_element_size(&self.inner.element_type);
-                Self::load_primitive_value(x, &self.inner.element_type, offset)
-            }
-            ArrayElements::NonPrimitive(x) => x.read()[offset].clone(),
-        })
+        Ok(self.load_at(offset))
     }
 
     fn copy_to(&self, src_pos: usize, dest: &mut dyn ArrayClassInstance, dest_pos: usize, length: usize) -> Result<bool> {
@@ -265,45 +277,11 @@ impl ArrayClassInstance for ArrayClassInstanceImpl {
         }
 
         if Arc::ptr_eq(&self.inner, &dest.inner) {
-            match &self.inner.elements {
-                ArrayElements::Primitive(values) => {
-                    let element_size = Self::primitive_element_size(&self.inner.element_type);
-                    let src_start = src_pos * element_size;
-                    let src_end = src_start + length * element_size;
-                    let dest_start = dest_pos * element_size;
-                    let values_to_copy = load_bytes(&values[src_start..src_end]);
-                    store_bytes(&values[dest_start..dest_start + values_to_copy.len()], &values_to_copy);
-                }
-                ArrayElements::NonPrimitive(values) => {
-                    let mut values = values.write();
-                    let values_to_copy = values[src_pos..src_pos + length].to_vec();
-                    values.splice(dest_pos..dest_pos + length, values_to_copy);
-                }
-            }
-
+            copy_elements_overlapping(&self.inner.elements, src_pos, dest_pos, length);
             return Ok(true);
         }
 
-        match (&self.inner.elements, &dest.inner.elements) {
-            (ArrayElements::Primitive(src), ArrayElements::Primitive(dest)) => {
-                let element_size = Self::primitive_element_size(&self.inner.element_type);
-                let src_start = src_pos * element_size;
-                let src_end = src_start + length * element_size;
-                let dest_start = dest_pos * element_size;
-                for (src, dest) in src[src_start..src_end]
-                    .iter()
-                    .zip(dest[dest_start..dest_start + length * element_size].iter())
-                {
-                    dest.store(src.load(Ordering::Relaxed), Ordering::Relaxed);
-                }
-            }
-            (ArrayElements::NonPrimitive(src), ArrayElements::NonPrimitive(dest)) => {
-                let values_to_copy = src.read()[src_pos..src_pos + length].to_vec();
-                dest.write().splice(dest_pos..dest_pos + length, values_to_copy);
-            }
-            _ => return Ok(false),
-        }
-
+        copy_elements(&self.inner.elements, &dest.inner.elements, src_pos, dest_pos, length);
         Ok(true)
     }
 
@@ -318,6 +296,24 @@ impl ArrayClassInstance for ArrayClassInstanceImpl {
     fn length(&self) -> usize {
         self.inner.length
     }
+
+    fn is_object_array(&self) -> bool {
+        matches!(self.inner.elements, ArrayElements::Objects(_))
+    }
+
+    fn i32_slice(&self) -> Option<&[i32]> {
+        match &self.inner.elements {
+            ArrayElements::I32(values) => Some(unsafe { &*values.get() }.as_slice()),
+            _ => None,
+        }
+    }
+
+    fn i32_slice_mut(&mut self) -> Option<&mut [i32]> {
+        match &self.inner.elements {
+            ArrayElements::I32(values) => Some(unsafe { &mut *values.get() }.as_mut_slice()),
+            _ => None,
+        }
+    }
 }
 
 fn int_value(value: JavaValue) -> i32 {
@@ -331,22 +327,50 @@ fn int_value(value: JavaValue) -> i32 {
     }
 }
 
-fn load_bytes(values: &[AtomicU8]) -> Vec<u8> {
-    values.iter().map(|value| value.load(Ordering::Relaxed)).collect()
+fn copy_elements_overlapping(elements: &ArrayElements, src_pos: usize, dest_pos: usize, length: usize) {
+    match elements {
+        ArrayElements::I32(values) => unsafe { &mut *values.get() }.copy_within(src_pos..src_pos + length, dest_pos),
+        ArrayElements::I64(values) => unsafe { &mut *values.get() }.copy_within(src_pos..src_pos + length, dest_pos),
+        ArrayElements::F32(values) => unsafe { &mut *values.get() }.copy_within(src_pos..src_pos + length, dest_pos),
+        ArrayElements::F64(values) => unsafe { &mut *values.get() }.copy_within(src_pos..src_pos + length, dest_pos),
+        ArrayElements::U8(values) => unsafe { &mut *values.get() }.copy_within(src_pos..src_pos + length, dest_pos),
+        ArrayElements::U16(values) => unsafe { &mut *values.get() }.copy_within(src_pos..src_pos + length, dest_pos),
+        ArrayElements::Objects(values) => {
+            let mut values = values.write();
+            let copied = values[src_pos..src_pos + length].to_vec();
+            values.splice(dest_pos..dest_pos + length, copied);
+        }
+    }
 }
 
-fn load_bytes_array<const N: usize>(values: &[AtomicU8]) -> [u8; N] {
-    let mut result = [0; N];
-    for (dest, value) in result.iter_mut().zip(values) {
-        *dest = value.load(Ordering::Relaxed);
-    }
-    result
+fn copy_range<T: Copy>(src: &UnsafeCell<Vec<T>>, dest: &UnsafeCell<Vec<T>>, src_pos: usize, dest_pos: usize, length: usize) {
+    let src = unsafe { &*src.get() };
+    let dest = unsafe { &mut *dest.get() };
+    dest[dest_pos..dest_pos + length].copy_from_slice(&src[src_pos..src_pos + length]);
 }
 
-fn store_bytes(dest: &[AtomicU8], values: &[u8]) {
-    for (dest, value) in dest.iter().zip(values) {
-        dest.store(*value, Ordering::Relaxed);
+fn copy_elements(src: &ArrayElements, dest: &ArrayElements, src_pos: usize, dest_pos: usize, length: usize) {
+    match (src, dest) {
+        (ArrayElements::I32(src), ArrayElements::I32(dest)) => copy_range(src, dest, src_pos, dest_pos, length),
+        (ArrayElements::I64(src), ArrayElements::I64(dest)) => copy_range(src, dest, src_pos, dest_pos, length),
+        (ArrayElements::F32(src), ArrayElements::F32(dest)) => copy_range(src, dest, src_pos, dest_pos, length),
+        (ArrayElements::F64(src), ArrayElements::F64(dest)) => copy_range(src, dest, src_pos, dest_pos, length),
+        (ArrayElements::U8(src), ArrayElements::U8(dest)) => copy_range(src, dest, src_pos, dest_pos, length),
+        (ArrayElements::U16(src), ArrayElements::U16(dest)) => copy_range(src, dest, src_pos, dest_pos, length),
+        (ArrayElements::Objects(src), ArrayElements::Objects(dest)) => {
+            let copied = src.read()[src_pos..src_pos + length].to_vec();
+            dest.write().splice(dest_pos..dest_pos + length, copied);
+        }
+        _ => {}
     }
+}
+
+fn as_bytes<T>(values: &[T]) -> &[u8] {
+    unsafe { core::slice::from_raw_parts(values.as_ptr().cast::<u8>(), mem::size_of_val(values)) }
+}
+
+fn as_bytes_mut<T>(values: &mut [T]) -> &mut [u8] {
+    unsafe { core::slice::from_raw_parts_mut(values.as_mut_ptr().cast::<u8>(), mem::size_of_val(values)) }
 }
 
 impl Hash for ArrayClassInstanceImpl {
@@ -365,26 +389,63 @@ struct ArrayRawBufferImpl {
     inner: Arc<ArrayClassInstanceInner>,
 }
 
+impl ArrayRawBufferImpl {
+    fn primitive_bytes(&self) -> Option<&[u8]> {
+        Some(match &self.inner.elements {
+            ArrayElements::I32(values) => as_bytes(unsafe { &*values.get() }.as_slice()),
+            ArrayElements::I64(values) => as_bytes(unsafe { &*values.get() }.as_slice()),
+            ArrayElements::F32(values) => as_bytes(unsafe { &*values.get() }.as_slice()),
+            ArrayElements::F64(values) => as_bytes(unsafe { &*values.get() }.as_slice()),
+            ArrayElements::U8(values) => unsafe { &*values.get() }.as_slice(),
+            ArrayElements::U16(values) => as_bytes(unsafe { &*values.get() }.as_slice()),
+            ArrayElements::Objects(_) => return None,
+        })
+    }
+
+    fn primitive_bytes_mut(&mut self) -> Option<&mut [u8]> {
+        Some(match &self.inner.elements {
+            ArrayElements::I32(values) => as_bytes_mut(unsafe { &mut *values.get() }.as_mut_slice()),
+            ArrayElements::I64(values) => as_bytes_mut(unsafe { &mut *values.get() }.as_mut_slice()),
+            ArrayElements::F32(values) => as_bytes_mut(unsafe { &mut *values.get() }.as_mut_slice()),
+            ArrayElements::F64(values) => as_bytes_mut(unsafe { &mut *values.get() }.as_mut_slice()),
+            ArrayElements::U8(values) => unsafe { &mut *values.get() }.as_mut_slice(),
+            ArrayElements::U16(values) => as_bytes_mut(unsafe { &mut *values.get() }.as_mut_slice()),
+            ArrayElements::Objects(_) => return None,
+        })
+    }
+
+    fn element_size(&self) -> usize {
+        match &self.inner.elements {
+            ArrayElements::I32(_) | ArrayElements::F32(_) => 4,
+            ArrayElements::I64(_) | ArrayElements::F64(_) => 8,
+            ArrayElements::U8(_) => 1,
+            ArrayElements::U16(_) => 2,
+            ArrayElements::Objects(_) => 0,
+        }
+    }
+}
+
 impl ArrayRawBuffer for ArrayRawBufferImpl {
     fn read(&self, offset: usize, buffer: &mut [u8]) -> Result<()> {
         profile::array_raw_read();
 
-        match &self.inner.elements {
-            ArrayElements::Primitive(x) => {
-                let element_size = ArrayClassInstanceImpl::primitive_element_size(&self.inner.element_type);
-                let byte_offset = offset * element_size;
-                let values_raw = &x[byte_offset..byte_offset + buffer.len()];
-
-                for (dest, value) in buffer.iter_mut().zip(values_raw) {
-                    *dest = value.load(Ordering::Relaxed);
-                }
-            }
-            ArrayElements::NonPrimitive(_) => {
-                panic!("Expected primitive array");
-            }
+        let Some(bytes) = self.primitive_bytes() else {
+            panic!("Expected primitive array");
+        };
+        let byte_offset = offset * self.element_size();
+        let count = buffer.len().min(bytes.len().saturating_sub(byte_offset));
+        if count > 0 {
+            buffer[..count].copy_from_slice(&bytes[byte_offset..byte_offset + count]);
         }
 
         Ok(())
+    }
+
+    fn i32_slice(&self) -> Option<&[i32]> {
+        match &self.inner.elements {
+            ArrayElements::I32(values) => Some(unsafe { &*values.get() }.as_slice()),
+            _ => None,
+        }
     }
 }
 
@@ -392,15 +453,23 @@ impl ArrayRawBufferMut for ArrayRawBufferImpl {
     fn write(&mut self, offset: usize, buffer: &[u8]) -> Result<()> {
         profile::array_raw_write();
 
-        if let ArrayElements::Primitive(x) = &self.inner.elements {
-            let element_size = ArrayClassInstanceImpl::primitive_element_size(&self.inner.element_type);
-            let byte_offset = offset * element_size;
-
-            store_bytes(&x[byte_offset..byte_offset + buffer.len()], buffer);
-        } else {
+        let element_size = self.element_size();
+        let Some(bytes) = self.primitive_bytes_mut() else {
             panic!("Expected primitive array");
+        };
+        let byte_offset = offset * element_size;
+        let count = buffer.len().min(bytes.len().saturating_sub(byte_offset));
+        if count > 0 {
+            bytes[byte_offset..byte_offset + count].copy_from_slice(&buffer[..count]);
         }
 
         Ok(())
+    }
+
+    fn i32_slice_mut(&mut self) -> Option<&mut [i32]> {
+        match &self.inner.elements {
+            ArrayElements::I32(values) => Some(unsafe { &mut *values.get() }.as_mut_slice()),
+            _ => None,
+        }
     }
 }

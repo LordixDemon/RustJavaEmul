@@ -1,0 +1,12 @@
+simple_exception!(
+    MalformedURLException,
+    "java/net/MalformedURLException",
+    "java/io/IOException",
+    "java.net.MalformedURLException"
+);
+simple_exception!(
+    UnknownServiceException,
+    "java/io/UnknownServiceException",
+    "java/io/IOException",
+    "java.io.UnknownServiceException"
+);

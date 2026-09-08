@@ -99,3 +99,36 @@ async fn test_file_input_stream_skip_past_eof() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_file_input_stream_leading_slash() -> Result<()> {
+    let filesystem = [("test.txt".into(), b"hello".to_vec())];
+    let jvm = test_jvm_filesystem(filesystem.into_iter().collect()).await?;
+
+    let file = JavaLangString::from_rust_string(&jvm, "/test.txt").await?;
+    let fis = jvm.new_class("java/io/FileInputStream", "(Ljava/lang/String;)V", (file,)).await?;
+    let read: i32 = jvm.invoke_virtual(&fis, "read", "()I", ()).await?;
+    assert_eq!(read, 104);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_file_name_and_roots() -> Result<()> {
+    let jvm = test_utils::test_jvm().await?;
+    let path = JavaLangString::from_rust_string(&jvm, "/games/foo.jar").await?;
+    let java_file = jvm.new_class("java/io/File", "(Ljava/lang/String;)V", (path,)).await?;
+    let name: jvm::ClassInstanceRef<java_runtime::classes::java::lang::String> =
+        jvm.invoke_virtual(&java_file, "getName", "()Ljava/lang/String;", ()).await?;
+    assert_eq!(JavaLangString::to_rust_string(&jvm, &name).await?, "foo.jar");
+
+    let roots: jvm::ClassInstanceRef<jvm::Array<jvm::ClassInstanceRef<java_runtime::classes::java::io::File>>> =
+        jvm.invoke_static("java/io/File", "listRoots", "()[Ljava/io/File;", ()).await?;
+    assert_eq!(jvm.array_length(&roots).await?, 1);
+
+    let separator: jvm::ClassInstanceRef<java_runtime::classes::java::lang::String> =
+        jvm.get_static_field("java/io/File", "separator", "Ljava/lang/String;").await?;
+    assert_eq!(JavaLangString::to_rust_string(&jvm, &separator).await?, "/");
+
+    Ok(())
+}

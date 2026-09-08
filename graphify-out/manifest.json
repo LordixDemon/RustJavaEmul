@@ -1,0 +1,3086 @@
+{
+  "Cargo.toml": {
+    "mtime": 1788810950.892711,
+    "seen": 1788811522.676529,
+    "ast_hash": "70b716edc55b967bc86af0b67aaa707f",
+    "semantic_hash": ""
+  },
+  "classfile/Cargo.toml": {
+    "mtime": 1788347668.2132277,
+    "seen": 1788528449.444326,
+    "ast_hash": "1d0d45f04dacf4325eb967f462b0dbab",
+    "semantic_hash": ""
+  },
+  "classfile/src/attribute.rs": {
+    "mtime": 1788204711.8088756,
+    "seen": 1788528449.444326,
+    "ast_hash": "0fadbdb82a0bb3d83caf7e2f5354be31",
+    "semantic_hash": ""
+  },
+  "classfile/src/class.rs": {
+    "mtime": 1788347549.710595,
+    "seen": 1788528449.444326,
+    "ast_hash": "2cc09597a6f4b357bf73099a79fe8948",
+    "semantic_hash": ""
+  },
+  "classfile/src/constant_pool.rs": {
+    "mtime": 1788799235.589658,
+    "seen": 1788800120.9860673,
+    "ast_hash": "bd6be45e7dae367ded023dccb26c6898",
+    "semantic_hash": ""
+  },
+  "classfile/src/field.rs": {
+    "mtime": 1788204687.247045,
+    "seen": 1788528449.444326,
+    "ast_hash": "b1ba82b977c9a440186d1c968013dc61",
+    "semantic_hash": ""
+  },
+  "classfile/src/interface.rs": {
+    "mtime": 1788204683.719674,
+    "seen": 1788528449.444326,
+    "ast_hash": "1f93fb314d07700ae149b3ecc96c54f6",
+    "semantic_hash": ""
+  },
+  "classfile/src/lib.rs": {
+    "mtime": 1787665325.989842,
+    "seen": 1788528449.444326,
+    "ast_hash": "b875dfcb99d573d0b59fd8fb2647b523",
+    "semantic_hash": ""
+  },
+  "classfile/src/method.rs": {
+    "mtime": 1788204687.5887625,
+    "seen": 1788528449.444326,
+    "ast_hash": "53fb4dd0fd3fbc042afcae8667f4f15c",
+    "semantic_hash": ""
+  },
+  "classfile/src/opcode.rs": {
+    "mtime": 1788347416.8721383,
+    "seen": 1788528449.444326,
+    "ast_hash": "6ff0a59f25f179f9cad0b79760af5cc0",
+    "semantic_hash": ""
+  },
+  "classfile/tests/test.rs": {
+    "mtime": 1788204782.3141654,
+    "seen": 1788528449.444326,
+    "ast_hash": "5c2db4dafe9cc4e0d09b164311cbe6d1",
+    "semantic_hash": ""
+  },
+  "java_class_proto/Cargo.toml": {
+    "mtime": 1788347668.2132277,
+    "seen": 1788528449.444326,
+    "ast_hash": "c47af74877a5d334b0b30ff97bfa6711",
+    "semantic_hash": ""
+  },
+  "java_class_proto/src/lib.rs": {
+    "mtime": 1781920575.7281804,
+    "seen": 1788528449.444326,
+    "ast_hash": "00aa0c9ecacc0ca0820320f9af2e0019",
+    "semantic_hash": "00aa0c9ecacc0ca0820320f9af2e0019"
+  },
+  "java_class_proto/src/method.rs": {
+    "mtime": 1782126359.1160884,
+    "seen": 1788528449.444326,
+    "ast_hash": "9ec284b74011bac49d479249861a391b",
+    "semantic_hash": "9ec284b74011bac49d479249861a391b"
+  },
+  "java_class_proto/src/proto.rs": {
+    "mtime": 1788799293.4482167,
+    "seen": 1788800120.9860673,
+    "ast_hash": "2469ba785848ceee97b42a7b700fc864",
+    "semantic_hash": ""
+  },
+  "java_constants/Cargo.toml": {
+    "mtime": 1788347668.31101,
+    "seen": 1788528449.444326,
+    "ast_hash": "a412edf5bc20b8e1ec69442b9495e132",
+    "semantic_hash": ""
+  },
+  "java_constants/src/lib.rs": {
+    "mtime": 1781920575.7302272,
+    "seen": 1788528449.444326,
+    "ast_hash": "29a688219dcbe655414d99d2b3d28735",
+    "semantic_hash": "29a688219dcbe655414d99d2b3d28735"
+  },
+  "java_runtime/Cargo.toml": {
+    "mtime": 1788529224.9119897,
+    "seen": 1788530097.9022064,
+    "ast_hash": "7176e09b8e5f73b507b379a9542abc2c",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes.rs": {
+    "mtime": 1788788966.5718658,
+    "seen": 1788789879.6863558,
+    "ast_hash": "fae3f93e80bf8fe9f52737a1dbdb07c8",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com.rs": {
+    "mtime": 1787683686.9523077,
+    "seen": 1788528449.444326,
+    "ast_hash": "837af0d494e283d05ea51df60dd3e592",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule.rs": {
+    "mtime": 1781962470.058739,
+    "seen": 1788528449.444326,
+    "ast_hash": "ddc975010ed8193b7cc37a7973fd17fc",
+    "semantic_hash": "ddc975010ed8193b7cc37a7973fd17fc"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d.rs": {
+    "mtime": 1781962474.4014888,
+    "seen": 1788528449.444326,
+    "ast_hash": "66e26e75e0041abc759a0c9a7e561a69",
+    "semantic_hash": "66e26e75e0041abc759a0c9a7e561a69"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3.rs": {
+    "mtime": 1788371325.3031638,
+    "seen": 1788528449.444326,
+    "ast_hash": "dddd1d69be4e0f4d4d6b4521631e821f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/benchmark.rs": {
+    "mtime": 1782136561.9470522,
+    "seen": 1788528449.444326,
+    "ast_hash": "91f2258c76ca29aba473f1a75ce358bc",
+    "semantic_hash": "91f2258c76ca29aba473f1a75ce358bc"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/binary.rs": {
+    "mtime": 1781992487.3173206,
+    "seen": 1788528449.444326,
+    "ast_hash": "e4356350252064a671244c88fba6cbfc",
+    "semantic_hash": "e4356350252064a671244c88fba6cbfc"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/constants.rs": {
+    "mtime": 1782127676.2246878,
+    "seen": 1788528449.444326,
+    "ast_hash": "fc17bd1e1f49392e55ac1f2873bdf383",
+    "semantic_hash": "fc17bd1e1f49392e55ac1f2873bdf383"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/diagnostics.rs": {
+    "mtime": 1782158721.4860957,
+    "seen": 1788528449.444326,
+    "ast_hash": "f8743a2d59b6a3ac6b83d3d4e1446576",
+    "semantic_hash": "f8743a2d59b6a3ac6b83d3d4e1446576"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/effect.rs": {
+    "mtime": 1782127736.308029,
+    "seen": 1788528449.444326,
+    "ast_hash": "afead8914260f327ed2620774a39dce3",
+    "semantic_hash": "afead8914260f327ed2620774a39dce3"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/figure.rs": {
+    "mtime": 1782136582.633943,
+    "seen": 1788528449.444326,
+    "ast_hash": "22f06899c7882b6b8a2a70bbd71b7058",
+    "semantic_hash": "22f06899c7882b6b8a2a70bbd71b7058"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/gpu_scene.rs": {
+    "mtime": 1788894653.7745817,
+    "seen": 1788894796.3852735,
+    "ast_hash": "97f78c2acc02a5449d509053fb5a9da8",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/layout.rs": {
+    "mtime": 1782127685.9513516,
+    "seen": 1788528449.444326,
+    "ast_hash": "92ce50af6ea9cc1dbda7f3a35e39ad51",
+    "semantic_hash": "92ce50af6ea9cc1dbda7f3a35e39ad51"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/math.rs": {
+    "mtime": 1782125879.5404274,
+    "seen": 1788528449.444326,
+    "ast_hash": "5b49e5488473db18d912d92ea2b628c2",
+    "semantic_hash": "5b49e5488473db18d912d92ea2b628c2"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/mbac.rs": {
+    "mtime": 1788877305.9515328,
+    "seen": 1788894614.8340974,
+    "ast_hash": "7ebc116d20283431c16afc67dcc7dcaa",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/mtra.rs": {
+    "mtime": 1782131598.6579988,
+    "seen": 1788528449.444326,
+    "ast_hash": "7cad29f4aeb965fcf82c8a2abce08d2f",
+    "semantic_hash": "7cad29f4aeb965fcf82c8a2abce08d2f"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/queue.rs": {
+    "mtime": 1781996406.9583764,
+    "seen": 1788528449.444326,
+    "ast_hash": "a137ddf0baa2637ff07f7ee8a823f129",
+    "semantic_hash": "a137ddf0baa2637ff07f7ee8a823f129"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/raster.rs": {
+    "mtime": 1788539455.3981285,
+    "seen": 1788539610.1515687,
+    "ast_hash": "24c467aa4f0965c3dd9017f18bc947ae",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/scene.rs": {
+    "mtime": 1788539459.6711233,
+    "seen": 1788539610.1515687,
+    "ast_hash": "ba044782c72a67e7de98207443ef8caa",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/storage.rs": {
+    "mtime": 1782137144.4055285,
+    "seen": 1788528449.444326,
+    "ast_hash": "40a56cf93907f14ddd59bc37f9e792db",
+    "semantic_hash": "40a56cf93907f14ddd59bc37f9e792db"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/texture.rs": {
+    "mtime": 1782136134.3276467,
+    "seen": 1788528449.444326,
+    "ast_hash": "65c37a6f96310139943495e421c91742",
+    "semantic_hash": "65c37a6f96310139943495e421c91742"
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/util.rs": {
+    "mtime": 1782125892.8245776,
+    "seen": 1788528449.444326,
+    "ast_hash": "23aa297fd8e703366575619b842a4539",
+    "semantic_hash": "23aa297fd8e703366575619b842a4539"
+  },
+  "java_runtime/src/classes/com/nokia.rs": {
+    "mtime": 1787683400.157635,
+    "seen": 1788528449.444326,
+    "ast_hash": "a3ee1b64ca20366e1412822e46520ed5",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/nokia/mid.rs": {
+    "mtime": 1787683407.5740874,
+    "seen": 1788528449.444326,
+    "ast_hash": "e5f5e5c2155664b4cd1e7824ffeb3f4a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java.rs": {
+    "mtime": 1787683327.5892272,
+    "seen": 1788528449.444326,
+    "ast_hash": "4fbdf3b63ae71ba2b1aa670a0e74f3f4",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io.rs": {
+    "mtime": 1788347417.0781431,
+    "seen": 1788528449.444326,
+    "ast_hash": "b27162cebe6a5a96480e1d49ee441a52",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/buffered_reader.rs": {
+    "mtime": 1781920575.7322388,
+    "seen": 1788528449.444326,
+    "ast_hash": "d3ab0f4f56d1797d456decbb9103a46f",
+    "semantic_hash": "d3ab0f4f56d1797d456decbb9103a46f"
+  },
+  "java_runtime/src/classes/java/io/byte_array_input_stream.rs": {
+    "mtime": 1788214844.3764305,
+    "seen": 1788528449.444326,
+    "ast_hash": "913153beacdc2487af5102c0dbf5bf5f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/byte_array_output_stream.rs": {
+    "mtime": 1788528295.5506065,
+    "seen": 1788528449.444326,
+    "ast_hash": "1fdaf2d23a9f94a804b5a3566c84df77",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/data_input.rs": {
+    "mtime": 1781963035.8809547,
+    "seen": 1788528449.444326,
+    "ast_hash": "49803b7aa47794283ffb46a48db56618",
+    "semantic_hash": "49803b7aa47794283ffb46a48db56618"
+  },
+  "java_runtime/src/classes/java/io/data_input_stream.rs": {
+    "mtime": 1788779977.3214178,
+    "seen": 1788782479.896702,
+    "ast_hash": "a280c0eaa3cee727f9183d320800d70c",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/data_output.rs": {
+    "mtime": 1787664058.7465658,
+    "seen": 1788528449.444326,
+    "ast_hash": "f5c1d92768c03fa4b1b524887b1632ad",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/data_output_stream.rs": {
+    "mtime": 1787664074.328122,
+    "seen": 1788528449.444326,
+    "ast_hash": "7340ac4d428c1acbe043aab45bd025c9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/file.rs": {
+    "mtime": 1788347417.0667186,
+    "seen": 1788528449.444326,
+    "ast_hash": "2a354de2b801697d33f2a6d0698ae8af",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/file_descriptor.rs": {
+    "mtime": 1788214714.5721934,
+    "seen": 1788528449.444326,
+    "ast_hash": "21b5e9c0daf6ab1634d923ed2fe31951",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/file_input_stream.rs": {
+    "mtime": 1788778068.5975757,
+    "seen": 1788778741.4437716,
+    "ast_hash": "6c6e562d10589324428d626e381653bd",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/file_output_stream.rs": {
+    "mtime": 1788347417.0692823,
+    "seen": 1788528449.444326,
+    "ast_hash": "f573c40afe5e733fd0913771df4da968",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/filter_input_stream.rs": {
+    "mtime": 1788779905.24384,
+    "seen": 1788782479.896702,
+    "ast_hash": "2c57d0c0749a684819f656474b6e2ebe",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/filter_output_stream.rs": {
+    "mtime": 1781920575.7367475,
+    "seen": 1788528449.444326,
+    "ast_hash": "4156d4209664fcc30c51685406cff6a3",
+    "semantic_hash": "4156d4209664fcc30c51685406cff6a3"
+  },
+  "java_runtime/src/classes/java/io/input_stream.rs": {
+    "mtime": 1788214574.6993687,
+    "seen": 1788528449.444326,
+    "ast_hash": "4f42811ac187e543439549dc5ab12f7d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/input_stream_reader.rs": {
+    "mtime": 1788175424.0589125,
+    "seen": 1788528449.444326,
+    "ast_hash": "d27eb73cae0d5d7deef144222cea568d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/output_stream.rs": {
+    "mtime": 1788221016.7773857,
+    "seen": 1788528449.444326,
+    "ast_hash": "d47b9a9cfd0f58d6ba94af6c98db1994",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/print_stream.rs": {
+    "mtime": 1788347417.0741327,
+    "seen": 1788528449.444326,
+    "ast_hash": "a81e3ecb76106480e62cebdca90e33b9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/print_writer.rs": {
+    "mtime": 1788347417.075137,
+    "seen": 1788528449.444326,
+    "ast_hash": "d2b8e22d85ce75c52b8e7761173cb7af",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/random_access_file.rs": {
+    "mtime": 1788214791.523396,
+    "seen": 1788528449.444326,
+    "ast_hash": "6e91ea4e61e9b9e22df8ff2a89f7b39f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/reader.rs": {
+    "mtime": 1788214791.2407696,
+    "seen": 1788528449.444326,
+    "ast_hash": "ae49d6cb67e0807d9b053d76d7f86c74",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/serializable.rs": {
+    "mtime": 1781920575.7397687,
+    "seen": 1788528449.444326,
+    "ast_hash": "db622722a335020f53b25a9d2ad3df08",
+    "semantic_hash": "db622722a335020f53b25a9d2ad3df08"
+  },
+  "java_runtime/src/classes/java/io/string_writer.rs": {
+    "mtime": 1781920575.7402864,
+    "seen": 1788528449.444326,
+    "ast_hash": "cfdf4465d70bd8507dc60a65b90002b6",
+    "semantic_hash": "cfdf4465d70bd8507dc60a65b90002b6"
+  },
+  "java_runtime/src/classes/java/io/writer.rs": {
+    "mtime": 1788221447.738799,
+    "seen": 1788528449.444326,
+    "ast_hash": "48cacbf2d8d180ffd0a12010c60ec31c",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang.rs": {
+    "mtime": 1788175482.7293618,
+    "seen": 1788528449.444326,
+    "ast_hash": "4084e8781c806c97c43394dbe1e03e49",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/array_index_out_of_bounds_exception.rs": {
+    "mtime": 1787683250.2467923,
+    "seen": 1788528449.444326,
+    "ast_hash": "cf452997a3bb8d2ec8e2b9db36b5870f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/class.rs": {
+    "mtime": 1787665573.2886636,
+    "seen": 1788528449.444326,
+    "ast_hash": "c99e6675e3d028aede6a4b96dc01f22e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/class_loader.rs": {
+    "mtime": 1782051238.540991,
+    "seen": 1788528449.444326,
+    "ast_hash": "3cfaad1d224d3485fa0c1486e7601b18",
+    "semantic_hash": "3cfaad1d224d3485fa0c1486e7601b18"
+  },
+  "java_runtime/src/classes/java/lang/cloneable.rs": {
+    "mtime": 1781920575.743291,
+    "seen": 1788528449.444326,
+    "ast_hash": "02e6f65ea6099ff883b9e8f8ee969785",
+    "semantic_hash": "02e6f65ea6099ff883b9e8f8ee969785"
+  },
+  "java_runtime/src/classes/java/lang/comparable.rs": {
+    "mtime": 1781920575.743291,
+    "seen": 1788528449.444326,
+    "ast_hash": "96988240d9d693046a12681a161a153e",
+    "semantic_hash": "96988240d9d693046a12681a161a153e"
+  },
+  "java_runtime/src/classes/java/lang/exception.rs": {
+    "mtime": 1781920575.743291,
+    "seen": 1788528449.444326,
+    "ast_hash": "bd428bb0ab347550bcd2aaac32243872",
+    "semantic_hash": "bd428bb0ab347550bcd2aaac32243872"
+  },
+  "java_runtime/src/classes/java/lang/exception_in_initializer_error.rs": {
+    "mtime": 1781920575.744291,
+    "seen": 1788528449.444326,
+    "ast_hash": "f40ebbb3a67ba37150dd66bf63db94ae",
+    "semantic_hash": "f40ebbb3a67ba37150dd66bf63db94ae"
+  },
+  "java_runtime/src/classes/java/lang/float.rs": {
+    "mtime": 1788347417.0861628,
+    "seen": 1788528449.444326,
+    "ast_hash": "8bdebedfd31d1b8a13d83f64b06c0d5b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/integer.rs": {
+    "mtime": 1788347417.08867,
+    "seen": 1788528449.444326,
+    "ast_hash": "b79958a06260ae649c39a8a303d717c8",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/math.rs": {
+    "mtime": 1788295258.6745718,
+    "seen": 1788528449.444326,
+    "ast_hash": "2fa43575e3c9c0d8737be0003a489f7f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/object.rs": {
+    "mtime": 1787665575.1393902,
+    "seen": 1788528449.444326,
+    "ast_hash": "8f8f4cd6f455ab1f2de1dd3e94f96753",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/runnable.rs": {
+    "mtime": 1781920575.7499425,
+    "seen": 1788528449.444326,
+    "ast_hash": "7d6c5a5aea45c9bec98ecde75bf5319d",
+    "semantic_hash": "7d6c5a5aea45c9bec98ecde75bf5319d"
+  },
+  "java_runtime/src/classes/java/lang/runtime.rs": {
+    "mtime": 1788776431.5140796,
+    "seen": 1788777030.9601405,
+    "ast_hash": "7de84e0b14a2333029e2c134706fc289",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/runtime_exception.rs": {
+    "mtime": 1781920575.750948,
+    "seen": 1788528449.444326,
+    "ast_hash": "4a598def59694256b9aca36e7ff60ca7",
+    "semantic_hash": "4a598def59694256b9aca36e7ff60ca7"
+  },
+  "java_runtime/src/classes/java/lang/string_buffer.rs": {
+    "mtime": 1788788531.2501433,
+    "seen": 1788789879.6863558,
+    "ast_hash": "e868900fd204325a940ef90fcb48cfdd",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/system.rs": {
+    "mtime": 1788776451.856614,
+    "seen": 1788777030.9601405,
+    "ast_hash": "4b4efb665e096e379231bb8a5ef94c12",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/thread.rs": {
+    "mtime": 1788525862.4229398,
+    "seen": 1788528449.444326,
+    "ast_hash": "958f82b6af85e4e38dd6a84ee51d6cd4",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/throwable.rs": {
+    "mtime": 1787667651.0320468,
+    "seen": 1788528449.444326,
+    "ast_hash": "437b7b0de225ce75b5d3491e3b41c792",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/net.rs": {
+    "mtime": 1788347417.1118577,
+    "seen": 1788528449.444326,
+    "ast_hash": "d2597a760723d1a2e88b96b8b33fe305",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/net/jar_url_connection.rs": {
+    "mtime": 1782084975.439488,
+    "seen": 1788528449.444326,
+    "ast_hash": "ad04eba3e057df314c7535bf241c9940",
+    "semantic_hash": "ad04eba3e057df314c7535bf241c9940"
+  },
+  "java_runtime/src/classes/java/net/url.rs": {
+    "mtime": 1781920575.7549603,
+    "seen": 1788528449.444326,
+    "ast_hash": "ea01babd8176bed7bbcc7f7f99c91805",
+    "semantic_hash": "ea01babd8176bed7bbcc7f7f99c91805"
+  },
+  "java_runtime/src/classes/java/net/url_class_loader.rs": {
+    "mtime": 1788855202.8636742,
+    "seen": 1788856307.610377,
+    "ast_hash": "9ce03dbe3c46453aced16e51f49a3e84",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/net/url_connection.rs": {
+    "mtime": 1788347417.110857,
+    "seen": 1788528449.444326,
+    "ast_hash": "0b548c6ebb3883477f71a0fe59c644e6",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/net/url_stream_handler.rs": {
+    "mtime": 1788778060.936386,
+    "seen": 1788778741.4437716,
+    "ast_hash": "985e89b06c2faa423b69df48e4d07bd0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util.rs": {
+    "mtime": 1788347417.1314013,
+    "seen": 1788528449.444326,
+    "ast_hash": "4cbb48ccf5d135bffdcf019e4273d3e7",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/abstract_collection.rs": {
+    "mtime": 1781920575.7574675,
+    "seen": 1788528449.444326,
+    "ast_hash": "f4b219745c1995001334023094e9984e",
+    "semantic_hash": "f4b219745c1995001334023094e9984e"
+  },
+  "java_runtime/src/classes/java/util/abstract_list.rs": {
+    "mtime": 1781920575.7574675,
+    "seen": 1788528449.444326,
+    "ast_hash": "1262bd1dfd5ab4a7b3cfe5b5e3b49e87",
+    "semantic_hash": "1262bd1dfd5ab4a7b3cfe5b5e3b49e87"
+  },
+  "java_runtime/src/classes/java/util/calendar.rs": {
+    "mtime": 1788347417.1148577,
+    "seen": 1788528449.444326,
+    "ast_hash": "1e75b111b222481b6e2ab9ecc037a5e9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/date.rs": {
+    "mtime": 1787667254.1791842,
+    "seen": 1788528449.444326,
+    "ast_hash": "08de1eb41cec1f17714fee622b9b41bf",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/dictionary.rs": {
+    "mtime": 1788347417.1158578,
+    "seen": 1788528449.444326,
+    "ast_hash": "242a62e63e241c2a0878ddaf5536abec",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/enumeration.rs": {
+    "mtime": 1781920575.758471,
+    "seen": 1788528449.444326,
+    "ast_hash": "ddb2baa8dda7efd4b0c737b0f560eb24",
+    "semantic_hash": "ddb2baa8dda7efd4b0c737b0f560eb24"
+  },
+  "java_runtime/src/classes/java/util/gregorian_calendar.rs": {
+    "mtime": 1788347417.118361,
+    "seen": 1788528449.444326,
+    "ast_hash": "3e40b110e4fee5f5ad993a5f8bd98752",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/hashtable.rs": {
+    "mtime": 1788780345.0340765,
+    "seen": 1788782479.896702,
+    "ast_hash": "5577dfb072e88c6c56d6325240c26980",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/hashtable_entry.rs": {
+    "mtime": 1781920575.759974,
+    "seen": 1788528449.444326,
+    "ast_hash": "fd40a48955450132d449e04dd594af52",
+    "semantic_hash": "fd40a48955450132d449e04dd594af52"
+  },
+  "java_runtime/src/classes/java/util/jar.rs": {
+    "mtime": 1787683321.3130646,
+    "seen": 1788528449.444326,
+    "ast_hash": "5f7c1a78643c70f1ad7725731aecf0f2",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/jar/attributes.rs": {
+    "mtime": 1781920575.760485,
+    "seen": 1788528449.444326,
+    "ast_hash": "24d877703bf380becac60f3326e8c9bc",
+    "semantic_hash": "24d877703bf380becac60f3326e8c9bc"
+  },
+  "java_runtime/src/classes/java/util/jar/jar_entry.rs": {
+    "mtime": 1781920575.760485,
+    "seen": 1788528449.444326,
+    "ast_hash": "43e4c80ec17f26da74d8736d593eee38",
+    "semantic_hash": "43e4c80ec17f26da74d8736d593eee38"
+  },
+  "java_runtime/src/classes/java/util/jar/jar_file.rs": {
+    "mtime": 1788214652.112617,
+    "seen": 1788528449.444326,
+    "ast_hash": "35622d7d8b799cb1f692f6de08a80816",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/jar/jar_file_entries.rs": {
+    "mtime": 1781920575.7614882,
+    "seen": 1788528449.444326,
+    "ast_hash": "beb6321170184df20da3241675cbcfca",
+    "semantic_hash": "beb6321170184df20da3241675cbcfca"
+  },
+  "java_runtime/src/classes/java/util/jar/manifest.rs": {
+    "mtime": 1788214714.5067575,
+    "seen": 1788528449.444326,
+    "ast_hash": "ed05c20866a269759fb90c8c25d51701",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/properties.rs": {
+    "mtime": 1788295439.946958,
+    "seen": 1788528449.444326,
+    "ast_hash": "3cd4fb365bed580559e72b20492a85fd",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/random.rs": {
+    "mtime": 1788295428.3149257,
+    "seen": 1788528449.444326,
+    "ast_hash": "da27f17bc66bc699296d636fda83e885",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/simple_time_zone.rs": {
+    "mtime": 1781920575.762491,
+    "seen": 1788528449.444326,
+    "ast_hash": "77b491ee08792f3e1d1f750592df8ce5",
+    "semantic_hash": "77b491ee08792f3e1d1f750592df8ce5"
+  },
+  "java_runtime/src/classes/java/util/stack.rs": {
+    "mtime": 1781920575.763492,
+    "seen": 1788528449.444326,
+    "ast_hash": "0b65e01180c376d9cefd4cd01e1c0090",
+    "semantic_hash": "0b65e01180c376d9cefd4cd01e1c0090"
+  },
+  "java_runtime/src/classes/java/util/time_zone.rs": {
+    "mtime": 1788205746.7987638,
+    "seen": 1788528449.444326,
+    "ast_hash": "f1be448371a26fde832692303cd0d98e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/timer.rs": {
+    "mtime": 1788175444.9706197,
+    "seen": 1788528449.444326,
+    "ast_hash": "2412b11d26fa0f174e3575b692fc7e21",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/timer_task.rs": {
+    "mtime": 1787667211.596233,
+    "seen": 1788528449.444326,
+    "ast_hash": "0234920c8b51ecbab7770d0711390729",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/timer_thread.rs": {
+    "mtime": 1781920575.764491,
+    "seen": 1788528449.444326,
+    "ast_hash": "11a434befae46c8a3179943d7f124cfa",
+    "semantic_hash": "11a434befae46c8a3179943d7f124cfa"
+  },
+  "java_runtime/src/classes/java/util/vector.rs": {
+    "mtime": 1788347417.127385,
+    "seen": 1788528449.444326,
+    "ast_hash": "23111d3a62190090c3693d26bcafa642",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/zip.rs": {
+    "mtime": 1788214678.5818,
+    "seen": 1788528449.444326,
+    "ast_hash": "7b622c92e21038fe5f707be489922933",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/zip/zip_entry.rs": {
+    "mtime": 1781920575.7654936,
+    "seen": 1788528449.444326,
+    "ast_hash": "a796debb8f0d0b8c59b33dbc4b2a0282",
+    "semantic_hash": "a796debb8f0d0b8c59b33dbc4b2a0282"
+  },
+  "java_runtime/src/classes/java/util/zip/zip_file.rs": {
+    "mtime": 1788788037.3083625,
+    "seen": 1788789879.6863558,
+    "ast_hash": "544aaba46910537129987c877089ee40",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/zip/zip_file_entries.rs": {
+    "mtime": 1781920575.7664928,
+    "seen": 1788528449.444326,
+    "ast_hash": "87e445a058ec1b8bfc6805205655fd4d",
+    "semantic_hash": "87e445a058ec1b8bfc6805205655fd4d"
+  },
+  "java_runtime/src/classes/javax.rs": {
+    "mtime": 1788256802.8057022,
+    "seen": 1788528449.444326,
+    "ast_hash": "b4479a59553fb9fe8d42691902f22f6b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition.rs": {
+    "mtime": 1788799235.948457,
+    "seen": 1788800120.987067,
+    "ast_hash": "d9df35515ebeeefdb0648daa1b6b0bdd",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui.rs": {
+    "mtime": 1788810915.5161269,
+    "seen": 1788811522.676529,
+    "ast_hash": "7903e2dc190874e3f35bd98c144f7222",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/alert.rs": {
+    "mtime": 1788347417.1559727,
+    "seen": 1788528449.444326,
+    "ast_hash": "fedf4d61f7ea3a832505fecf9427dc56",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/canvas.rs": {
+    "mtime": 1788804188.838311,
+    "seen": 1788805171.9005044,
+    "ast_hash": "b395445d68f13b57a0a740f4e7b618df",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/command.rs": {
+    "mtime": 1782042007.0009322,
+    "seen": 1788528449.444326,
+    "ast_hash": "f2b6e93bbb633ded2c2015ee73063305",
+    "semantic_hash": "f2b6e93bbb633ded2c2015ee73063305"
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/command_listener.rs": {
+    "mtime": 1781921146.213869,
+    "seen": 1788528449.444326,
+    "ast_hash": "e5e768c4cc4a640122d61310219e1222",
+    "semantic_hash": "e5e768c4cc4a640122d61310219e1222"
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/display.rs": {
+    "mtime": 1788787459.2730808,
+    "seen": 1788787764.2961385,
+    "ast_hash": "482de160301e0f3d94b48deed8733566",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/displayable.rs": {
+    "mtime": 1788786058.80977,
+    "seen": 1788786226.948342,
+    "ast_hash": "489ee26df409add92cb009d36b850326",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/font.rs": {
+    "mtime": 1788788557.861816,
+    "seen": 1788789879.6863558,
+    "ast_hash": "e88922d6dc8f284fc8e45b8985c239be",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/form.rs": {
+    "mtime": 1788175507.9770093,
+    "seen": 1788528449.444326,
+    "ast_hash": "7f99f1a8b11e948a6f2657d88e0d6afe",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/image.rs": {
+    "mtime": 1788818966.9442797,
+    "seen": 1788819497.9797723,
+    "ast_hash": "6e9bfeb4981d8b6b9cf26a4bdbce0854",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/image_item.rs": {
+    "mtime": 1782045238.0732303,
+    "seen": 1788528449.444326,
+    "ast_hash": "16a04b3899d95122427c95b618f94714",
+    "semantic_hash": "16a04b3899d95122427c95b618f94714"
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/item.rs": {
+    "mtime": 1788175563.0995264,
+    "seen": 1788528449.444326,
+    "ast_hash": "250ca684eb7150fbabdb4c76dd2b7727",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/item_command_listener.rs": {
+    "mtime": 1782045238.0752292,
+    "seen": 1788528449.444326,
+    "ast_hash": "4476f63da8dfa67862a511713a98e103",
+    "semantic_hash": "4476f63da8dfa67862a511713a98e103"
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/item_state_listener.rs": {
+    "mtime": 1782044991.093618,
+    "seen": 1788528449.444326,
+    "ast_hash": "868dd5ccb7990ded9eccc21db055615b",
+    "semantic_hash": "868dd5ccb7990ded9eccc21db055615b"
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/list.rs": {
+    "mtime": 1788347417.1861594,
+    "seen": 1788528449.444326,
+    "ast_hash": "caee06b5f302eb1b7e46b58ae799441a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/string_item.rs": {
+    "mtime": 1788175790.5013525,
+    "seen": 1788528449.444326,
+    "ast_hash": "0e2c1705c2c1f8df3c61a27df62d2428",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/text_box.rs": {
+    "mtime": 1788205745.7449646,
+    "seen": 1788528449.444326,
+    "ast_hash": "a8e81bdd48954f12606c6c8bf4c32e8d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/text_field.rs": {
+    "mtime": 1782045238.0787413,
+    "seen": 1788528449.444326,
+    "ast_hash": "f405e8b383c4a37ca2873820e585554a",
+    "semantic_hash": "f405e8b383c4a37ca2873820e585554a"
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/math.rs": {
+    "mtime": 1788522210.9061337,
+    "seen": 1788528449.444326,
+    "ast_hash": "8c5049a84521e0c67a0325ab1e3dcb4b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/raw_arrays.rs": {
+    "mtime": 1788221012.7307458,
+    "seen": 1788528449.444326,
+    "ast_hash": "a472887b2a7d5dcf09d2673f13135d6f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/media.rs": {
+    "mtime": 1788788197.6887093,
+    "seen": 1788789879.6863558,
+    "ast_hash": "eda09078e552dafbfce56d9bd4b61ea7",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/media/control.rs": {
+    "mtime": 1788789639.3688798,
+    "seen": 1788789879.6863558,
+    "ast_hash": "2bc0c90114ee3ecbf9018eace5fd9319",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/media/controllable.rs": {
+    "mtime": 1787666024.4072998,
+    "seen": 1788528449.444326,
+    "ast_hash": "78d33c8c485025f04042e519fe0647e9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/media/manager.rs": {
+    "mtime": 1788347417.2944298,
+    "seen": 1788528449.444326,
+    "ast_hash": "e630f10e50ef950d3b6caddbda493619",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/media/player.rs": {
+    "mtime": 1788789329.1899002,
+    "seen": 1788789879.6863558,
+    "ast_hash": "22d09e7c7850689f95cd69d8e729bb78",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/media/player_listener.rs": {
+    "mtime": 1788347417.2974348,
+    "seen": 1788528449.444326,
+    "ast_hash": "0f085a1b20173e15e827dd436cdfde53",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/midlet.rs": {
+    "mtime": 1788221293.3880303,
+    "seen": 1788528449.444326,
+    "ast_hash": "85fb6b59d473d2b150031d63aa666f6f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org.rs": {
+    "mtime": 1788788936.3050077,
+    "seen": 1788789879.6863558,
+    "ast_hash": "d54aad2d0da540caec9e079f028f0986",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org/rustjava.rs": {
+    "mtime": 1787683762.484329,
+    "seen": 1788528449.444326,
+    "ast_hash": "5dd52fd49d091fb9b813c44991730c3a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org/rustjava/net.rs": {
+    "mtime": 1787683665.4268599,
+    "seen": 1788528449.444326,
+    "ast_hash": "246b8b2da8e6d6aaacd840bc68a19dd5",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org/rustjava/net/file_url_connection.rs": {
+    "mtime": 1781920575.768999,
+    "seen": 1788528449.444326,
+    "ast_hash": "7d3822911afc807fc5703b108fb8d7b6",
+    "semantic_hash": "7d3822911afc807fc5703b108fb8d7b6"
+  },
+  "java_runtime/src/classes/org/rustjava/net/file_url_handler.rs": {
+    "mtime": 1781920575.768999,
+    "seen": 1788528449.444326,
+    "ast_hash": "303accfe829830184ecd4b5ef5e468a4",
+    "semantic_hash": "303accfe829830184ecd4b5ef5e468a4"
+  },
+  "java_runtime/src/classes/org/rustjava/net/jar_url_connection.rs": {
+    "mtime": 1788778045.4966555,
+    "seen": 1788778741.4437716,
+    "ast_hash": "8f4dccf3542479df951bc10091121a98",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org/rustjava/net/jar_url_handler.rs": {
+    "mtime": 1781920575.770006,
+    "seen": 1788528449.444326,
+    "ast_hash": "a88fec49b5a625095bd3feff50363dff",
+    "semantic_hash": "a88fec49b5a625095bd3feff50363dff"
+  },
+  "java_runtime/src/lib.rs": {
+    "mtime": 1788804188.838311,
+    "seen": 1788805171.9015045,
+    "ast_hash": "558799b6de2d6e733e499fb7074073b5",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/loader.rs": {
+    "mtime": 1788788974.822081,
+    "seen": 1788789879.6863558,
+    "ast_hash": "d1d61c373b764f5cae6c2a2baf802128",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/profile.rs": {
+    "mtime": 1788893915.0676115,
+    "seen": 1788894614.8340974,
+    "ast_hash": "08ea2eddc61f93b9ed5be1e6d3b038fd",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/runtime.rs": {
+    "mtime": 1788804188.8408186,
+    "seen": 1788805171.9015045,
+    "ast_hash": "f33d09c1d6ae0e80677ae9026f20a2ac",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/runtime/io.rs": {
+    "mtime": 1781920575.7710834,
+    "seen": 1788528449.444326,
+    "ast_hash": "7a30b01b9ea436f9f75bd50e45d83ddb",
+    "semantic_hash": "7a30b01b9ea436f9f75bd50e45d83ddb"
+  },
+  "java_runtime/tests/classes/java/io/mod.rs": {
+    "mtime": 1781920575.7735968,
+    "seen": 1788528449.444326,
+    "ast_hash": "21a1c28a5be2b7d75342413aac60f61d",
+    "semantic_hash": "21a1c28a5be2b7d75342413aac60f61d"
+  },
+  "java_runtime/tests/classes/java/io/test_buffered_reader.rs": {
+    "mtime": 1781920575.7735968,
+    "seen": 1788528449.444326,
+    "ast_hash": "fa0bfe00e6e894e48c40785c68233b9a",
+    "semantic_hash": "fa0bfe00e6e894e48c40785c68233b9a"
+  },
+  "java_runtime/tests/classes/java/io/test_byte_array_input_stream.rs": {
+    "mtime": 1788347417.4069717,
+    "seen": 1788528449.444326,
+    "ast_hash": "dbeb1d4aea5e7a4a96df1526bedd45b1",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/io/test_byte_array_output_stream.rs": {
+    "mtime": 1781920575.7745953,
+    "seen": 1788528449.444326,
+    "ast_hash": "3bb633744184ef1e7297c97351f2335d",
+    "semantic_hash": "3bb633744184ef1e7297c97351f2335d"
+  },
+  "java_runtime/tests/classes/java/io/test_data_input_stream.rs": {
+    "mtime": 1781920575.7755928,
+    "seen": 1788528449.444326,
+    "ast_hash": "4180e4f3cc6247c093e6a4ff2333b9dc",
+    "semantic_hash": "4180e4f3cc6247c093e6a4ff2333b9dc"
+  },
+  "java_runtime/tests/classes/java/io/test_data_output_stream.rs": {
+    "mtime": 1781920575.7755928,
+    "seen": 1788528449.444326,
+    "ast_hash": "8b979e6353f10d29e84627c3cef252cd",
+    "semantic_hash": "8b979e6353f10d29e84627c3cef252cd"
+  },
+  "java_runtime/tests/classes/java/io/test_file_input_stream.rs": {
+    "mtime": 1788347417.4094808,
+    "seen": 1788528449.444326,
+    "ast_hash": "48fff4f0be794086860686eedd24a417",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/io/test_input_stream_reader.rs": {
+    "mtime": 1781920575.776595,
+    "seen": 1788528449.444326,
+    "ast_hash": "df7c217a6eab268e31768a9a03a9b152",
+    "semantic_hash": "df7c217a6eab268e31768a9a03a9b152"
+  },
+  "java_runtime/tests/classes/java/io/test_print_writer.rs": {
+    "mtime": 1788347417.4094808,
+    "seen": 1788528449.444326,
+    "ast_hash": "d0aeded497208aba90d76c2a8f8903c4",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/io/test_random_access_file.rs": {
+    "mtime": 1781920575.7775946,
+    "seen": 1788528449.444326,
+    "ast_hash": "42557f8e2f9d9b09d461a2f140abfe64",
+    "semantic_hash": "42557f8e2f9d9b09d461a2f140abfe64"
+  },
+  "java_runtime/tests/classes/java/io/test_string_writer.rs": {
+    "mtime": 1781920575.7775946,
+    "seen": 1788528449.444326,
+    "ast_hash": "c915f0f6977bedb7e9a9d40a2137e172",
+    "semantic_hash": "c915f0f6977bedb7e9a9d40a2137e172"
+  },
+  "java_runtime/tests/classes/java/lang/mod.rs": {
+    "mtime": 1781920575.7786436,
+    "seen": 1788528449.444326,
+    "ast_hash": "b4f1b0f0aa1d99d2a80a9f5a8f4a1bec",
+    "semantic_hash": "b4f1b0f0aa1d99d2a80a9f5a8f4a1bec"
+  },
+  "java_runtime/tests/classes/java/lang/test_class.rs": {
+    "mtime": 1788260033.601872,
+    "seen": 1788528449.444326,
+    "ast_hash": "ceb8cdb925aa305ddfc55a9f8678a8e5",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/lang/test_integer.rs": {
+    "mtime": 1788347749.1137304,
+    "seen": 1788528449.444326,
+    "ast_hash": "4f60cd38396f6934f5d66b9961f161a9",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/lang/test_math.rs": {
+    "mtime": 1788295564.3668785,
+    "seen": 1788528449.444326,
+    "ast_hash": "67eef8545e2226f86d7043f6a1c98dfb",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/lang/test_object.rs": {
+    "mtime": 1788267572.9079058,
+    "seen": 1788528449.444326,
+    "ast_hash": "10c2e794c1d8cf9ac41cc46a218525e1",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/lang/test_string.rs": {
+    "mtime": 1788347750.2417634,
+    "seen": 1788528449.444326,
+    "ast_hash": "1de5db5bd5d1c073c57c51ef46360010",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/lang/test_string_buffer.rs": {
+    "mtime": 1781958691.8207603,
+    "seen": 1788528449.444326,
+    "ast_hash": "6b2d519b8f75850326ff75f54a3e6b56",
+    "semantic_hash": "6b2d519b8f75850326ff75f54a3e6b56"
+  },
+  "java_runtime/tests/classes/java/lang/test_thread.rs": {
+    "mtime": 1781920575.7816567,
+    "seen": 1788528449.444326,
+    "ast_hash": "91b0ade8efbdf771a18eec41e58cea1f",
+    "semantic_hash": "91b0ade8efbdf771a18eec41e58cea1f"
+  },
+  "java_runtime/tests/classes/java/lang/test_throwable.rs": {
+    "mtime": 1781920575.7821627,
+    "seen": 1788528449.444326,
+    "ast_hash": "3cfec8fe07e4112800e164a6ab3e005a",
+    "semantic_hash": "3cfec8fe07e4112800e164a6ab3e005a"
+  },
+  "java_runtime/tests/classes/java/mod.rs": {
+    "mtime": 1781920575.7821627,
+    "seen": 1788528449.444326,
+    "ast_hash": "186841cbadccf8f843328394b12b6b80",
+    "semantic_hash": "186841cbadccf8f843328394b12b6b80"
+  },
+  "java_runtime/tests/classes/java/net/mod.rs": {
+    "mtime": 1781920575.7821627,
+    "seen": 1788528449.444326,
+    "ast_hash": "6c7b6620bc0b9726e169f36f3e516460",
+    "semantic_hash": "6c7b6620bc0b9726e169f36f3e516460"
+  },
+  "java_runtime/tests/classes/java/net/test_jar_url_connection.rs": {
+    "mtime": 1781920575.7831714,
+    "seen": 1788528449.444326,
+    "ast_hash": "8ffbfe3c37fc10faf88e0106c7a0706f",
+    "semantic_hash": "8ffbfe3c37fc10faf88e0106c7a0706f"
+  },
+  "java_runtime/tests/classes/java/net/test_url_class_loader.rs": {
+    "mtime": 1781920575.7831714,
+    "seen": 1788528449.444326,
+    "ast_hash": "3e157cd5f2e03a8996c134efc3cf58ea",
+    "semantic_hash": "3e157cd5f2e03a8996c134efc3cf58ea"
+  },
+  "java_runtime/tests/classes/java/util/jar/mod.rs": {
+    "mtime": 1781920575.7846766,
+    "seen": 1788528449.444326,
+    "ast_hash": "b0b23a90d4903872f36c793a6554fbda",
+    "semantic_hash": "b0b23a90d4903872f36c793a6554fbda"
+  },
+  "java_runtime/tests/classes/java/util/jar/test_attributes.rs": {
+    "mtime": 1781920575.7846766,
+    "seen": 1788528449.444326,
+    "ast_hash": "7063dd50e8f2a12e4c9d4d1a35e74a62",
+    "semantic_hash": "7063dd50e8f2a12e4c9d4d1a35e74a62"
+  },
+  "java_runtime/tests/classes/java/util/jar/test_jar_file.rs": {
+    "mtime": 1781920575.7851946,
+    "seen": 1788528449.444326,
+    "ast_hash": "8d74e8261406dd69c72ff2956a9d0490",
+    "semantic_hash": "8d74e8261406dd69c72ff2956a9d0490"
+  },
+  "java_runtime/tests/classes/java/util/jar/test_manifest.rs": {
+    "mtime": 1781920575.7851946,
+    "seen": 1788528449.444326,
+    "ast_hash": "f36a0316b9de5027623545ab64bf80f7",
+    "semantic_hash": "f36a0316b9de5027623545ab64bf80f7"
+  },
+  "java_runtime/tests/classes/java/util/mod.rs": {
+    "mtime": 1781920575.786203,
+    "seen": 1788528449.444326,
+    "ast_hash": "dc4695e959f8a1777b29fa4d4fec7c01",
+    "semantic_hash": "dc4695e959f8a1777b29fa4d4fec7c01"
+  },
+  "java_runtime/tests/classes/java/util/test_gregorian_calendar.rs": {
+    "mtime": 1788250320.973645,
+    "seen": 1788528449.444326,
+    "ast_hash": "562de15e41241229b8645a4c527865ac",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/util/test_hashtable.rs": {
+    "mtime": 1788295583.1820922,
+    "seen": 1788528449.444326,
+    "ast_hash": "204c6246ac9aa7efc6ee3d385aae39f4",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/util/test_random.rs": {
+    "mtime": 1788295571.1125472,
+    "seen": 1788528449.444326,
+    "ast_hash": "809a2eda212eea08f00fdee69f624bd8",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/util/test_stack.rs": {
+    "mtime": 1781920575.787708,
+    "seen": 1788528449.444326,
+    "ast_hash": "65e7352ebcf1f54e41feaeaaf29bbc7c",
+    "semantic_hash": "65e7352ebcf1f54e41feaeaaf29bbc7c"
+  },
+  "java_runtime/tests/classes/java/util/test_timer.rs": {
+    "mtime": 1781920575.787708,
+    "seen": 1788528449.444326,
+    "ast_hash": "3df23b968245a9ae3f158bacc21eaa92",
+    "semantic_hash": "3df23b968245a9ae3f158bacc21eaa92"
+  },
+  "java_runtime/tests/classes/java/util/test_timezone.rs": {
+    "mtime": 1781920575.7882302,
+    "seen": 1788528449.444326,
+    "ast_hash": "eb72987e7e070001b3032569e52d6b04",
+    "semantic_hash": "eb72987e7e070001b3032569e52d6b04"
+  },
+  "java_runtime/tests/classes/java/util/test_url.rs": {
+    "mtime": 1781920575.7887454,
+    "seen": 1788528449.444326,
+    "ast_hash": "7eea6f12dd300a0a227ca94e698f3f84",
+    "semantic_hash": "7eea6f12dd300a0a227ca94e698f3f84"
+  },
+  "java_runtime/tests/classes/java/util/test_vector.rs": {
+    "mtime": 1788347750.2417634,
+    "seen": 1788528449.444326,
+    "ast_hash": "bbe112d47789ecc7840af47859efbbe8",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/java/util/zip/mod.rs": {
+    "mtime": 1781920575.7887454,
+    "seen": 1788528449.444326,
+    "ast_hash": "0f326cd8eb9858ed42ce28badf7f320b",
+    "semantic_hash": "0f326cd8eb9858ed42ce28badf7f320b"
+  },
+  "java_runtime/tests/classes/java/util/zip/test_zip_file.rs": {
+    "mtime": 1781920575.7897525,
+    "seen": 1788528449.444326,
+    "ast_hash": "1bf3bd7c6a3ec1c22de47ab5ec7c79ea",
+    "semantic_hash": "1bf3bd7c6a3ec1c22de47ab5ec7c79ea"
+  },
+  "java_runtime/tests/classes/javax/microedition/lcdui/mod.rs": {
+    "mtime": 1782041763.062018,
+    "seen": 1788528449.444326,
+    "ast_hash": "65dc4c338d5c90fd75a4d07ce6a0c394",
+    "semantic_hash": "65dc4c338d5c90fd75a4d07ce6a0c394"
+  },
+  "java_runtime/tests/classes/javax/microedition/lcdui/test_display.rs": {
+    "mtime": 1787670380.6781766,
+    "seen": 1788528449.444326,
+    "ast_hash": "5e994b95860f37b29b31d0ebce60128c",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/javax/microedition/mod.rs": {
+    "mtime": 1788257935.5787206,
+    "seen": 1788528449.444326,
+    "ast_hash": "d735d815bc4ad18510709dfebdd627b4",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/javax/mod.rs": {
+    "mtime": 1788256902.4456515,
+    "seen": 1788528449.444326,
+    "ast_hash": "cb6d906b4b2a4ef13d7cab0a95141006",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/mod.rs": {
+    "mtime": 1782041763.0600176,
+    "seen": 1788528449.444326,
+    "ast_hash": "fb564534163824c60f1eb7ed63b0eea7",
+    "semantic_hash": "fb564534163824c60f1eb7ed63b0eea7"
+  },
+  "java_runtime/tests/classes/org/mod.rs": {
+    "mtime": 1788214789.8640604,
+    "seen": 1788528449.444326,
+    "ast_hash": "e3d216d2edc491d23effa9404427d1d7",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/org/rustjava/mod.rs": {
+    "mtime": 1781920575.7909098,
+    "seen": 1788528449.444326,
+    "ast_hash": "ff4979757b6bf4aab60834cf3bd73e2f",
+    "semantic_hash": "ff4979757b6bf4aab60834cf3bd73e2f"
+  },
+  "java_runtime/tests/classes/org/rustjava/net/mod.rs": {
+    "mtime": 1781920575.79192,
+    "seen": 1788528449.444326,
+    "ast_hash": "05b7b2acba13f0d0631605a0921d6fb3",
+    "semantic_hash": "05b7b2acba13f0d0631605a0921d6fb3"
+  },
+  "java_runtime/tests/classes/org/rustjava/net/test_file_url_connection.rs": {
+    "mtime": 1781920575.79192,
+    "seen": 1788528449.444326,
+    "ast_hash": "fec3f9c335a77bd550b26c6e643bb8a6",
+    "semantic_hash": "fec3f9c335a77bd550b26c6e643bb8a6"
+  },
+  "java_runtime/tests/classes/org/rustjava/net/test_jar_url_connection.rs": {
+    "mtime": 1781920575.7929196,
+    "seen": 1788528449.444326,
+    "ast_hash": "4082d20f39df3fdbcbbed4cc8ec22bdb",
+    "semantic_hash": "4082d20f39df3fdbcbbed4cc8ec22bdb"
+  },
+  "java_runtime/tests/tests.rs": {
+    "mtime": 1787684050.614107,
+    "seen": 1788528449.444326,
+    "ast_hash": "06a5ee40d88a52078833168571b56f63",
+    "semantic_hash": "06a5ee40d88a52078833168571b56f63"
+  },
+  "jvm/Cargo.toml": {
+    "mtime": 1788347668.2107148,
+    "seen": 1788528449.444326,
+    "ast_hash": "01c6644a5058b693776a4d79a7d7f94e",
+    "semantic_hash": ""
+  },
+  "jvm/src/array_class_definition.rs": {
+    "mtime": 1788507507.6932383,
+    "seen": 1788528449.444326,
+    "ast_hash": "b291d137de6fb1190967e10cc66c31b6",
+    "semantic_hash": ""
+  },
+  "jvm/src/array_class_instance.rs": {
+    "mtime": 1788818339.802858,
+    "seen": 1788819497.9807718,
+    "ast_hash": "4b2b196dc879149896250ab88ae2de24",
+    "semantic_hash": ""
+  },
+  "jvm/src/as_any.rs": {
+    "mtime": 1781920575.794915,
+    "seen": 1788528449.444326,
+    "ast_hash": "7115f66c82c6d21fdaf367d25b7d88b7",
+    "semantic_hash": "7115f66c82c6d21fdaf367d25b7d88b7"
+  },
+  "jvm/src/class_definition.rs": {
+    "mtime": 1788507493.2730289,
+    "seen": 1788528449.444326,
+    "ast_hash": "cf031653f8397ff7570d74642d15556c",
+    "semantic_hash": ""
+  },
+  "jvm/src/class_instance.rs": {
+    "mtime": 1788822860.0695739,
+    "seen": 1788825183.8133485,
+    "ast_hash": "346f18c4bb35e2e040d13a2365be6d80",
+    "semantic_hash": ""
+  },
+  "jvm/src/class_loader.rs": {
+    "mtime": 1788782268.5841348,
+    "seen": 1788782479.896702,
+    "ast_hash": "7fdd70822edec1f9d3a378019a45d756",
+    "semantic_hash": ""
+  },
+  "jvm/src/error.rs": {
+    "mtime": 1788798908.8616147,
+    "seen": 1788800120.987067,
+    "ast_hash": "adf34dd5f57eb6f4d49a417cb45557bc",
+    "semantic_hash": ""
+  },
+  "jvm/src/field.rs": {
+    "mtime": 1788507443.8750043,
+    "seen": 1788528449.444326,
+    "ast_hash": "05537e65012d71abfa77f701401b2f78",
+    "semantic_hash": ""
+  },
+  "jvm/src/garbage_collector.rs": {
+    "mtime": 1788776408.7557528,
+    "seen": 1788777030.9611447,
+    "ast_hash": "d646c2129f7faff2222d03713a7dee45",
+    "semantic_hash": ""
+  },
+  "jvm/src/invoke_arg.rs": {
+    "mtime": 1781920575.7974207,
+    "seen": 1788528449.444326,
+    "ast_hash": "09ef22c283fea49e977ba35c758a7644",
+    "semantic_hash": "09ef22c283fea49e977ba35c758a7644"
+  },
+  "jvm/src/lib.rs": {
+    "mtime": 1788819883.580733,
+    "seen": 1788820633.631375,
+    "ast_hash": "66f9c29caa4c52a92441eb94e7baaf00",
+    "semantic_hash": ""
+  },
+  "jvm/src/method.rs": {
+    "mtime": 1788819883.580733,
+    "seen": 1788820633.631375,
+    "ast_hash": "d3df0280fb47043054d379a9c28efba4",
+    "semantic_hash": ""
+  },
+  "jvm/src/runtime.rs": {
+    "mtime": 1781920575.798427,
+    "seen": 1788528449.444326,
+    "ast_hash": "c1fed9d786fc3cbcd5afa6a0f6778b1f",
+    "semantic_hash": "c1fed9d786fc3cbcd5afa6a0f6778b1f"
+  },
+  "jvm/src/runtime/java_io_input_stream.rs": {
+    "mtime": 1781920575.798427,
+    "seen": 1788528449.444326,
+    "ast_hash": "9ffa5104dba9dab7ecdd7cb2bdfc69a4",
+    "semantic_hash": "9ffa5104dba9dab7ecdd7cb2bdfc69a4"
+  },
+  "jvm/src/runtime/java_lang_class.rs": {
+    "mtime": 1781920575.798427,
+    "seen": 1788528449.444326,
+    "ast_hash": "36b946556b3c833b3fa6307ff65d0e6b",
+    "semantic_hash": "36b946556b3c833b3fa6307ff65d0e6b"
+  },
+  "jvm/src/runtime/java_lang_class_loader.rs": {
+    "mtime": 1788347417.448036,
+    "seen": 1788528449.444326,
+    "ast_hash": "ae2596449e266515df8c4a13985f59a9",
+    "semantic_hash": ""
+  },
+  "jvm/src/runtime/java_lang_string.rs": {
+    "mtime": 1788257956.9828055,
+    "seen": 1788528449.444326,
+    "ast_hash": "a07eb2c919f7bf42068889e2dd635d8b",
+    "semantic_hash": ""
+  },
+  "jvm/src/thread.rs": {
+    "mtime": 1787663547.4235334,
+    "seen": 1788528449.444326,
+    "ast_hash": "526a9ea48c958cb4a7410eacb687fd87",
+    "semantic_hash": ""
+  },
+  "jvm/src/type.rs": {
+    "mtime": 1781920575.8009396,
+    "seen": 1788528449.444326,
+    "ast_hash": "b51bda659dc415464760b96ba01fbbfe",
+    "semantic_hash": "b51bda659dc415464760b96ba01fbbfe"
+  },
+  "jvm/src/value.rs": {
+    "mtime": 1788252116.7510345,
+    "seen": 1788528449.444326,
+    "ast_hash": "baaac3c23748f0b8f8342fb203ee17fe",
+    "semantic_hash": ""
+  },
+  "jvm/tests/test_garbage_collection.rs": {
+    "mtime": 1781920575.8009396,
+    "seen": 1788528449.444326,
+    "ast_hash": "cd92790e32970298f1e8f47fa1f3de1e",
+    "semantic_hash": "cd92790e32970298f1e8f47fa1f3de1e"
+  },
+  "jvm/tests/test_is_instance.rs": {
+    "mtime": 1781920575.8009396,
+    "seen": 1788528449.444326,
+    "ast_hash": "092a5427bcb75edb67ea38663b9d5925",
+    "semantic_hash": "092a5427bcb75edb67ea38663b9d5925"
+  },
+  "jvm/tests/test_string.rs": {
+    "mtime": 1781920575.8009396,
+    "seen": 1788528449.444326,
+    "ast_hash": "a316d46ea7806399fd66344ecbc9973f",
+    "semantic_hash": "a316d46ea7806399fd66344ecbc9973f"
+  },
+  "jvm_rust/Cargo.toml": {
+    "mtime": 1788347668.207713,
+    "seen": 1788528449.444326,
+    "ast_hash": "858155bd6021e1cffb8a3617ef6ed9ba",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/array_class_definition.rs": {
+    "mtime": 1781920575.802961,
+    "seen": 1788528449.444326,
+    "ast_hash": "4e47d5a1ae00c4d4601f057fbd804695",
+    "semantic_hash": "4e47d5a1ae00c4d4601f057fbd804695"
+  },
+  "jvm_rust/src/array_class_instance.rs": {
+    "mtime": 1788822860.0710852,
+    "seen": 1788825183.8133485,
+    "ast_hash": "571c585ab20e7090cc67d2cb441cc6d7",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/class_definition.rs": {
+    "mtime": 1788893232.8617175,
+    "seen": 1788894614.8340974,
+    "ast_hash": "37786541fd35aed50b3e9c51830c5c13",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/class_instance.rs": {
+    "mtime": 1788825152.8389091,
+    "seen": 1788825183.8133485,
+    "ast_hash": "9276706e684a8907109e897dff6356b5",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/field.rs": {
+    "mtime": 1782157675.417761,
+    "seen": 1788528449.444326,
+    "ast_hash": "14e1be51e82e8f073e9402b81e15ddea",
+    "semantic_hash": "14e1be51e82e8f073e9402b81e15ddea"
+  },
+  "jvm_rust/src/lib.rs": {
+    "mtime": 1782159852.3971446,
+    "seen": 1788528449.444326,
+    "ast_hash": "55ef2438f5905c896aeec6b7e89ec15f",
+    "semantic_hash": "55ef2438f5905c896aeec6b7e89ec15f"
+  },
+  "jvm_rust/src/profile.rs": {
+    "mtime": 1788818497.5656915,
+    "seen": 1788819497.9807718,
+    "ast_hash": "b4a01719980f213803089477ff879845",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/stack_frame.rs": {
+    "mtime": 1781961662.5671077,
+    "seen": 1788528449.444326,
+    "ast_hash": "37244d2c13e49d22978270019374afe7",
+    "semantic_hash": "37244d2c13e49d22978270019374afe7"
+  },
+  "src/bin/v3_bench.rs": {
+    "mtime": 1781998306.3114278,
+    "seen": 1788528449.444326,
+    "ast_hash": "2fe4e7e7daab90817b8db7b053306c54",
+    "semantic_hash": "2fe4e7e7daab90817b8db7b053306c54"
+  },
+  "src/lib.rs": {
+    "mtime": 1788821068.7670484,
+    "seen": 1788821483.4021413,
+    "ast_hash": "cdd2723d3e0a6983390ef38e968db6e3",
+    "semantic_hash": ""
+  },
+  "src/main.rs": {
+    "mtime": 1788799428.0840993,
+    "seen": 1788800120.987067,
+    "ast_hash": "6c99b4557c001b606b79d52b9d27ef71",
+    "semantic_hash": ""
+  },
+  "src/profile.rs": {
+    "mtime": 1788798536.228616,
+    "seen": 1788800120.987067,
+    "ast_hash": "a8d20e3bb54d744b3fa1d1e97e424012",
+    "semantic_hash": ""
+  },
+  "src/runtime/controls.rs": {
+    "mtime": 1788804348.1746483,
+    "seen": 1788805171.9015045,
+    "ast_hash": "dbcb472c7b848bd76cd832b931a60bc0",
+    "semantic_hash": ""
+  },
+  "src/runtime/io.rs": {
+    "mtime": 1788799236.1863403,
+    "seen": 1788800120.987067,
+    "ast_hash": "892d54ad3f888a4d5a39dcfca591698f",
+    "semantic_hash": ""
+  },
+  "test_utils/Cargo.toml": {
+    "mtime": 1788347668.31101,
+    "seen": 1788528449.444326,
+    "ast_hash": "01b09f0e8a6d360475c8fd2be27ff638",
+    "semantic_hash": ""
+  },
+  "test_utils/src/lib.rs": {
+    "mtime": 1788855190.9670253,
+    "seen": 1788856307.610377,
+    "ast_hash": "dc33cc01ac5551a5d9bbcfa167632c1a",
+    "semantic_hash": ""
+  },
+  "tests/test_class.rs": {
+    "mtime": 1781992332.5112605,
+    "seen": 1788528449.444326,
+    "ast_hash": "5208960ff105a441ca2742d073d68dff",
+    "semantic_hash": "5208960ff105a441ca2742d073d68dff"
+  },
+  "tests/test_helper/mod.rs": {
+    "mtime": 1781920575.8513148,
+    "seen": 1788528449.444326,
+    "ast_hash": "04d1b3b329c4e6fe4a4c6ae6942aeb52",
+    "semantic_hash": "04d1b3b329c4e6fe4a4c6ae6942aeb52"
+  },
+  "tests/test_real_jvm.rs": {
+    "mtime": 1781920575.8513148,
+    "seen": 1788528449.444326,
+    "ast_hash": "377f512a0f865a99942e5b0daee30e97",
+    "semantic_hash": "377f512a0f865a99942e5b0daee30e97"
+  },
+  "README.md": {
+    "mtime": 1788812034.3683605,
+    "seen": 1788812271.0509498,
+    "ast_hash": "f934de2dc1beec758b3bddcb3016e038",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/lg.rs": {
+    "mtime": 1787684180.850964,
+    "seen": 1788528449.444326,
+    "ast_hash": "1f04372367a7a07e65c33535bfd8e26d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/motorola.rs": {
+    "mtime": 1788347417.0485992,
+    "seen": 1788528449.444326,
+    "ast_hash": "329cac1b5ae18c8eb311dc89a930dc9c",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/nokia/mid/sound.rs": {
+    "mtime": 1788347417.0496051,
+    "seen": 1788528449.444326,
+    "ast_hash": "3060f3026ea5db3324328d3e7c4dea49",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/samsung.rs": {
+    "mtime": 1788855740.4409194,
+    "seen": 1788856307.610377,
+    "ast_hash": "5cd6363b388c3dae3fed4b2d1c012814",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/sonyericsson.rs": {
+    "mtime": 1788347417.0587027,
+    "seen": 1788528449.444326,
+    "ast_hash": "b31bdefb7dfed89ca6cb94bafb92ca18",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/sprintpcs.rs": {
+    "mtime": 1788175734.0310707,
+    "seen": 1788528449.444326,
+    "ast_hash": "f20ff5437023028c271b2ff80e1d2ccf",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/vodafone.rs": {
+    "mtime": 1787702043.8941836,
+    "seen": 1788528449.444326,
+    "ast_hash": "a9a4b6f3b90fc667b9dae902bffe934a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/boolean.rs": {
+    "mtime": 1788347417.0786557,
+    "seen": 1788528449.444326,
+    "ast_hash": "0a2c17d021106d22e6a6c93ef2f918f8",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/byte.rs": {
+    "mtime": 1788175403.595788,
+    "seen": 1788528449.444326,
+    "ast_hash": "f389b7415b51e6376c48526628843dd0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/character.rs": {
+    "mtime": 1788175407.1993701,
+    "seen": 1788528449.444326,
+    "ast_hash": "e66240e207a8994891cb58c913b16cc0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/double.rs": {
+    "mtime": 1788347417.0836592,
+    "seen": 1788528449.444326,
+    "ast_hash": "ce069e60bd2009148aa17b7cbc66e324",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/long.rs": {
+    "mtime": 1787666062.9202263,
+    "seen": 1788528449.444326,
+    "ast_hash": "34816c47c2393ed95f01f252bf538e27",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/number.rs": {
+    "mtime": 1787663376.5760744,
+    "seen": 1788528449.444326,
+    "ast_hash": "76d8ad11966038a0a18ad762999caadb",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/short.rs": {
+    "mtime": 1788175399.9179466,
+    "seen": 1788528449.444326,
+    "ast_hash": "f5fa358de4c8706a82b620d1e8d7bf49",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/nio.rs": {
+    "mtime": 1787683347.7443032,
+    "seen": 1788528449.444326,
+    "ast_hash": "6882666f0739d72d821b6a7c1b21aa8a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/enumerators.rs": {
+    "mtime": 1788347417.1168573,
+    "seen": 1788528449.444326,
+    "ast_hash": "ee5ebb8987df5901d5e1d9eeb334ac72",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/media/exception.rs": {
+    "mtime": 1787683407.5018146,
+    "seen": 1788528449.444326,
+    "ast_hash": "3d753d481f3ad25d356d481048c3708c",
+    "semantic_hash": ""
+  },
+  "src/compat.rs": {
+    "mtime": 1788804973.5448973,
+    "seen": 1788805171.9015045,
+    "ast_hash": "bc5042179f470369ae025636830a1bd9",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1787662719.5968575,
+    "seen": 1788528449.444326,
+    "ast_hash": "21ceb6533048be51308e69e7b74a35cf",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/security.rs": {
+    "mtime": 1788347417.1138575,
+    "seen": 1788528449.444326,
+    "ast_hash": "d166eefec6b8824c989a1ec3a432073f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/exceptions.rs": {
+    "mtime": 1788347417.065215,
+    "seen": 1788528449.444326,
+    "ast_hash": "03a0bab75dead02ba3389c7d8048b5ab",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/exceptions.rs": {
+    "mtime": 1788347417.0846596,
+    "seen": 1788528449.444326,
+    "ast_hash": "1f4ab71c0becbb3c744b2d3439b4a1ae",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/net/exceptions.rs": {
+    "mtime": 1787683242.8545802,
+    "seen": 1788528449.444326,
+    "ast_hash": "61c78c46f92e628a823deebd8d16acdc",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/util/exceptions.rs": {
+    "mtime": 1788175409.3689065,
+    "seen": 1788528449.444326,
+    "ast_hash": "ee17764f269894b28f724e6df073d34e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/macros.rs": {
+    "mtime": 1788347417.388614,
+    "seen": 1788528449.444326,
+    "ast_hash": "66754742ef12d967308408014594f910",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/test_registry.rs": {
+    "mtime": 1788869343.388734,
+    "seen": 1788869372.7705247,
+    "ast_hash": "7d0c7fc139022fd20ba6d0aecbabc66f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/connector.rs": {
+    "mtime": 1788347417.1419551,
+    "seen": 1788528449.444326,
+    "ast_hash": "e8798de010533bad118551b3b72d4999",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/datagram.rs": {
+    "mtime": 1788347417.1429546,
+    "seen": 1788528449.444326,
+    "ast_hash": "73c835760c8aba24c64d40fc84c40b76",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/file.rs": {
+    "mtime": 1788347417.143955,
+    "seen": 1788528449.444326,
+    "ast_hash": "58e8313a7621e8178e96ba6b65b58010",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/http.rs": {
+    "mtime": 1788347417.1459553,
+    "seen": 1788528449.444326,
+    "ast_hash": "09a59ce511987faa126c5b3b1d6f500e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/interfaces.rs": {
+    "mtime": 1788347417.1469555,
+    "seen": 1788528449.444326,
+    "ast_hash": "e94e40a82e01f163b550481c5d9ba575",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/mod.rs": {
+    "mtime": 1788347417.1469555,
+    "seen": 1788528449.444326,
+    "ast_hash": "c3e27da2bf882bdaebdebd3511710967",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/push.rs": {
+    "mtime": 1788347417.1484594,
+    "seen": 1788528449.444326,
+    "ast_hash": "e2648004611398219b15a3942e26b3b9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/io/sockets.rs": {
+    "mtime": 1788347417.1509676,
+    "seen": 1788528449.444326,
+    "ast_hash": "536d0d8f101ea0ce22aaf2d97a6129c6",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/game/game_canvas.rs": {
+    "mtime": 1788877281.645262,
+    "seen": 1788894614.8340974,
+    "ast_hash": "6c732a3532b13e43241925a6618967ec",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/game/layer.rs": {
+    "mtime": 1788347417.1650994,
+    "seen": 1788528449.444326,
+    "ast_hash": "887f866ccad0e66dbbf8b8a8884db622",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/game/layer_manager.rs": {
+    "mtime": 1788347417.166603,
+    "seen": 1788528449.444326,
+    "ast_hash": "d239398c5e03bd0f2db788d1a519b030",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/game/mod.rs": {
+    "mtime": 1788347417.1681166,
+    "seen": 1788528449.444326,
+    "ast_hash": "ef2caecaf9a2243872d5289979370c4b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/game/sprite.rs": {
+    "mtime": 1788347417.170631,
+    "seen": 1788528449.444326,
+    "ast_hash": "7cd9510018c2b999c9cf3959bcf96772",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/game/tiled_layer.rs": {
+    "mtime": 1788347417.1726341,
+    "seen": 1788528449.444326,
+    "ast_hash": "864e583c0fbf88919a7ec76f3ea8c10a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/animation.rs": {
+    "mtime": 1788522194.8165061,
+    "seen": 1788528449.444326,
+    "ast_hash": "138bd1461ab6dd0357d98120436192a3",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/appearance.rs": {
+    "mtime": 1788347417.2005415,
+    "seen": 1788528449.444326,
+    "ast_hash": "8f46bd4277c58879f80356cc128a879c",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/loader.rs": {
+    "mtime": 1788347417.244634,
+    "seen": 1788528449.444326,
+    "ast_hash": "c1eda43c9fd46908db539984afb0ef26",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/mesh.rs": {
+    "mtime": 1788347417.249657,
+    "seen": 1788528449.444326,
+    "ast_hash": "dcc379d31770f98c96cd67432b8783cd",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/mod.rs": {
+    "mtime": 1788810915.5161269,
+    "seen": 1788811522.676529,
+    "ast_hash": "18e0836c5344073e1cc26ef08bb68450",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/transform.rs": {
+    "mtime": 1788347417.2853527,
+    "seen": 1788528449.444326,
+    "ast_hash": "00e125fcce47d71c3cee994b6c2f32d0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/nokia/mid/ui/device_control.rs": {
+    "mtime": 1788347417.0506034,
+    "seen": 1788528449.444326,
+    "ast_hash": "7b31cd35f171877553ad0c7f62a44fed",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/nokia/mid/ui/direct_graphics.rs": {
+    "mtime": 1788788514.5947673,
+    "seen": 1788789879.6863558,
+    "ast_hash": "b58d67a8892be74abfe48ec8b978a258",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/nokia/mid/ui/direct_utils.rs": {
+    "mtime": 1788788495.1331904,
+    "seen": 1788789879.6863558,
+    "ast_hash": "ec7af60128f9be3d6f22b63825725d26",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/nokia/mid/ui/full_canvas.rs": {
+    "mtime": 1788347417.0546844,
+    "seen": 1788528449.444326,
+    "ast_hash": "24f9a46aefd6a3088424703d5e9ef6a6",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/nokia/mid/ui/mod.rs": {
+    "mtime": 1788347417.0546844,
+    "seen": 1788528449.444326,
+    "ast_hash": "3071aef78ecfd4cc045e893455500242",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/discovery.rs": {
+    "mtime": 1788788594.5943847,
+    "seen": 1788789879.6863558,
+    "ast_hash": "0095fbfe03664c80ef8dad19ce1e1818",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/l2cap.rs": {
+    "mtime": 1788347417.1364257,
+    "seen": 1788528449.444326,
+    "ast_hash": "04f9e778231ace55f356d547a4bdddf7",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/mod.rs": {
+    "mtime": 1788347417.1384327,
+    "seen": 1788528449.444326,
+    "ast_hash": "e09ac907cd12a5232dd9a042262af16f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/uuid.rs": {
+    "mtime": 1788347417.1399512,
+    "seen": 1788528449.444326,
+    "ast_hash": "f0e3602d24cf4583e94b4bf4f8190dda",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/khronos/egl.rs": {
+    "mtime": 1788347417.1529737,
+    "seen": 1788528449.444326,
+    "ast_hash": "36691ac9382336ba0901efe904ab9df2",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/khronos/gl.rs": {
+    "mtime": 1788347417.1539738,
+    "seen": 1788528449.444326,
+    "ast_hash": "3642a41cdc3675415ff482e7cc795cef",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/khronos/mod.rs": {
+    "mtime": 1788347417.1549723,
+    "seen": 1788528449.444326,
+    "ast_hash": "21bbb0d4eb3cea406e2e5a86621c58fc",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/graphics/methods.rs": {
+    "mtime": 1788821867.2680135,
+    "seen": 1788822313.1823707,
+    "ast_hash": "36b6468b1af30f6ef467873f6ab6d591",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/graphics/mod.rs": {
+    "mtime": 1788817024.3214533,
+    "seen": 1788817394.2505953,
+    "ast_hash": "fb9a2e2e324088d14d668831dacbaff6",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/graphics/raster.rs": {
+    "mtime": 1788818966.9442797,
+    "seen": 1788819497.9797723,
+    "ast_hash": "0d3f0a4a17b3a5f24735810925b7d3a0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/alert_type.rs": {
+    "mtime": 1788347417.190697,
+    "seen": 1788528449.444326,
+    "ast_hash": "0f0c58478166d43a0e7dd6baf29bce30",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/choice.rs": {
+    "mtime": 1788347417.1930125,
+    "seen": 1788528449.444326,
+    "ast_hash": "e43e32c1f9ca9e2970be162824f7bbc0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/custom_item.rs": {
+    "mtime": 1788347417.1945162,
+    "seen": 1788528449.444326,
+    "ast_hash": "136a9269d1f5aac02ceb421618de6f15",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/date_field.rs": {
+    "mtime": 1788347417.1945162,
+    "seen": 1788528449.444326,
+    "ast_hash": "e58cdc390c6e7cf53db07d02b20d305e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/gauge.rs": {
+    "mtime": 1788347417.195521,
+    "seen": 1788528449.444326,
+    "ast_hash": "30a52d6ca274ae81da889bc7ceb293d1",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/mod.rs": {
+    "mtime": 1788347417.195521,
+    "seen": 1788528449.444326,
+    "ast_hash": "dcba65e52ef5efaa85c4e7998b7b206b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/spacer.rs": {
+    "mtime": 1788347417.197026,
+    "seen": 1788528449.444326,
+    "ast_hash": "8969b8106e5fd5992c198fbd07466ba6",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/widgets/ticker.rs": {
+    "mtime": 1788347417.197026,
+    "seen": 1788528449.444326,
+    "ast_hash": "6cb82ff7992c18aa5db894c3dba5692a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/file_loader.rs": {
+    "mtime": 1788779893.415962,
+    "seen": 1788782479.896702,
+    "ast_hash": "8838db0193586e418d4b7310e5c6652f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/lighting.rs": {
+    "mtime": 1788347417.2436342,
+    "seen": 1788528449.444326,
+    "ast_hash": "3b9d042c728581b8babb3206cf14cece",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/rms/enumeration.rs": {
+    "mtime": 1788347417.2999437,
+    "seen": 1788528449.444326,
+    "ast_hash": "d71c6ea3cf73f2f734d4b950e790a04d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/rms/exceptions.rs": {
+    "mtime": 1788347417.2999437,
+    "seen": 1788528449.444326,
+    "ast_hash": "80865ee7142374e7c00352b78c18af7a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/rms/mod.rs": {
+    "mtime": 1788347417.3009436,
+    "seen": 1788528449.444326,
+    "ast_hash": "68a65d74d3eee57a35c71a3ec3bac722",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/rms/record_store.rs": {
+    "mtime": 1788799235.9459505,
+    "seen": 1788800120.987067,
+    "ast_hash": "4ec4b69c37fe1c7b348aa628db7a5869",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/wireless/connection.rs": {
+    "mtime": 1788347417.3054538,
+    "seen": 1788528449.444326,
+    "ast_hash": "465b7f01aa3e1861a59e71294049c78c",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/wireless/messages.rs": {
+    "mtime": 1788347417.3064525,
+    "seen": 1788528449.444326,
+    "ast_hash": "7c06cf733516715bdab927bb9ea971b8",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/wireless/mod.rs": {
+    "mtime": 1788347417.3074534,
+    "seen": 1788528449.444326,
+    "ast_hash": "faef45aaf433ab91fd136c414218ad3d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/siemens/game.rs": {
+    "mtime": 1788347417.0566857,
+    "seen": 1788528449.444326,
+    "ast_hash": "648f8904388684fb9f8172c41fb19028",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/siemens/mod.rs": {
+    "mtime": 1788347417.0581894,
+    "seen": 1788528449.444326,
+    "ast_hash": "ceebf69fe2ce3efc75dcd8b0111b60ba",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/siemens/ui.rs": {
+    "mtime": 1788347417.0587027,
+    "seen": 1788528449.444326,
+    "ast_hash": "301ea9bd14adc04b5aafd329bad5251b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/image2d.rs": {
+    "mtime": 1788347417.239634,
+    "seen": 1788528449.444326,
+    "ast_hash": "143e7f5ab2d6719f1cf77819e4b343b7",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/keyframe.rs": {
+    "mtime": 1788347417.242633,
+    "seen": 1788528449.444326,
+    "ast_hash": "ccaefe07ed08c4c96c9ce2c65c34640e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/m3g_reader.rs": {
+    "mtime": 1788347417.2456338,
+    "seen": 1788528449.444326,
+    "ast_hash": "1aecc55927315d4677ece40cdab6ea2f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/node.rs": {
+    "mtime": 1788515988.6261168,
+    "seen": 1788528449.444326,
+    "ast_hash": "e4f077e9188a6c3e835715409b73500a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/world.rs": {
+    "mtime": 1788347417.2929244,
+    "seen": 1788528449.444326,
+    "ast_hash": "fef9fc0170556fd455b0cdb0b0056f50",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/render/draw.rs": {
+    "mtime": 1788877313.541526,
+    "seen": 1788894614.8340974,
+    "ast_hash": "80cb1690b122b37ee4b7becc8272fb5b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/render/mod.rs": {
+    "mtime": 1788347417.0339348,
+    "seen": 1788528449.444326,
+    "ast_hash": "a1fc28c72a22dfe07463f7ebcb01eafc",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/render/prepare.rs": {
+    "mtime": 1788347417.0364385,
+    "seen": 1788528449.444326,
+    "ast_hash": "f0c5bfbdf3fc28274bcabfc744626802",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/file_loader_mesh.rs": {
+    "mtime": 1788347417.2135615,
+    "seen": 1788528449.444326,
+    "ast_hash": "d86156651c8fed76c09a6c3b6521fee2",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/graphics_3d/api.rs": {
+    "mtime": 1788347417.019916,
+    "seen": 1788528449.444326,
+    "ast_hash": "2d0c8a7e4300ee74a1df5ee614748cf3",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/graphics_3d/draw.rs": {
+    "mtime": 1788347417.0219193,
+    "seen": 1788528449.444326,
+    "ast_hash": "efed9070f09c87f98d5b8439b710e5df",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/graphics_3d/mod.rs": {
+    "mtime": 1788347417.02292,
+    "seen": 1788528449.444326,
+    "ast_hash": "243a34ae71614951b2c2b664bd3104b6",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/transform/affine.rs": {
+    "mtime": 1788347417.0460896,
+    "seen": 1788528449.444326,
+    "ast_hash": "91944f75c060d592403a9e6a4b8d8812",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/transform/mod.rs": {
+    "mtime": 1788347417.0460896,
+    "seen": 1788528449.444326,
+    "ast_hash": "99636604d4041d46e20dffdc284c7796",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/mascotcapsule/micro3d/v3/transform/vector.rs": {
+    "mtime": 1788347417.0470955,
+    "seen": 1788528449.444326,
+    "ast_hash": "14f618dd2b1e946ae73bde6a62189418",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/string/encoding.rs": {
+    "mtime": 1788347417.0926795,
+    "seen": 1788528449.444326,
+    "ast_hash": "3c2056f19fee3acb0e17b02edc14c8df",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/string/methods.rs": {
+    "mtime": 1788781235.8900652,
+    "seen": 1788782479.896702,
+    "ast_hash": "7b5418602847b75c4dfdad8032437dda",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/string/mod.rs": {
+    "mtime": 1788347417.097185,
+    "seen": 1788528449.444326,
+    "ast_hash": "2cfeb7785adb4ee69a212b3f07ff483b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/string/search.rs": {
+    "mtime": 1788787632.0396123,
+    "seen": 1788787764.2961385,
+    "ast_hash": "c04bd4ad023711a299771f8b1bbf6b69",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/graphics/draw_pixels.rs": {
+    "mtime": 1788819083.7829669,
+    "seen": 1788819497.9797723,
+    "ast_hash": "c425b3be12cd9910bbd520a120851533",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/graphics/draw_shapes.rs": {
+    "mtime": 1788818933.6391761,
+    "seen": 1788819497.9797723,
+    "ast_hash": "e1e9c5f87593f0d9e284c9e21e2887d1",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/render/mod.rs": {
+    "mtime": 1788265152.598205,
+    "seen": 1788528449.444326,
+    "ast_hash": "a0607ca5ae30c587b2c4a1305764b525",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/render/raster.rs": {
+    "mtime": 1788525910.9571834,
+    "seen": 1788528449.444326,
+    "ast_hash": "32d6ebf9de4a47890872b7157408f17d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/render/texture.rs": {
+    "mtime": 1788347417.2785163,
+    "seen": 1788528449.444326,
+    "ast_hash": "551fc7073e237e5e7313d0056f9e31b9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/render/types.rs": {
+    "mtime": 1788347417.2795203,
+    "seen": 1788528449.444326,
+    "ast_hash": "f4d46495a382a3953929f26b05d667fc",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/vertex_array.rs": {
+    "mtime": 1788347417.2889192,
+    "seen": 1788528449.444326,
+    "ast_hash": "63f511784e0573e2362533c1d0598a9f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/vertex_buffer.rs": {
+    "mtime": 1788347417.2909245,
+    "seen": 1788528449.444326,
+    "ast_hash": "177731451ea599052df00600a7cc4fd7",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/vertex_index.rs": {
+    "mtime": 1788347417.2919238,
+    "seen": 1788528449.444326,
+    "ast_hash": "714cba5efa54083a9c304068ecaebb8a",
+    "semantic_hash": ""
+  },
+  "tests/test_corpus.rs": {
+    "mtime": 1788348555.9319034,
+    "seen": 1788528449.444326,
+    "ast_hash": "7d176c62e2aef87b825f5e6668d4bef0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/com/siemens/extras.rs": {
+    "mtime": 1788347417.0566857,
+    "seen": 1788528449.444326,
+    "ast_hash": "d943cbaf8b7e7f1c8c8266f154bd342f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/buffered_input_stream.rs": {
+    "mtime": 1788347417.0597067,
+    "seen": 1788528449.444326,
+    "ast_hash": "af2633188392c8807deb742371aa4a2b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/buffered_writer.rs": {
+    "mtime": 1788295286.9776886,
+    "seen": 1788528449.444326,
+    "ast_hash": "3fa8630e75a1b049af17f47c9bdb81df",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/io/output_stream_writer.rs": {
+    "mtime": 1788347417.0726295,
+    "seen": 1788528449.444326,
+    "ast_hash": "662096972088d5177ddb0e5c96164fb7",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/lang/reflect.rs": {
+    "mtime": 1788175862.1797667,
+    "seen": 1788528449.444326,
+    "ast_hash": "c2145c3717c340f0249d44df89ee39ba",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/net/http_url_connection.rs": {
+    "mtime": 1788347417.107349,
+    "seen": 1788528449.444326,
+    "ast_hash": "0634da60244899ccdddee2d8b9ea4847",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/java/net/url_encoder.rs": {
+    "mtime": 1788175233.6011765,
+    "seen": 1788528449.444326,
+    "ast_hash": "f7fb15da68a4105932a651e5ac95d247",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/screen.rs": {
+    "mtime": 1788175309.3726695,
+    "seen": 1788528449.444326,
+    "ast_hash": "d06f6497eb2f1cbb3b52eb4aa7563fed",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/location.rs": {
+    "mtime": 1788347417.1985378,
+    "seen": 1788528449.444326,
+    "ast_hash": "cff21004ef406aa6923ac502240390ac",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/pim.rs": {
+    "mtime": 1788788611.3231745,
+    "seen": 1788789879.6863558,
+    "ast_hash": "e73cf42a6efd02d02ec9878ff087102b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/sensor.rs": {
+    "mtime": 1788799235.9474573,
+    "seen": 1788800120.987067,
+    "ast_hash": "7b0d529e25977d283a73f139feb10c4f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/xml.rs": {
+    "mtime": 1788347417.3084526,
+    "seen": 1788528449.444326,
+    "ast_hash": "2c24e66135805d464dcdb1f666c48a23",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/coverage_stub_data.rs": {
+    "mtime": 1788799236.0274217,
+    "seen": 1788800120.987067,
+    "ast_hash": "d34883b4c1d00245a4dd316712edb68f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/coverage_stubs.rs": {
+    "mtime": 1788347417.3865921,
+    "seen": 1788528449.444326,
+    "ast_hash": "4e708f85d6cd78ed29dbc93f8e442f6a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org/xml.rs": {
+    "mtime": 1788347417.310962,
+    "seen": 1788528449.444326,
+    "ast_hash": "9912fe21c59d5d849a9d2fe22294f681",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/paths.rs": {
+    "mtime": 1788855183.2767985,
+    "seen": 1788856307.610377,
+    "ast_hash": "377a75bb32f4ec2a666baeb229f3904f",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/org/test_sax.rs": {
+    "mtime": 1788347417.4274974,
+    "seen": 1788528449.444326,
+    "ast_hash": "9ce9f7eab21647281aa73ad24ff70feb",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/javax/microedition/test_m3g.rs": {
+    "mtime": 1788347417.424989,
+    "seen": 1788528449.444326,
+    "ast_hash": "cd1537b00609d6cb9f86028d28fcffbd",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/obex.rs": {
+    "mtime": 1788347417.3044536,
+    "seen": 1788528449.444326,
+    "ast_hash": "445aff6e5ffd57673a1f22cac1dc7dd5",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/javax/bluetooth/mod.rs": {
+    "mtime": 1788256869.8492115,
+    "seen": 1788528449.444326,
+    "ast_hash": "abf0499b50a9351d20866ec1ff64c39a",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/javax/bluetooth/test_discovery.rs": {
+    "mtime": 1788347417.4209895,
+    "seen": 1788528449.444326,
+    "ast_hash": "404df853c2dedb29d17f8e4543609a39",
+    "semantic_hash": ""
+  },
+  "java_runtime/tests/classes/javax/microedition/test_player.rs": {
+    "mtime": 1788258110.5194733,
+    "seen": 1788528449.444326,
+    "ast_hash": "89ca62eae2f369a8683dc918f2273b33",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/gpu_image.rs": {
+    "mtime": 1788818567.4993193,
+    "seen": 1788819497.9797723,
+    "ast_hash": "42e504e9d6036155309eb21613ca1640",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/common.rs": {
+    "mtime": 1788347417.2050502,
+    "seen": 1788528449.444326,
+    "ast_hash": "157189571a4f77b1cd1f2982039e7120",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/cache.rs": {
+    "mtime": 1788613420.2370696,
+    "seen": 1788613843.1334205,
+    "ast_hash": "bfa24911298eec27e3682b33e7575e10",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/mod.rs": {
+    "mtime": 1788347417.2245948,
+    "seen": 1788528449.444326,
+    "ast_hash": "9b4eaaa6569827753d3dd823e4237762",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/prelude.rs": {
+    "mtime": 1788347417.2700138,
+    "seen": 1788528449.444326,
+    "ast_hash": "7e3a6e53066485d5738793a7e2b07367",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/types.rs": {
+    "mtime": 1788265152.571542,
+    "seen": 1788528449.444326,
+    "ast_hash": "8597e1e0a3f9eb59c001529e88751c5d",
+    "semantic_hash": ""
+  },
+  "jvm/src/jvm/arrays.rs": {
+    "mtime": 1788267275.5292253,
+    "seen": 1788528449.444326,
+    "ast_hash": "5b08fd4153fc50a87cd50b25e30419cf",
+    "semantic_hash": ""
+  },
+  "jvm/src/jvm/fields.rs": {
+    "mtime": 1788507565.0583518,
+    "seen": 1788528449.444326,
+    "ast_hash": "a61a5720b877c886dd3813b9df4fe244",
+    "semantic_hash": ""
+  },
+  "jvm/src/jvm/invoke.rs": {
+    "mtime": 1788799236.0826495,
+    "seen": 1788800120.987067,
+    "ast_hash": "2b5151bd552cc5c0d2a2cb26ce5da146",
+    "semantic_hash": ""
+  },
+  "jvm/src/jvm/mod.rs": {
+    "mtime": 1788866972.0556579,
+    "seen": 1788868333.9284232,
+    "ast_hash": "85e95759a6ba9a92f82ecea2347f0283",
+    "semantic_hash": ""
+  },
+  "jvm/src/jvm/monitors.rs": {
+    "mtime": 1788347417.446532,
+    "seen": 1788528449.444326,
+    "ast_hash": "4f0e76d0be34b76953fc47403effd131",
+    "semantic_hash": ""
+  },
+  "src/runtime/fs.rs": {
+    "mtime": 1788798595.0146978,
+    "seen": 1788800120.987067,
+    "ast_hash": "b6684e9485627d67922d0524b590afea",
+    "semantic_hash": ""
+  },
+  "src/runtime/http.rs": {
+    "mtime": 1788347834.1666167,
+    "seen": 1788528449.444326,
+    "ast_hash": "aaf571256f188fb61b1ebfa263733f89",
+    "semantic_hash": ""
+  },
+  "src/runtime/mod.rs": {
+    "mtime": 1788821076.5424795,
+    "seen": 1788821483.4021413,
+    "ast_hash": "cf0e746b9146639ef0a4ba2d74bef0f4",
+    "semantic_hash": ""
+  },
+  "src/runtime/rms.rs": {
+    "mtime": 1788799236.1875513,
+    "seen": 1788800120.987067,
+    "ast_hash": "fcac5f58346480d5ed3685deb532bbf9",
+    "semantic_hash": ""
+  },
+  "src/runtime/screen.rs": {
+    "mtime": 1788799387.5162442,
+    "seen": 1788800120.987067,
+    "ast_hash": "d0e550b9f9b89f9d3651ec0775a5015c",
+    "semantic_hash": ""
+  },
+  "src/runtime/window.rs": {
+    "mtime": 1788804358.8859959,
+    "seen": 1788805171.9015045,
+    "ast_hash": "70af15a64c0c6e0aa49a409d7595e441",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/method/fixed_point.rs": {
+    "mtime": 1788268704.76713,
+    "seen": 1788528449.444326,
+    "ast_hash": "2b0844f1b2cabefab31c0c13fd4e635a",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/method/mod.rs": {
+    "mtime": 1788826656.1453104,
+    "seen": 1788826905.327753,
+    "ast_hash": "4a3797303d31860419642e24b330fb9e",
+    "semantic_hash": ""
+  },
+  "src/browser/canvas.rs": {
+    "mtime": 1788347831.6173224,
+    "seen": 1788528449.444326,
+    "ast_hash": "1a6a4e3c57cdf583217f58d5aaa3c725",
+    "semantic_hash": ""
+  },
+  "src/browser/gpu.rs": {
+    "mtime": 1788375727.8575642,
+    "seen": 1788528449.444326,
+    "ast_hash": "627bae3403734fa3795318ac0f3cd26a",
+    "semantic_hash": ""
+  },
+  "src/browser/mod.rs": {
+    "mtime": 1788804397.6777816,
+    "seen": 1788805171.9015045,
+    "ast_hash": "5903b77beecda2ceb1dc91fb3b247e51",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/bind.rs": {
+    "mtime": 1788799235.8846304,
+    "seen": 1788800120.987067,
+    "ast_hash": "d73d751ffdc91da7bc364bcae740666a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/draw.rs": {
+    "mtime": 1788347417.222087,
+    "seen": 1788528449.444326,
+    "ast_hash": "986caedec02d0debfeb11cc018ae77e0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/lights.rs": {
+    "mtime": 1788347417.2230914,
+    "seen": 1788528449.444326,
+    "ast_hash": "5373a0e8129131082c0db7f45615b3d6",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/scene/lighting.rs": {
+    "mtime": 1788347417.2255993,
+    "seen": 1788528449.444326,
+    "ast_hash": "38a3ee3b214d7714e52d4d7a412fc0f7",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/scene/mesh.rs": {
+    "mtime": 1788371415.541779,
+    "seen": 1788528449.444326,
+    "ast_hash": "c1c385cd08c90aecdef6abcfca6414b1",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/scene/mod.rs": {
+    "mtime": 1788613447.428842,
+    "seen": 1788613843.1334205,
+    "ast_hash": "2660c275e93486cbe7263d67160dcdc0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/scene/sprite.rs": {
+    "mtime": 1788371419.0112827,
+    "seen": 1788528449.444326,
+    "ast_hash": "e8dc9ccbe44146af8a5c39121a74243a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/graphics3d/state.rs": {
+    "mtime": 1788347417.235119,
+    "seen": 1788528449.444326,
+    "ast_hash": "6ecfc4b62811c9469f59e8bb50c92190",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/animation.rs": {
+    "mtime": 1788347417.2605016,
+    "seen": 1788528449.444326,
+    "ast_hash": "1f4ef4d5b19a0a2db1d1a97c45b7ec19",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/appearance.rs": {
+    "mtime": 1788347417.2625067,
+    "seen": 1788528449.444326,
+    "ast_hash": "406272cabed701978e5b6aa855e182c9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/fields.rs": {
+    "mtime": 1788347417.2645068,
+    "seen": 1788528449.444326,
+    "ast_hash": "3340f993b7b00b6db747f83ed4e1cf94",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/geometry.rs": {
+    "mtime": 1788347417.2655058,
+    "seen": 1788528449.444326,
+    "ast_hash": "e60699b408f42a2d82e2220f8c96c86d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/mod.rs": {
+    "mtime": 1788347417.2655058,
+    "seen": 1788528449.444326,
+    "ast_hash": "57d044a7209846aa3e3eb929cf7bf0e3",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/nodes.rs": {
+    "mtime": 1788347417.2675061,
+    "seen": 1788528449.444326,
+    "ast_hash": "e798b0d25af312fd5d2fce9aad3e74a4",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/references.rs": {
+    "mtime": 1788347417.2690127,
+    "seen": 1788528449.444326,
+    "ast_hash": "747803099b49366713e7c67e846ea30f",
+    "semantic_hash": ""
+  },
+  "src/launch/manifest.rs": {
+    "mtime": 1788775365.2485592,
+    "seen": 1788775738.3857205,
+    "ast_hash": "2e63588c5e5c9dbab9af9e5a89858211",
+    "semantic_hash": ""
+  },
+  "src/launch/mod.rs": {
+    "mtime": 1788799236.1697826,
+    "seen": 1788800120.987067,
+    "ast_hash": "c5f1161697662fabe4601f336cbd8efe",
+    "semantic_hash": ""
+  },
+  "src/launch/screen.rs": {
+    "mtime": 1788799207.141679,
+    "seen": 1788800120.987067,
+    "ast_hash": "b777ff4e64956af253c55cf808447a25",
+    "semantic_hash": ""
+  },
+  "src/runtime/gpu_window/mod.rs": {
+    "mtime": 1788866950.0302901,
+    "seen": 1788868333.9284232,
+    "ast_hash": "740d5482af4ddb82a199bba48e18ed69",
+    "semantic_hash": ""
+  },
+  "src/runtime/gpu_window/presenter.rs": {
+    "mtime": 1788375631.3059301,
+    "seen": 1788528449.444326,
+    "ast_hash": "195aa82d39c58d17139dd8f01adf1f4b",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/background.rs": {
+    "mtime": 1788347417.2030501,
+    "seen": 1788528449.444326,
+    "ast_hash": "1f1200ff327db0cd2834b3151780d5b0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/camera.rs": {
+    "mtime": 1788347417.20405,
+    "seen": 1788528449.444326,
+    "ast_hash": "a6798b67819ee00b839fd81434457869",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/group.rs": {
+    "mtime": 1788347417.2386298,
+    "seen": 1788528449.444326,
+    "ast_hash": "c0ca5e5909906728527dbe6ea9833dd0",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/morphing_mesh.rs": {
+    "mtime": 1788347417.2521653,
+    "seen": 1788528449.444326,
+    "ast_hash": "8b7eb721c9ab1dc9f29291b9164115eb",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d/animate.rs": {
+    "mtime": 1788522202.3453424,
+    "seen": 1788528449.444326,
+    "ast_hash": "9a556ac2aeb08a5b05ee1ddec234e5ff",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d/mod.rs": {
+    "mtime": 1788347417.2589982,
+    "seen": 1788528449.444326,
+    "ast_hash": "2e0ebfdf3c0a3570c7120b4f325d3a6f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/object3d_duplicate/copy.rs": {
+    "mtime": 1788347417.2635057,
+    "seen": 1788528449.444326,
+    "ast_hash": "86efb7869e030e8d207a1b768fb2049e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/ray_intersection.rs": {
+    "mtime": 1788347417.2720141,
+    "seen": 1788528449.444326,
+    "ast_hash": "af191909b51bb5d1145c6ee546f4c354",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/skinned_mesh.rs": {
+    "mtime": 1788347417.2815197,
+    "seen": 1788528449.444326,
+    "ast_hash": "c490076034095d88f83969c4151d055a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/sprite3d.rs": {
+    "mtime": 1788347417.2825205,
+    "seen": 1788528449.444326,
+    "ast_hash": "9c1802825586da52038d7738f4664789",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/data_element.rs": {
+    "mtime": 1788347417.132407,
+    "seen": 1788528449.444326,
+    "ast_hash": "5a1734ae3235d77e0d4fc42a6ed4e3dc",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/device_class.rs": {
+    "mtime": 1788347417.132407,
+    "seen": 1788528449.444326,
+    "ast_hash": "5312fa54a673a1c7d9a3b62973c185a4",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/discovery_listener.rs": {
+    "mtime": 1788347417.1354206,
+    "seen": 1788528449.444326,
+    "ast_hash": "7124791135096bc08bdbcb32a285ec68",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/l2cap_notifier.rs": {
+    "mtime": 1788347417.1369293,
+    "seen": 1788528449.444326,
+    "ast_hash": "1b101ccdd30583c55e0c74f296627387",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/local_device.rs": {
+    "mtime": 1788347417.1369293,
+    "seen": 1788528449.444326,
+    "ast_hash": "b03b066f0549159feee429e26a101384",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/remote_device.rs": {
+    "mtime": 1788788578.3258214,
+    "seen": 1788789879.6863558,
+    "ast_hash": "a2bdf0fd2bae0a847922db8ceabf2b5a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/bluetooth/service_record.rs": {
+    "mtime": 1788347417.1399512,
+    "seen": 1788528449.444326,
+    "ast_hash": "5d5f8f0e55eaa0eab89313f5c95e676a",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/animation_track.rs": {
+    "mtime": 1788347417.2005415,
+    "seen": 1788528449.444326,
+    "ast_hash": "897de9ce0b764f31f6067ea9b6f2d34f",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/compositing_mode.rs": {
+    "mtime": 1788347417.2070496,
+    "seen": 1788528449.444326,
+    "ast_hash": "5aeaa8ee6a430e8bd4769eae15d86a43",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/fog.rs": {
+    "mtime": 1788347417.2145615,
+    "seen": 1788528449.444326,
+    "ast_hash": "ecf9739c66e7e0983f73203bab6749ac",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/material.rs": {
+    "mtime": 1788347417.246634,
+    "seen": 1788528449.444326,
+    "ast_hash": "4d2bba131e873e38afd1e5cc63e1e183",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/polygon_mode.rs": {
+    "mtime": 1788347417.2700138,
+    "seen": 1788528449.444326,
+    "ast_hash": "f35c54d4924b164ae17343de29c60faf",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/texture2d.rs": {
+    "mtime": 1788347417.2838478,
+    "seen": 1788528449.444326,
+    "ast_hash": "204fc9916b43a39c41bbdd929ef662e8",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/transformable.rs": {
+    "mtime": 1788347417.28636,
+    "seen": 1788528449.444326,
+    "ast_hash": "b9d1e09a753e3d0b2c3630b2a25e7e2c",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/triangle_strip_array.rs": {
+    "mtime": 1788347417.2878919,
+    "seen": 1788528449.444326,
+    "ast_hash": "f4b7789a2673a07474479d52361695c9",
+    "semantic_hash": ""
+  },
+  "src/gpu/mod.rs": {
+    "mtime": 1788799207.142679,
+    "seen": 1788800120.987067,
+    "ast_hash": "ef52d44cae173ae8028a29c698433069",
+    "semantic_hash": ""
+  },
+  "src/gpu/shaders.rs": {
+    "mtime": 1788375403.6531663,
+    "seen": 1788528449.444326,
+    "ast_hash": "dfadb21db41f40923202b7304aa1a5c5",
+    "semantic_hash": ""
+  },
+  "src/gpu/v3.rs": {
+    "mtime": 1788539465.011256,
+    "seen": 1788539610.1520743,
+    "ast_hash": "e4a0e4f3896fb5a771f933fd4ae68175",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/gpu_scene.rs": {
+    "mtime": 1788376190.4591427,
+    "seen": 1788528449.444326,
+    "ast_hash": "4582cb2c07ef135f51c2ef8114c40382",
+    "semantic_hash": ""
+  },
+  "src/gpu/m3g.rs": {
+    "mtime": 1788376190.7064438,
+    "seen": 1788528449.444326,
+    "ast_hash": "c7c0f30c49e3926a05bdf28ca03d3e77",
+    "semantic_hash": ""
+  },
+  "src/runtime/screenshot.rs": {
+    "mtime": 1788877229.4676116,
+    "seen": 1788894614.8340974,
+    "ast_hash": "6e99c929d1c8adb0f40eff62752998ba",
+    "semantic_hash": ""
+  },
+  "src/runtime/control_server.rs": {
+    "mtime": 1788804437.6048782,
+    "seen": 1788805171.9015045,
+    "ast_hash": "5fa4631a399a57428b847f0a41bcd06e",
+    "semantic_hash": ""
+  },
+  "tests/test_profile_pop.rs": {
+    "mtime": 1788799428.0810924,
+    "seen": 1788800120.987067,
+    "ast_hash": "a5e3e48e0c8df6288a9ecfce044cb8ee",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/zip.rs": {
+    "mtime": 1788811454.4206746,
+    "seen": 1788811522.676529,
+    "ast_hash": "747d0b6f3d13a1a72d9e93d8d5f8cec1",
+    "semantic_hash": ""
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1788528624.1719053,
+    "seen": 1788530097.9022064,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1788528624.1734133,
+    "seen": 1788530097.9022064,
+    "ast_hash": "a831cf3669f1e6ab85d8a80ebe655f99",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m2g.rs": {
+    "mtime": 1788799235.8680751,
+    "seen": 1788800120.987067,
+    "ast_hash": "4148d257b1b2c264bcdfe363d2fa2af1",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org/netbeans.rs": {
+    "mtime": 1788788927.0646603,
+    "seen": 1788789879.6863558,
+    "ast_hash": "d618ef3dd81c17f69bd0a0cb12840de3",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/org/w3c.rs": {
+    "mtime": 1788799235.9544568,
+    "seen": 1788800120.987067,
+    "ast_hash": "b1669bc9add80f8b9fe53ea791bd3a3d",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/root.rs": {
+    "mtime": 1788799235.9564688,
+    "seen": 1788800120.987067,
+    "ast_hash": "23a0cd7117a06f55d26be247f5a46568",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/interpreter/fast.rs": {
+    "mtime": 1788893237.7785802,
+    "seen": 1788894614.8340974,
+    "ast_hash": "8d5f300030e51a4d9d4539463d06c9b4",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/interpreter/helpers.rs": {
+    "mtime": 1788864795.6663415,
+    "seen": 1788868333.9284232,
+    "ast_hash": "48792dc0299c8ceb5d1915c69ea878b8",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/interpreter/mod.rs": {
+    "mtime": 1788864766.0563285,
+    "seen": 1788868333.9284232,
+    "ast_hash": "76d22fbf70068cd3d60c6d50b624ed06",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/interpreter/slow.rs": {
+    "mtime": 1788893241.5365708,
+    "seen": 1788894614.8340974,
+    "ast_hash": "11631bebfe35bedd79131620a17c37a0",
+    "semantic_hash": ""
+  },
+  "src/config.rs": {
+    "mtime": 1788799393.239267,
+    "seen": 1788800120.987067,
+    "ast_hash": "1387dd15dc9609e127a15e7b76d669b4",
+    "semantic_hash": ""
+  },
+  "src/runtime/class_define.rs": {
+    "mtime": 1788804188.838311,
+    "seen": 1788805171.9015045,
+    "ast_hash": "b266f6661cd8cdad5a1a6fbda00b03e3",
+    "semantic_hash": ""
+  },
+  "src/runtime/clock.rs": {
+    "mtime": 1788821068.76605,
+    "seen": 1788821483.4021413,
+    "ast_hash": "bd35727fab9e5975839b557c2f10d399",
+    "semantic_hash": ""
+  },
+  "src/runtime/device.rs": {
+    "mtime": 1788804188.838311,
+    "seen": 1788805171.9015045,
+    "ast_hash": "2763e9a5fec17a2241620e652d28a785",
+    "semantic_hash": ""
+  },
+  "src/runtime/spawn.rs": {
+    "mtime": 1788798720.594566,
+    "seen": 1788800120.987067,
+    "ast_hash": "f97e8cdebf247fe2e26b8363b87363bb",
+    "semantic_hash": ""
+  },
+  "src/runtime/wasm_sleep.rs": {
+    "mtime": 1788799236.1940584,
+    "seen": 1788800120.987067,
+    "ast_hash": "97fb565564b68f0e0f7744aeef052b3e",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/lcdui/graphics/benchmark.rs": {
+    "mtime": 1788811454.2463741,
+    "seen": 1788811522.676529,
+    "ast_hash": "6f20914bcacb5ccbbf17ce8f177fb3c9",
+    "semantic_hash": ""
+  },
+  "java_runtime/src/classes/javax/microedition/m3g/benchmark.rs": {
+    "mtime": 1788811454.270082,
+    "seen": 1788811522.676529,
+    "ast_hash": "570334ca61fc6b05530397fd2d0585c1",
+    "semantic_hash": ""
+  },
+  "src/bin/engine_bench/bytecode.rs": {
+    "mtime": 1788811454.514455,
+    "seen": 1788811522.676529,
+    "ast_hash": "8bfc390ee6d271eaa79997d487925fe3",
+    "semantic_hash": ""
+  },
+  "src/bin/engine_bench/jvm.rs": {
+    "mtime": 1788811454.5164604,
+    "seen": 1788811522.676529,
+    "ast_hash": "18d518c683e10f46f22a769ab177e4a7",
+    "semantic_hash": ""
+  },
+  "src/bin/engine_bench/load.rs": {
+    "mtime": 1788811492.944311,
+    "seen": 1788811522.676529,
+    "ast_hash": "6c991a144ab1e20d067e86f73fdb8d96",
+    "semantic_hash": ""
+  },
+  "src/bin/engine_bench/main.rs": {
+    "mtime": 1788812034.3834908,
+    "seen": 1788812271.0509498,
+    "ast_hash": "8a5527c5567e7d748b4700e22fcc1ccc",
+    "semantic_hash": ""
+  },
+  "benches/jar/build.ps1": {
+    "mtime": 1788812254.5256052,
+    "seen": 1788812271.0509498,
+    "ast_hash": "13d27b9f6733e2e6ae16de2c5d9593e0",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/BenchCanvas.java": {
+    "mtime": 1788811909.2700791,
+    "seen": 1788812271.0509498,
+    "ast_hash": "56358d563d348465f2db1c8f11788a98",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/BenchCase.java": {
+    "mtime": 1788811824.6536367,
+    "seen": 1788812271.0509498,
+    "ast_hash": "a51288744e3b625f0abe40d8d742ecc4",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/BenchMIDlet.java": {
+    "mtime": 1788815899.89915,
+    "seen": 1788816388.838808,
+    "ast_hash": "abf72da40f17c61a147929d5dcdcb92d",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/CpuTests.java": {
+    "mtime": 1788812227.828181,
+    "seen": 1788812271.0509498,
+    "ast_hash": "478a76716a346965d6a5a29828d9ee28",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/GameTests.java": {
+    "mtime": 1788811885.8101294,
+    "seen": 1788812271.0509498,
+    "ast_hash": "d9ca41e36146a009890adc7941f84954",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/GfxTests.java": {
+    "mtime": 1788812227.828181,
+    "seen": 1788812271.0509498,
+    "ast_hash": "019b113defc9b0951792a58fd3ac7de2",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/M3gTests.java": {
+    "mtime": 1788811885.8101294,
+    "seen": 1788812271.0509498,
+    "ast_hash": "68cfa332774b16d2b05ee8874b69498d",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/Runner.java": {
+    "mtime": 1788815899.9016702,
+    "seen": 1788816388.838808,
+    "ast_hash": "2a4e624976d872660c9e783f85841f66",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/TimedWork.java": {
+    "mtime": 1788811824.6546361,
+    "seen": 1788812271.0509498,
+    "ast_hash": "fc759b2ca15450d2a0a0b76ad0372b2f",
+    "semantic_hash": ""
+  },
+  "benches/jar/src/org/rustjava/bench/V3Tests.java": {
+    "mtime": 1788811885.8101294,
+    "seen": 1788812271.0509498,
+    "ast_hash": "745dfc7a5e2d5d4e24cc74ac64a55127",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/com/mascotcapsule/micro3d/v3/AffineTrans.java": {
+    "mtime": 1788811942.4330785,
+    "seen": 1788812271.0509498,
+    "ast_hash": "f3948d926e5f3ca9ffb7947bacb7eee2",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/lcdui/Canvas.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "f0762e512ad3fe3487ea5554693075d0",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/lcdui/Display.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "3f450b44ec666c99741d8ea78e63d372",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/lcdui/Displayable.java": {
+    "mtime": 1788811942.4330785,
+    "seen": 1788812271.0509498,
+    "ast_hash": "d172d22e3acc5adaa3bc5eb4e199188d",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/lcdui/Graphics.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "6468b4a2fdba2b17e1dfc5c4b4a5f5fc",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/lcdui/Image.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "d5d51bf6250f7656c6bc172851d5fd44",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/lcdui/game/Layer.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "a4da4db6ca0c83fae905639bb6da9fd1",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/lcdui/game/Sprite.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "49cc3a8e70da2a0ce430dc52778592ee",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/m3g/Transform.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "64ba768e453f5d3d8111823daa91b718",
+    "semantic_hash": ""
+  },
+  "benches/jar/stubs/javax/microedition/midlet/MIDlet.java": {
+    "mtime": 1788811942.436154,
+    "seen": 1788812271.0509498,
+    "ast_hash": "2cca52e69279db0fb7c68b436ce59011",
+    "semantic_hash": ""
+  },
+  "src/bin/engine_bench/jar.rs": {
+    "mtime": 1788815899.89915,
+    "seen": 1788816388.8398085,
+    "ast_hash": "4bc82e3f85ee7a281115813b9db34f73",
+    "semantic_hash": ""
+  },
+  "benches/jar/README.md": {
+    "mtime": 1788811942.4295237,
+    "seen": 1788812271.0509498,
+    "ast_hash": "1d9d6521ccb4d1d0e44c13c9479c2ef4",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/method/int_compiler.rs": {
+    "mtime": 1788825913.0745466,
+    "seen": 1788826239.205028,
+    "ast_hash": "21f75027addc48bb6bca2cf1dd4e34a8",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/method/general.rs": {
+    "mtime": 1788864744.4864287,
+    "seen": 1788868333.9284232,
+    "ast_hash": "2c9d2a51d4b2f1f25564d44914d9d2e9",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/method/gfx.rs": {
+    "mtime": 1788825981.8484082,
+    "seen": 1788826239.205028,
+    "ast_hash": "aa047b2db5ee88eb0da2ed559393318a",
+    "semantic_hash": ""
+  },
+  "jvm_rust/src/method/loop_compiler.rs": {
+    "mtime": 1788826879.698848,
+    "seen": 1788826905.327753,
+    "ast_hash": "b95ead803606f078e3ad702b88fad090",
+    "semantic_hash": ""
+  }
+}

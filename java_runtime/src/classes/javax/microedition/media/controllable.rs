@@ -14,11 +14,14 @@ impl Controllable {
             name: "javax/microedition/media/Controllable",
             parent_class: None,
             interfaces: vec![],
-            methods: vec![JavaMethodProto::new_abstract(
-                "getControl",
-                "(Ljava/lang/String;)Ljavax/microedition/media/Control;",
-                MethodAccessFlags::ABSTRACT,
-            )],
+            methods: vec![
+                JavaMethodProto::new_abstract(
+                    "getControl",
+                    "(Ljava/lang/String;)Ljavax/microedition/media/Control;",
+                    MethodAccessFlags::ABSTRACT,
+                ),
+                JavaMethodProto::new_abstract("getControls", "()[Ljavax/microedition/media/Control;", MethodAccessFlags::ABSTRACT),
+            ],
             fields: vec![],
             access_flags: ClassAccessFlags::INTERFACE,
         }

@@ -6,7 +6,7 @@ use jvm::{ClassInstanceRef, Jvm, Result};
 use crate::{
     RuntimeClassProto, RuntimeContext,
     classes::{
-        java::util::Vector,
+        java::{lang::String, util::Vector},
         javax::microedition::lcdui::{Command, CommandListener},
     },
 };
@@ -45,10 +45,16 @@ impl Displayable {
                 JavaMethodProto::new("isShown", "()Z", Self::is_shown, Default::default()),
                 JavaMethodProto::new("showNotify", "()V", Self::show_notify, Default::default()),
                 JavaMethodProto::new("hideNotify", "()V", Self::hide_notify, Default::default()),
+                JavaMethodProto::new("setTitle", "(Ljava/lang/String;)V", Self::set_title, Default::default()),
+                JavaMethodProto::new("getTitle", "()Ljava/lang/String;", Self::get_title, Default::default()),
+                JavaMethodProto::new("setTicker", "(Ljavax/microedition/lcdui/Ticker;)V", Self::set_ticker, Default::default()),
+                JavaMethodProto::new("getTicker", "()Ljavax/microedition/lcdui/Ticker;", Self::get_ticker, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("commands", "Ljava/util/Vector;", Default::default()),
                 JavaFieldProto::new("commandListener", "Ljavax/microedition/lcdui/CommandListener;", Default::default()),
+                JavaFieldProto::new("title", "Ljava/lang/String;", Default::default()),
+                JavaFieldProto::new("ticker", "Ljavax/microedition/lcdui/Ticker;", Default::default()),
             ],
             access_flags: Default::default(),
         }
@@ -141,6 +147,22 @@ impl Displayable {
         tracing::trace!("javax.microedition.lcdui.Displayable::hideNotify({this:?})");
 
         Ok(())
+    }
+
+    async fn set_title(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, title: ClassInstanceRef<String>) -> Result<()> {
+        jvm.put_field(&mut this, "title", "Ljava/lang/String;", title).await
+    }
+
+    async fn get_title(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<String>> {
+        jvm.get_field(&this, "title", "Ljava/lang/String;").await
+    }
+
+    async fn set_ticker(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, ticker: ClassInstanceRef<()>) -> Result<()> {
+        jvm.put_field(&mut this, "ticker", "Ljavax/microedition/lcdui/Ticker;", ticker).await
+    }
+
+    async fn get_ticker(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<()>> {
+        jvm.get_field(&this, "ticker", "Ljavax/microedition/lcdui/Ticker;").await
     }
 
     async fn commands(jvm: &Jvm, this: &mut ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Vector>> {

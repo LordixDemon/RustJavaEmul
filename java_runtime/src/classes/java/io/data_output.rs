@@ -21,6 +21,8 @@ impl DataOutput {
                 JavaMethodProto::new_abstract("writeInt", "(I)V", Default::default()),
                 JavaMethodProto::new_abstract("writeShort", "(I)V", Default::default()),
                 JavaMethodProto::new_abstract("writeLong", "(J)V", Default::default()),
+                JavaMethodProto::new_abstract("writeFloat", "(F)V", Default::default()),
+                JavaMethodProto::new_abstract("writeDouble", "(D)V", Default::default()),
                 JavaMethodProto::new_abstract("writeChars", "(Ljava/lang/String;)V", Default::default()),
                 JavaMethodProto::new_abstract("writeUTF", "(Ljava/lang/String;)V", Default::default()),
                 JavaMethodProto::new_abstract("close", "()V", Default::default()),

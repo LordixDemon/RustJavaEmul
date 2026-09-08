@@ -18,6 +18,7 @@ impl ByteArrayOutputStream {
                 JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
                 JavaMethodProto::new("<init>", "(I)V", Self::init_with_size, Default::default()),
                 JavaMethodProto::new("write", "(I)V", Self::write, Default::default()),
+                JavaMethodProto::new("write", "([BII)V", Self::write_bytes, Default::default()),
                 JavaMethodProto::new("toByteArray", "()[B", Self::to_byte_array, Default::default()),
                 JavaMethodProto::new("size", "()I", Self::size, Default::default()),
                 JavaMethodProto::new("reset", "()V", Self::reset, Default::default()),
@@ -26,6 +27,7 @@ impl ByteArrayOutputStream {
             fields: vec![
                 JavaFieldProto::new("buf", "[B", Default::default()),
                 JavaFieldProto::new("pos", "I", Default::default()),
+                JavaFieldProto::new("count", "I", Default::default()),
             ],
             access_flags: Default::default(),
         }
@@ -35,7 +37,7 @@ impl ByteArrayOutputStream {
         tracing::debug!("java.io.ByteArrayOutputStream::<init>({:?})", &this);
 
         let _: () = jvm
-            .invoke_special(&this, "java/io/ByteArrayOutputStream", "<init>", "(I)V", (1024,))
+            .invoke_special(&this, "java/io/ByteArrayOutputStream", "<init>", "(I)V", (32,))
             .await?;
 
         Ok(())
@@ -44,12 +46,17 @@ impl ByteArrayOutputStream {
     async fn init_with_size(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, size: i32) -> Result<()> {
         tracing::debug!("java.io.ByteArrayOutputStream::<init>({:?}, {:?})", &this, size);
 
+        if size < 0 {
+            return Err(jvm.exception("java/lang/IllegalArgumentException", "Negative initial size").await);
+        }
+
         let _: () = jvm.invoke_special(&this, "java/io/OutputStream", "<init>", "()V", ()).await?;
 
-        let array = jvm.instantiate_array("B", 1024).await?;
+        let array = jvm.instantiate_array("B", size as usize).await?;
 
         jvm.put_field(&mut this, "buf", "[B", array).await?;
         jvm.put_field(&mut this, "pos", "I", 0).await?;
+        jvm.put_field(&mut this, "count", "I", 0).await?;
 
         Ok(())
     }
@@ -57,13 +64,53 @@ impl ByteArrayOutputStream {
     async fn write(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, b: i32) -> Result<()> {
         tracing::debug!("java.io.ByteArrayOutputStream::write({:?}, {:?})", &this, b);
 
-        let pos: i32 = jvm.get_field(&this, "pos", "I").await?;
-        Self::ensure_capacity(jvm, &mut this, (pos + 1) as _).await?;
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
+        Self::ensure_capacity(jvm, &mut this, (count + 1) as _).await?;
 
-        let mut buf = jvm.get_field(&this, "buf", "[B").await?;
-        jvm.store_array(&mut buf, pos as _, vec![b as i8]).await?;
+        let mut buf: ClassInstanceRef<Array<i8>> = jvm.get_field(&this, "buf", "[B").await?;
+        jvm.store_array(&mut buf, count as _, vec![b as i8]).await?;
 
-        jvm.put_field(&mut this, "pos", "I", pos + 1).await?;
+        jvm.put_field(&mut this, "count", "I", count + 1).await?;
+        jvm.put_field(&mut this, "pos", "I", count + 1).await?;
+
+        Ok(())
+    }
+
+    async fn write_bytes(
+        jvm: &Jvm,
+        _: &mut RuntimeContext,
+        mut this: ClassInstanceRef<Self>,
+        b: ClassInstanceRef<Array<i8>>,
+        off: i32,
+        len: i32,
+    ) -> Result<()> {
+        tracing::debug!("java.io.ByteArrayOutputStream::write({:?}, {:?}, {}, {})", &this, &b, off, len);
+
+        if b.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "b is null").await);
+        }
+        let array_len = jvm.array_length(&b).await? as i32;
+        if off < 0 || len < 0 || off + len > array_len {
+            return Err(jvm.exception("java/lang/IndexOutOfBoundsException", "out of bounds").await);
+        }
+        if len == 0 {
+            return Ok(());
+        }
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
+        Self::ensure_capacity(jvm, &mut this, (count + len) as _).await?;
+
+        let buf: ClassInstanceRef<Array<i8>> = jvm.get_field(&this, "buf", "[B").await?;
+        let _: () = jvm
+            .invoke_static(
+                "java/lang/System",
+                "arraycopy",
+                "(Ljava/lang/Object;ILjava/lang/Object;II)V",
+                (b, off, buf.clone(), count, len),
+            )
+            .await?;
+
+        jvm.put_field(&mut this, "count", "I", count + len).await?;
+        jvm.put_field(&mut this, "pos", "I", count + len).await?;
 
         Ok(())
     }
@@ -72,15 +119,15 @@ impl ByteArrayOutputStream {
         tracing::debug!("java.io.ByteArrayOutputStream::to_byte_array({:?})", &this);
 
         let buf: ClassInstanceRef<Array<i8>> = jvm.get_field(&this, "buf", "[B").await?;
-        let pos: i32 = jvm.get_field(&this, "pos", "I").await?;
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
 
-        let dest = jvm.instantiate_array("B", pos as _).await?;
+        let dest = jvm.instantiate_array("B", count as _).await?;
         let _: () = jvm
             .invoke_static(
                 "java/lang/System",
                 "arraycopy",
                 "(Ljava/lang/Object;ILjava/lang/Object;II)V",
-                (buf.clone(), 0, dest.clone(), 0, pos),
+                (buf.clone(), 0, dest.clone(), 0, count),
             )
             .await?;
 
@@ -90,15 +137,16 @@ impl ByteArrayOutputStream {
     async fn size(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
         tracing::debug!("java.io.ByteArrayOutputStream::size({:?})", &this);
 
-        let pos: i32 = jvm.get_field(&this, "pos", "I").await?;
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
 
-        Ok(pos)
+        Ok(count)
     }
 
     async fn reset(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>) -> Result<()> {
         tracing::debug!("java.io.ByteArrayOutputStream::reset({:?})", &this);
 
         jvm.put_field(&mut this, "pos", "I", 0).await?;
+        jvm.put_field(&mut this, "count", "I", 0).await?;
 
         Ok(())
     }
@@ -114,7 +162,7 @@ impl ByteArrayOutputStream {
         let current_capacity = jvm.array_length(&old_buf).await?;
 
         if current_capacity < capacity {
-            let new_capacity = capacity * 2;
+            let new_capacity = (current_capacity * 2).max(capacity);
             let new_buf = jvm.instantiate_array("B", new_capacity).await?;
 
             let _: () = jvm

@@ -13,12 +13,15 @@ impl Vector {
         RuntimeClassProto {
             name: "java/util/Vector",
             parent_class: Some("java/util/AbstractList"),
-            interfaces: vec![],
+            interfaces: vec!["java/lang/Cloneable"],
             methods: vec![
                 JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
                 JavaMethodProto::new("<init>", "(I)V", Self::init_with_capacity, Default::default()),
                 JavaMethodProto::new("<init>", "(II)V", Self::init_with_capacity_increment, Default::default()),
+                JavaMethodProto::new("<init>", "(Ljava/util/Collection;)V", Self::init_with_collection, Default::default()),
                 JavaMethodProto::new("add", "(Ljava/lang/Object;)Z", Self::add, Default::default()),
+                JavaMethodProto::new("add", "(ILjava/lang/Object;)V", Self::add_at, Default::default()),
+                JavaMethodProto::new("addAll", "(Ljava/util/Collection;)Z", Self::add_all, Default::default()),
                 JavaMethodProto::new("addElement", "(Ljava/lang/Object;)V", Self::add_element, Default::default()),
                 JavaMethodProto::new("capacity", "()I", Self::capacity, Default::default()),
                 JavaMethodProto::new("clear", "()V", Self::clear, Default::default()),
@@ -27,21 +30,27 @@ impl Vector {
                 JavaMethodProto::new("ensureCapacity", "(I)V", Self::ensure_capacity_public, Default::default()),
                 JavaMethodProto::new("insertElementAt", "(Ljava/lang/Object;I)V", Self::insert_element_at, Default::default()),
                 JavaMethodProto::new("elementAt", "(I)Ljava/lang/Object;", Self::element_at, Default::default()),
+                JavaMethodProto::new("get", "(I)Ljava/lang/Object;", Self::element_at, Default::default()),
                 JavaMethodProto::new("set", "(ILjava/lang/Object;)Ljava/lang/Object;", Self::set, Default::default()),
                 JavaMethodProto::new("setElementAt", "(Ljava/lang/Object;I)V", Self::set_element_at, Default::default()),
                 JavaMethodProto::new("setSize", "(I)V", Self::set_size, Default::default()),
                 JavaMethodProto::new("size", "()I", Self::size, Default::default()),
                 JavaMethodProto::new("isEmpty", "()Z", Self::is_empty, Default::default()),
                 JavaMethodProto::new("remove", "(I)Ljava/lang/Object;", Self::remove, Default::default()),
+                JavaMethodProto::new("remove", "(Ljava/lang/Object;)Z", Self::remove_element, Default::default()),
                 JavaMethodProto::new("removeAllElements", "()V", Self::remove_all_elements, Default::default()),
                 JavaMethodProto::new("removeElementAt", "(I)V", Self::remove_element_at, Default::default()),
                 JavaMethodProto::new("indexOf", "(Ljava/lang/Object;)I", Self::index_of, Default::default()),
+                JavaMethodProto::new("indexOf", "(Ljava/lang/Object;I)I", Self::index_of_from, Default::default()),
                 JavaMethodProto::new("lastIndexOf", "(Ljava/lang/Object;)I", Self::last_index_of, Default::default()),
                 JavaMethodProto::new("lastIndexOf", "(Ljava/lang/Object;I)I", Self::last_index_of_index, Default::default()),
                 JavaMethodProto::new("firstElement", "()Ljava/lang/Object;", Self::first_element, Default::default()),
                 JavaMethodProto::new("lastElement", "()Ljava/lang/Object;", Self::last_element, Default::default()),
                 JavaMethodProto::new("removeElement", "(Ljava/lang/Object;)Z", Self::remove_element, Default::default()),
                 JavaMethodProto::new("trimToSize", "()V", Self::trim_to_size, Default::default()),
+                JavaMethodProto::new("elements", "()Ljava/util/Enumeration;", Self::elements, Default::default()),
+                JavaMethodProto::new("clone", "()Ljava/lang/Object;", Self::clone, Default::default()),
+                JavaMethodProto::new("toString", "()Ljava/lang/String;", Self::to_string, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("elementData", "[Ljava/lang/Object;", Default::default()),
@@ -50,6 +59,68 @@ impl Vector {
             ],
             access_flags: Default::default(),
         }
+    }
+
+    async fn elements(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Object>> {
+        Ok(jvm
+            .new_class("java/util/Vector$Enumerator", "(Ljava/util/Vector;)V", (this,))
+            .await?
+            .into())
+    }
+
+    async fn clone(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Object>> {
+        jvm.invoke_special(&this, "java/lang/Object", "clone", "()Ljava/lang/Object;", ()).await
+    }
+
+    async fn to_string(
+        jvm: &Jvm,
+        _: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+    ) -> Result<jvm::ClassInstanceRef<crate::classes::java::lang::String>> {
+        let size: i32 = jvm.get_field(&this, "elementCount", "I").await?;
+        let mut text = alloc::string::String::from("[");
+        for i in 0..size {
+            if i > 0 {
+                text.push_str(", ");
+            }
+            let item: ClassInstanceRef<Object> = jvm.invoke_virtual(&this, "elementAt", "(I)Ljava/lang/Object;", (i,)).await?;
+            if item.is_null() {
+                text.push_str("null");
+            } else {
+                let s: jvm::ClassInstanceRef<crate::classes::java::lang::String> =
+                    jvm.invoke_virtual(&item, "toString", "()Ljava/lang/String;", ()).await?;
+                text.push_str(&jvm::runtime::JavaLangString::to_rust_string(jvm, &s).await?);
+            }
+        }
+        text.push(']');
+        Ok(jvm::runtime::JavaLangString::from_rust_string(jvm, &text).await?.into())
+    }
+
+    async fn index_of_from(
+        jvm: &Jvm,
+        _: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        element: ClassInstanceRef<Object>,
+        start: i32,
+    ) -> Result<i32> {
+        let element_count: i32 = jvm.get_field(&this, "elementCount", "I").await?;
+        let element_data = jvm.get_field(&this, "elementData", "[Ljava/lang/Object;").await?;
+        let start = start.max(0);
+        for i in start..element_count {
+            let item: ClassInstanceRef<Object> = jvm.load_array(&element_data, i as _, 1).await?.into_iter().next().unwrap();
+            if item.is_null() && element.is_null() {
+                return Ok(i);
+            }
+            if item.is_null() || element.is_null() {
+                continue;
+            }
+            let item_instance: Box<dyn ClassInstance> = item.into();
+            let element_instance: Box<dyn ClassInstance> = element.clone().into();
+            if item_instance.equals(&*element_instance)? {
+                return Ok(i);
+            }
+        }
+        Ok(-1)
     }
 
     async fn init(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<()> {
@@ -85,6 +156,52 @@ impl Vector {
         jvm.put_field(&mut this, "capacityIncrement", "I", capacity_increment).await?;
 
         Ok(())
+    }
+
+    async fn init_with_collection(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        collection: ClassInstanceRef<Object>,
+    ) -> Result<()> {
+        Self::init(jvm, context, this.clone()).await?;
+        let _: bool = Self::add_all(jvm, context, this, collection).await?;
+        Ok(())
+    }
+
+    async fn add_at(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        index: i32,
+        element: ClassInstanceRef<Object>,
+    ) -> Result<()> {
+        Self::insert_element_at(jvm, context, this, element, index).await
+    }
+
+    async fn add_all(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, collection: ClassInstanceRef<Object>) -> Result<bool> {
+        if collection.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "").await);
+        }
+        if collection.class_definition().name() == "java/util/Vector" {
+            let size: i32 = jvm.invoke_virtual(&collection, "size", "()I", ()).await?;
+            for index in 0..size {
+                let element: ClassInstanceRef<Object> = jvm.invoke_virtual(&collection, "elementAt", "(I)Ljava/lang/Object;", (index,)).await?;
+                let _: bool = jvm.invoke_virtual(&this, "add", "(Ljava/lang/Object;)Z", (element,)).await?;
+            }
+            return Ok(size > 0);
+        }
+        let array: ClassInstanceRef<Array<ClassInstanceRef<Object>>> =
+            jvm.invoke_virtual(&collection, "toArray", "()[Ljava/lang/Object;", ()).await?;
+        if array.is_null() {
+            return Ok(false);
+        }
+        let length = jvm.array_length(&array).await? as i32;
+        for index in 0..length {
+            let element: ClassInstanceRef<Object> = jvm.load_array(&array, index as usize, 1).await?.into_iter().next().unwrap();
+            let _: bool = jvm.invoke_virtual(&this, "add", "(Ljava/lang/Object;)Z", (element,)).await?;
+        }
+        Ok(length > 0)
     }
 
     async fn capacity(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {

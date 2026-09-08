@@ -2,7 +2,7 @@ use alloc::vec;
 
 use java_class_proto::JavaMethodProto;
 use java_constants::{ClassAccessFlags, MethodAccessFlags};
-use jvm::{ClassInstanceRef, Jvm, Result};
+use jvm::{ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
 
 use crate::{RuntimeClassProto, RuntimeContext, classes::java::lang::String};
 
@@ -23,6 +23,10 @@ impl TimeZone {
                     Self::get_time_zone,
                     MethodAccessFlags::STATIC,
                 ),
+                JavaMethodProto::new("getDefault", "()Ljava/util/TimeZone;", Self::get_default, MethodAccessFlags::STATIC),
+                JavaMethodProto::new("getRawOffset", "()I", Self::get_raw_offset, Default::default()),
+                JavaMethodProto::new("useDaylightTime", "()Z", Self::use_daylight_time, Default::default()),
+                JavaMethodProto::new("getID", "()Ljava/lang/String;", Self::get_id, Default::default()),
             ],
             fields: vec![],
             access_flags: ClassAccessFlags::ABSTRACT,
@@ -43,5 +47,22 @@ impl TimeZone {
         let result = jvm.new_class("java/util/SimpleTimeZone", "(Ljava/lang/String;)V", (id,)).await?;
 
         Ok(result.into())
+    }
+
+    async fn get_default(jvm: &Jvm, context: &mut RuntimeContext) -> Result<ClassInstanceRef<Self>> {
+        let id = JavaLangString::from_rust_string(jvm, "GMT").await?;
+        Self::get_time_zone(jvm, context, id.into()).await
+    }
+
+    async fn get_raw_offset(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>) -> Result<i32> {
+        Ok(0)
+    }
+
+    async fn use_daylight_time(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>) -> Result<bool> {
+        Ok(false)
+    }
+
+    async fn get_id(jvm: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<String>> {
+        Ok(JavaLangString::from_rust_string(jvm, "GMT").await?.into())
     }
 }

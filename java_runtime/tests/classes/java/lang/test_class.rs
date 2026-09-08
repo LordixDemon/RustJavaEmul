@@ -58,3 +58,35 @@ async fn test_for_name() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_for_name_unloaded_runtime_class() -> Result<()> {
+    let jvm = test_jvm().await?;
+
+    let class_name = JavaLangString::from_rust_string(&jvm, "java.lang.Boolean").await?;
+    let class: ClassInstanceRef<Class> = jvm
+        .invoke_static("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", (class_name,))
+        .await?;
+    let rust_class = JavaLangClass::to_rust_class(&jvm, &class).await?;
+    assert_eq!(rust_class.name(), "java/lang/Boolean");
+
+    let is_interface: bool = jvm.invoke_virtual(&class, "isInterface", "()Z", ()).await?;
+    assert!(!is_interface);
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_byte_array_array_is_object_array() -> Result<()> {
+    let jvm = test_jvm().await?;
+
+    let byte_arrays = jvm.instantiate_array("[B", 1).await?;
+    assert!(jvm.is_instance(&*byte_arrays, "[Ljava/lang/Object;"));
+    assert!(jvm.is_instance(&*byte_arrays, "java/lang/Object"));
+
+    let ints = jvm.instantiate_array("I", 2).await?;
+    assert!(!jvm.is_instance(&*ints, "[Ljava/lang/Object;"));
+
+    let strings = jvm.instantiate_array("Ljava/lang/String;", 1).await?;
+    assert!(jvm.is_instance(&*strings, "[Ljava/lang/Object;"));
+    Ok(())
+}

@@ -33,3 +33,21 @@ async fn test_min_max() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_math_copysign_log10() -> Result<()> {
+    let jvm = test_jvm().await?;
+
+    let copied: f64 = jvm.invoke_static("java/lang/Math", "copySign", "(DD)D", (-3.0f64, 1.0f64)).await?;
+    assert_eq!(copied, 3.0);
+    let copied_f: f32 = jvm.invoke_static("java/lang/Math", "copySign", "(FF)F", (2.0f32, -1.0f32)).await?;
+    assert_eq!(copied_f, -2.0);
+
+    let log: f64 = jvm.invoke_static("java/lang/Math", "log10", "(D)D", (100.0f64,)).await?;
+    assert!((log - 2.0).abs() < 1e-9);
+
+    let random: f64 = jvm.invoke_static("java/lang/Math", "random", "()D", ()).await?;
+    assert!((0.0..1.0).contains(&random));
+
+    Ok(())
+}

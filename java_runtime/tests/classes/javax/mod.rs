@@ -1,1 +1,2 @@
+mod bluetooth;
 mod microedition;

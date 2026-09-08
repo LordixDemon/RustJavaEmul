@@ -35,6 +35,7 @@ impl InputStreamReader {
                 JavaMethodProto::new("read", "()I", Self::read_one, Default::default()),
                 JavaMethodProto::new("read", "([CII)I", Self::read, Default::default()),
                 JavaMethodProto::new("close", "()V", Self::close, Default::default()),
+                JavaMethodProto::new("skip", "(J)J", Self::skip, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("in", "Ljava/io/InputStream;", Default::default()),
@@ -236,5 +237,24 @@ impl InputStreamReader {
         let _: () = jvm.invoke_virtual(&r#in, "close", "()V", ()).await?;
 
         Ok(())
+    }
+
+    async fn skip(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, n: i64) -> Result<i64> {
+        if n <= 0 {
+            return Ok(0);
+        }
+        let buf = jvm.instantiate_array("C", 256).await?;
+        let mut remaining = n;
+        let mut skipped = 0i64;
+        while remaining > 0 {
+            let to_read = remaining.min(256) as i32;
+            let read: i32 = jvm.invoke_virtual(&this, "read", "([CII)I", (buf.clone(), 0, to_read)).await?;
+            if read <= 0 {
+                break;
+            }
+            skipped += read as i64;
+            remaining -= read as i64;
+        }
+        Ok(skipped)
     }
 }

@@ -53,6 +53,7 @@ impl Item {
                 ),
                 JavaMethodProto::new("setLabel", "(Ljava/lang/String;)V", Self::set_label, Default::default()),
                 JavaMethodProto::new("setLayout", "(I)V", Self::set_layout, Default::default()),
+                JavaMethodProto::new("setPreferredSize", "(II)V", Self::set_preferred_size, Default::default()),
                 JavaMethodProto::new("notifyStateChanged", "()V", Self::notify_state_changed, Default::default()),
             ],
             fields: vec![
@@ -216,6 +217,10 @@ impl Item {
         tracing::debug!("javax.microedition.lcdui.Item::setLayout({this:?}, {layout:?})");
 
         jvm.put_field(&mut this, "layout", "I", layout).await
+    }
+
+    async fn set_preferred_size(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>, _width: i32, _height: i32) -> Result<()> {
+        Ok(())
     }
 
     async fn notify_state_changed(_: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<()> {

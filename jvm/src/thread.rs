@@ -21,6 +21,20 @@ impl StackFrame {
             StackFrame::Native(native_frame) => &mut native_frame.local_variables,
         }
     }
+
+    pub fn extra_roots(&self) -> &[Box<dyn ClassInstance>] {
+        match self {
+            StackFrame::Java(java_frame) => &java_frame.extra_roots,
+            StackFrame::Native(native_frame) => &native_frame.extra_roots,
+        }
+    }
+
+    pub fn set_extra_roots(&mut self, roots: Vec<Box<dyn ClassInstance>>) {
+        match self {
+            StackFrame::Java(java_frame) => java_frame.extra_roots = roots,
+            StackFrame::Native(native_frame) => native_frame.extra_roots = roots,
+        }
+    }
 }
 
 pub struct JvmThread {
@@ -38,11 +52,15 @@ impl JvmThread {
             class_instance,
             method,
             local_variables: Vec::new(),
+            extra_roots: Vec::new(),
         }));
     }
 
     pub fn push_native_frame(&mut self) {
-        self.stack.push(StackFrame::Native(NativeStackFrame { local_variables: Vec::new() }));
+        self.stack.push(StackFrame::Native(NativeStackFrame {
+            local_variables: Vec::new(),
+            extra_roots: Vec::new(),
+        }));
     }
 
     pub fn pop_frame(&mut self) -> Option<StackFrame> {
@@ -77,8 +95,10 @@ pub struct JavaStackFrame {
     pub class_instance: Option<Box<dyn ClassInstance>>,
     pub method: Arc<str>,
     pub local_variables: Vec<Box<dyn ClassInstance>>,
+    pub extra_roots: Vec<Box<dyn ClassInstance>>,
 }
 
 pub struct NativeStackFrame {
     pub local_variables: Vec<Box<dyn ClassInstance>>,
+    pub extra_roots: Vec<Box<dyn ClassInstance>>,
 }

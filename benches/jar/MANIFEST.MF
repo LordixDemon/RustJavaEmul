@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+MIDlet-Name: RustJavaBench
+MIDlet-Version: 1.0
+MIDlet-Vendor: RustJava
+MIDlet-1: RustJavaBench, , org.rustjava.bench.BenchMIDlet
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
+Bench-Ms: 400

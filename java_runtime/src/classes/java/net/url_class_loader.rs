@@ -132,6 +132,8 @@ impl URLClassLoader {
             let file = JavaLangString::to_rust_string(jvm, &file).await?;
             let is_directory = file.ends_with('/')
                 || file.is_empty()
+                || file == "."
+                || file.ends_with("/.")
                 || runtime
                     .metadata(&file)
                     .await
@@ -142,11 +144,18 @@ impl URLClassLoader {
                 // directory
                 let final_path = if file.ends_with('/') || file.is_empty() {
                     format!("{file}{name_str}")
+                } else if file == "." {
+                    name_str.clone()
                 } else {
                     format!("{file}/{name_str}")
                 };
 
-                if runtime.metadata(&final_path).await.is_ok() {
+                if runtime
+                    .metadata(&final_path)
+                    .await
+                    .map(|stat| stat.r#type == FileType::File)
+                    .unwrap_or(false)
+                {
                     let new_url = jvm
                         .new_class(
                             "java/net/URL",

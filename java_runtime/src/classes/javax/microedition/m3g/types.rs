@@ -1,0 +1,34 @@
+use jvm::{Array, ClassInstanceRef};
+
+pub struct Loader;
+pub struct AnimationController;
+pub struct AnimationTrack;
+pub struct KeyframeSequence;
+pub struct Object3D;
+pub struct Transform;
+pub struct Transformable;
+pub struct Node;
+pub struct Group;
+pub struct World;
+pub struct Camera;
+pub struct Background;
+pub struct Appearance;
+pub struct CompositingMode;
+pub struct Fog;
+pub struct PolygonMode;
+pub struct Image2D;
+pub struct Texture2D;
+pub struct Sprite3D;
+pub struct Mesh;
+pub struct MorphingMesh;
+pub struct SkinnedMesh;
+pub struct IndexBuffer;
+pub struct TriangleStripArray;
+pub struct VertexArray;
+pub struct VertexBuffer;
+pub struct Light;
+pub struct Material;
+pub struct Graphics3D;
+pub struct RayIntersection;
+
+pub(super) type Object3DArray = Array<ClassInstanceRef<Object3D>>;

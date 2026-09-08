@@ -2,7 +2,10 @@ use alloc::{vec, vec::Vec};
 
 use super::{
     binary::{ByteLoader, ParseResult},
-    constants::{BONE_STRIDE, MAT_COLORKEY, MAT_DOUBLE_FACE, MAT_MASK, PATTERN_STRIDE, QUAD_C_STRIDE, QUAD_T_STRIDE, TRI_C_STRIDE, TRI_T_STRIDE},
+    constants::{
+        BONE_STRIDE, MAT_COLORKEY, MAT_DOUBLE_FACE, MAT_FLAT_NORMAL, MAT_LIGHTING, MAT_MASK, MAT_SPECULAR, MAT_ZSORT_FAR,
+        MAT_ZSORT_NEAR, PATTERN_STRIDE, QUAD_C_STRIDE, QUAD_T_STRIDE, TRI_C_STRIDE, TRI_T_STRIDE,
+    },
 };
 
 pub(super) struct NativeFigure {
@@ -279,6 +282,33 @@ fn read_colored_polys(
     Ok((colors, c3, c4))
 }
 
+#[inline]
+pub(super) fn map_textured_poly_mat(raw: i32) -> i32 {
+    let mut mat = 0;
+    if (raw & 0x03) != 0 {
+        mat |= MAT_COLORKEY;
+    }
+    if (raw & 0x14) != 0 {
+        mat |= MAT_DOUBLE_FACE;
+    }
+    if (raw & 0x20) != 0 {
+        mat |= MAT_LIGHTING;
+    }
+    if (raw & 0x40) != 0 {
+        mat |= MAT_SPECULAR;
+    }
+    if (raw & 0x80) != 0 {
+        mat |= MAT_FLAT_NORMAL;
+    }
+    if (raw & 0x100) != 0 {
+        mat |= MAT_ZSORT_NEAR;
+    }
+    if (raw & 0x200) != 0 {
+        mat |= MAT_ZSORT_FAR;
+    }
+    mat
+}
+
 fn read_textured_polys(
     loader: &mut ByteLoader<'_>,
     num_t3: usize,
@@ -293,7 +323,7 @@ fn read_textured_polys(
     if format == 1 {
         for _ in 0..num_t3 {
             let raw = loader.read_u16()? as i32;
-            let mat = (((raw & 4) != 0) as i32 * MAT_DOUBLE_FACE) | (((raw & 2) != 0) as i32 * MAT_COLORKEY);
+            let mat = map_textured_poly_mat(raw);
             let a = loader.read_u16()? as i16;
             let b = loader.read_u16()? as i16;
             let c = loader.read_u16()? as i16;
@@ -307,7 +337,7 @@ fn read_textured_polys(
         }
         for _ in 0..num_t4 {
             let raw = loader.read_u16()? as i32;
-            let mat = (((raw & 4) != 0) as i32 * MAT_DOUBLE_FACE) | (((raw & 2) != 0) as i32 * MAT_COLORKEY);
+            let mat = map_textured_poly_mat(raw);
             let a = loader.read_u16()? as i16;
             let b = loader.read_u16()? as i16;
             let c = loader.read_u16()? as i16;
@@ -336,7 +366,8 @@ fn read_textured_polys(
     };
 
     for _ in 0..num_t3 {
-        let mat = loader.read_ubits(mat_bits)? & MAT_MASK;
+        let raw = loader.read_ubits(mat_bits)?;
+        let mat = map_textured_poly_mat(raw);
         let a = loader.read_ubits(vertex_bits)? as i16;
         let b = loader.read_ubits(vertex_bits)? as i16;
         let c = loader.read_ubits(vertex_bits)? as i16;
@@ -350,7 +381,8 @@ fn read_textured_polys(
     }
 
     for _ in 0..num_t4 {
-        let mat = loader.read_ubits(mat_bits)? & MAT_MASK;
+        let raw = loader.read_ubits(mat_bits)?;
+        let mat = map_textured_poly_mat(raw);
         let a = loader.read_ubits(vertex_bits)? as i16;
         let b = loader.read_ubits(vertex_bits)? as i16;
         let c = loader.read_ubits(vertex_bits)? as i16;
@@ -439,3 +471,4 @@ fn read_bones(loader: &mut ByteLoader<'_>, count: usize) -> ParseResult<Vec<i32>
     }
     Ok(bones)
 }
+

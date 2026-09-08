@@ -47,11 +47,17 @@ pub struct V3GpuTriangle {
     pub vertices: [V3GpuVertex; 3],
 }
 
+fn register_lcdui_gpu_hooks() {
+    crate::classes::javax::microedition::lcdui::register_gpu_image_hooks(invalidate_gpu_image, publish_gpu_image_to_screen);
+}
+
 pub fn set_gpu_scene_enabled(enabled: bool) {
+    register_lcdui_gpu_hooks();
     V3_GPU_SCENE_ENABLED.store(enabled, Ordering::Relaxed);
     if !enabled {
         *V3_GPU_FRAME.lock() = None;
         V3_GPU_IMAGE_FRAMES.lock().clear();
+        crate::classes::javax::microedition::m3g::clear_m3g_gpu_frames();
     }
 }
 
@@ -95,6 +101,7 @@ pub(super) fn publish_gpu_scene(
     true
 }
 
+#[allow(dead_code)]
 pub(super) fn publish_gpu_image_scene(
     pixels: &ClassInstanceRef<Array<i32>>,
     width: i32,

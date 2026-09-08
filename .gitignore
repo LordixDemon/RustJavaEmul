@@ -16,14 +16,36 @@
 .env.*
 !.env.example
 
+# Local proxy credentials
+/IPV4.txt
+
 # OS metadata
 .DS_Store
 Thumbs.db
 Desktop.ini
 
 # Temporary files
+/benches/jar/build/
 *.tmp
 *.temp
 *.swp
 *.swo
 *~
+
+# graphify AST/semantic cache (graph.json, GRAPH_REPORT.md, graph.html stay tracked)
+graphify-out/cache/
+graphify-out/20*/
+
+
+# Local temporary dumps and test artifacts
+/*.class
+/*.javap.txt
+/glomo.cfg
+/GlomoReg/
+/temp_sh2/
+/compat_scan/
+/scratch/
+/apk/
+__pycache__/
+*.pyc
+

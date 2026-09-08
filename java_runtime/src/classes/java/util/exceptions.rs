@@ -1,0 +1,12 @@
+simple_exception!(
+    EmptyStackException,
+    "java/util/EmptyStackException",
+    "java/lang/RuntimeException",
+    "java.util.EmptyStackException"
+);
+simple_exception!(
+    NoSuchElementException,
+    "java/util/NoSuchElementException",
+    "java/lang/RuntimeException",
+    "java.util.NoSuchElementException"
+);

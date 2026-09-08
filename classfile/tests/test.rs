@@ -132,3 +132,26 @@ fn test_invokeinterface() {
         panic!("Expected code attribute");
     }
 }
+
+#[test]
+fn invalid_this_class_index_does_not_panic() {
+    let mut class = Vec::new();
+    class.extend_from_slice(&0xCAFEBABEu32.to_be_bytes());
+    class.extend_from_slice(&0u16.to_be_bytes());
+    class.extend_from_slice(&45u16.to_be_bytes());
+    class.extend_from_slice(&2u16.to_be_bytes());
+    class.push(1);
+    class.extend_from_slice(&4u16.to_be_bytes());
+    class.extend_from_slice(b"Test");
+    class.extend_from_slice(&1u16.to_be_bytes());
+    class.extend_from_slice(&9u16.to_be_bytes());
+    class.extend_from_slice(&0u16.to_be_bytes());
+    class.extend_from_slice(&0u16.to_be_bytes());
+    class.extend_from_slice(&0u16.to_be_bytes());
+    class.extend_from_slice(&0u16.to_be_bytes());
+    class.extend_from_slice(&0u16.to_be_bytes());
+
+    assert!(ClassInfo::parse(&class).is_none());
+    let constants = ClassInfo::parse_constants(&class).expect("constant pool should still parse");
+    assert!(constants.1.is_none());
+}

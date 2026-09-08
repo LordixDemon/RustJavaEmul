@@ -23,9 +23,15 @@ impl Random {
                 JavaMethodProto::new("nextBoolean", "()Z", Self::next_boolean, Default::default()),
                 JavaMethodProto::new("nextFloat", "()F", Self::next_float, Default::default()),
                 JavaMethodProto::new("nextDouble", "()D", Self::next_double, Default::default()),
+                JavaMethodProto::new("nextGaussian", "()D", Self::next_gaussian, Default::default()),
+                JavaMethodProto::new("next", "(I)I", Self::next, Default::default()),
                 JavaMethodProto::new("setSeed", "(J)V", Self::set_seed, Default::default()),
             ],
-            fields: vec![JavaFieldProto::new("seed", "J", Default::default())],
+            fields: vec![
+                JavaFieldProto::new("seed", "J", Default::default()),
+                JavaFieldProto::new("haveNextNextGaussian", "Z", Default::default()),
+                JavaFieldProto::new("nextNextGaussian", "D", Default::default()),
+            ],
             access_flags: Default::default(),
         }
     }
@@ -103,12 +109,37 @@ impl Random {
         Ok(((high << 27) + low) as f64 / (1u64 << 53) as f64)
     }
 
+    async fn next(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, bits: i32) -> Result<i32> {
+        Self::next_bits(jvm, &mut this, bits.max(1) as u32).await
+    }
+
+    async fn next_gaussian(jvm: &Jvm, context: &mut RuntimeContext, mut this: ClassInstanceRef<Self>) -> Result<f64> {
+        let have: bool = jvm.get_field(&this, "haveNextNextGaussian", "Z").await?;
+        if have {
+            jvm.put_field(&mut this, "haveNextNextGaussian", "Z", false).await?;
+            return jvm.get_field(&this, "nextNextGaussian", "D").await;
+        }
+        loop {
+            let v1 = 2.0 * Self::next_double(jvm, context, this.clone()).await? - 1.0;
+            let v2 = 2.0 * Self::next_double(jvm, context, this.clone()).await? - 1.0;
+            let s = v1 * v1 + v2 * v2;
+            if s >= 1.0 || s == 0.0 {
+                continue;
+            }
+            let multiplier = (-2.0 * s.ln() / s).sqrt();
+            jvm.put_field(&mut this, "nextNextGaussian", "D", v2 * multiplier).await?;
+            jvm.put_field(&mut this, "haveNextNextGaussian", "Z", true).await?;
+            return Ok(v1 * multiplier);
+        }
+    }
+
     async fn set_seed(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, seed: i64) -> Result<()> {
         tracing::debug!("java.util.Random::setSeed({:?}, {:?})", &this, seed);
 
         let seed = (seed ^ 0x5DEECE66D) & Self::MASK;
 
         jvm.put_field(&mut this, "seed", "J", seed).await?;
+        jvm.put_field(&mut this, "haveNextNextGaussian", "Z", false).await?;
 
         Ok(())
     }

@@ -27,6 +27,9 @@ pub type Result<T> = result::Result<T, error::JavaError>;
 #[async_trait::async_trait]
 pub trait JvmCallback: Sync + Send {
     async fn call(&self, jvm: &Jvm, args: Box<[JavaValue]>) -> Result<JavaValue>;
+    fn call_sync(&self, _jvm: &Jvm, _args: &[JavaValue]) -> Option<Result<JavaValue>> {
+        None
+    }
 }
 
 pub use self::{

@@ -7,7 +7,7 @@ use alloc::{boxed::Box, format, vec};
 
 use dyn_clone::clone_box;
 use java_class_proto::JavaMethodProto;
-use java_constants::MethodAccessFlags;
+use java_constants::{FieldAccessFlags, MethodAccessFlags};
 use jvm::{ClassInstance, ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
 
 use crate::{Runtime, RuntimeClassProto, RuntimeContext, SpawnCallback, classes::java::lang::String};
@@ -105,13 +105,42 @@ impl Object {
     }
 
     async fn clone(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Self>> {
-        tracing::warn!("stub java.lang.Object::clone({:?})", &this);
+        tracing::debug!("java.lang.Object::clone({:?})", &this);
 
-        if !jvm.is_instance(&**this, "java/lang/Cloneable") {
+        let rust_this: Box<dyn ClassInstance> = this.clone().into();
+        let class_name = rust_this.class_definition().name();
+        if class_name.starts_with('[') {
+            let length = jvm.array_length(&rust_this).await?;
+            let element = &class_name[1..];
+            let mut new_array = jvm.instantiate_array(element, length).await?;
+            if let (Some(src), Some(dst)) = (rust_this.as_array_instance(), new_array.as_array_instance_mut()) {
+                let values = src.load(0, length)?;
+                dst.store(0, values.into())?;
+            }
+            return Ok(new_array.into());
+        }
+
+        if !jvm.is_instance(&*rust_this, "java/lang/Cloneable") {
             return Err(jvm.exception("java/lang/CloneNotSupportedException", "Cannot clone this object").await);
         }
 
-        Ok(None.into())
+        let mut new_obj = jvm.instantiate_class(&class_name).await?;
+        let mut current = Some(class_name);
+        while let Some(name) = current {
+            let Some(class) = jvm.get_class(&name) else {
+                break;
+            };
+            for field in class.definition.fields() {
+                if field.access_flags().contains(FieldAccessFlags::STATIC) {
+                    continue;
+                }
+                let value = rust_this.get_field(&*field)?;
+                new_obj.put_field(&*field, value)?;
+            }
+            current = class.definition.super_class_name();
+        }
+
+        Ok(new_obj.into())
     }
 
     async fn to_string(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<String>> {

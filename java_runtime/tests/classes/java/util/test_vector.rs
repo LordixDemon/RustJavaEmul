@@ -192,7 +192,7 @@ async fn test_first_element_empty() -> Result<()> {
     let result: Result<ClassInstanceRef<Object>> = jvm.invoke_virtual(&vector, "firstElement", "()Ljava/lang/Object;", ()).await;
 
     let Err(JavaError::JavaException(exception)) = result else {
-        panic!("Expected JavaException, got {:?}", result);
+        panic!("Expected JavaException, got {result:?}");
     };
     assert!(jvm.is_instance(&*exception, "java/util/NoSuchElementException"));
 
@@ -215,6 +215,30 @@ async fn test_index_of_null() -> Result<()> {
         .invoke_virtual(&vector, "indexOf", "(Ljava/lang/Object;)I", (JavaValue::Object(None),))
         .await?;
     assert_eq!(index, 1);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_vector_list_api() -> Result<()> {
+    let jvm = test_jvm().await?;
+    let vector = jvm.new_class("java/util/Vector", "()V", ()).await?;
+    let a = JavaLangString::from_rust_string(&jvm, "a").await?;
+    let b = JavaLangString::from_rust_string(&jvm, "b").await?;
+    let _: bool = jvm.invoke_virtual(&vector, "add", "(Ljava/lang/Object;)Z", (a.clone(),)).await?;
+    let _: () = jvm.invoke_virtual(&vector, "add", "(ILjava/lang/Object;)V", (0, b.clone())).await?;
+    let first: ClassInstanceRef<Object> = jvm.invoke_virtual(&vector, "get", "(I)Ljava/lang/Object;", (0,)).await?;
+    assert_eq!(JavaLangString::to_rust_string(&jvm, &first).await?, "b");
+    let removed: bool = jvm.invoke_virtual(&vector, "remove", "(Ljava/lang/Object;)Z", (a,)).await?;
+    assert!(removed);
+
+    let other = jvm.new_class("java/util/Vector", "()V", ()).await?;
+    let extra = JavaLangString::from_rust_string(&jvm, "c").await?;
+    let _: bool = jvm.invoke_virtual(&other, "add", "(Ljava/lang/Object;)Z", (extra,)).await?;
+    let changed: bool = jvm.invoke_virtual(&vector, "addAll", "(Ljava/util/Collection;)Z", (other,)).await?;
+    assert!(changed);
+    let size: i32 = jvm.invoke_virtual(&vector, "size", "()I", ()).await?;
+    assert_eq!(size, 2);
 
     Ok(())
 }

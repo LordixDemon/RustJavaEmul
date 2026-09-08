@@ -1,7 +1,6 @@
-use alloc::{borrow::ToOwned, string::String as RustString, string::ToString, vec};
+use alloc::{borrow::ToOwned, string::String as RustString, string::ToString, vec, vec::Vec};
 
 use java_constants::ClassAccessFlags;
-use url::Url;
 
 use java_class_proto::JavaMethodProto;
 use jvm::{ClassInstanceRef, Jvm, Result, runtime::JavaLangString};
@@ -10,6 +9,60 @@ use crate::{
     RuntimeClassProto, RuntimeContext,
     classes::java::{lang::String, net::URL},
 };
+
+struct ParsedUrl<'a> {
+    scheme: &'a str,
+    host: Option<&'a str>,
+    port: Option<i32>,
+    path: &'a str,
+    query: Option<&'a str>,
+    r#ref: Option<&'a str>,
+}
+
+fn parse_url_spec(input: &str) -> core::result::Result<ParsedUrl<'_>, &'static str> {
+    let (scheme, rest) = input.split_once(':').ok_or("no scheme")?;
+    if scheme.is_empty() {
+        return Err("empty scheme");
+    }
+
+    let (before_ref, r#ref) = match rest.split_once('#') {
+        Some((r, f)) => (r, Some(f)),
+        None => (rest, None),
+    };
+
+    let (host, port, path_and_query) = if let Some(after_slashes) = before_ref.strip_prefix("//") {
+        let (authority, remainder) = match after_slashes.find('/') {
+            Some(idx) => (&after_slashes[..idx], &after_slashes[idx..]),
+            None => (after_slashes, ""),
+        };
+        let (host_str, port_val) = if let Some((h, p)) = authority.rsplit_once(':') {
+            if let Ok(p_num) = p.parse::<i32>() {
+                (h, Some(p_num))
+            } else {
+                (authority, None)
+            }
+        } else {
+            (authority, None)
+        };
+        (Some(host_str), port_val, remainder)
+    } else {
+        (None, None, before_ref)
+    };
+
+    let (path, query) = match path_and_query.split_once('?') {
+        Some((p, q)) => (p, Some(q)),
+        None => (path_and_query, None),
+    };
+
+    Ok(ParsedUrl {
+        scheme,
+        host,
+        port,
+        path,
+        query,
+        r#ref,
+    })
+}
 
 // abstract class java.net.URLStreamHandler
 pub struct URLStreamHandler;
@@ -99,28 +152,30 @@ impl URLStreamHandler {
 
         let spec_str = JavaLangString::to_rust_string(jvm, &spec).await?;
 
-        let parsed_url = Url::parse(&spec_str);
-        if let Err(x) = parsed_url {
-            return Err(jvm.exception("java/net/MalformedURLException", &x.to_string()).await);
-        }
+        let parsed = match parse_url_spec(&spec_str) {
+            Ok(p) => p,
+            Err(e) => return Err(jvm.exception("java/net/MalformedURLException", e).await),
+        };
 
-        let parsed_url = parsed_url.unwrap();
-
-        let protocol = parsed_url.scheme();
-        let path = parsed_url.path().to_owned() + &parsed_url.query().map(|x| "?".to_owned() + x).unwrap_or("".into());
+        let protocol = parsed.scheme;
+        let path = parsed.path.to_owned() + &parsed.query.map(|x| "?".to_owned() + x).unwrap_or_default();
         let file = if protocol == "file" { normalize_file_url_path(&path) } else { path };
 
-        let protocol = JavaLangString::from_rust_string(jvm, parsed_url.scheme()).await?;
-        let host = JavaLangString::from_rust_string(jvm, parsed_url.host_str().unwrap_or("")).await?;
-        let port = parsed_url.port().map(|x| x as i32).unwrap_or(-1);
+        let protocol = JavaLangString::from_rust_string(jvm, parsed.scheme).await?;
+        let host = JavaLangString::from_rust_string(jvm, parsed.host.unwrap_or("")).await?;
+        let port = parsed.port.unwrap_or(-1);
         let file = JavaLangString::from_rust_string(jvm, &file).await?;
+        let r#ref = match parsed.r#ref {
+            Some(r) => Some(JavaLangString::from_rust_string(jvm, r).await?),
+            None => None,
+        };
 
         let _: () = jvm
             .invoke_virtual(
                 &this,
                 "setURL",
                 "(Ljava/net/URL;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V",
-                (url, protocol, host, port, file, None),
+                (url, protocol, host, port, file, r#ref),
             )
             .await?;
 
@@ -134,20 +189,20 @@ fn normalize_file_url_path(path: &str) -> RustString {
 
 fn percent_decode(value: &str) -> RustString {
     let bytes = value.as_bytes();
-    let mut out = RustString::with_capacity(value.len());
+    let mut out = Vec::with_capacity(value.len());
     let mut index = 0;
     while index < bytes.len() {
         if bytes[index] == b'%' && index + 2 < bytes.len() {
             if let (Some(high), Some(low)) = (hex_value(bytes[index + 1]), hex_value(bytes[index + 2])) {
-                out.push((high << 4 | low) as char);
+                out.push(high << 4 | low);
                 index += 3;
                 continue;
             }
         }
-        out.push(bytes[index] as char);
+        out.push(bytes[index]);
         index += 1;
     }
-    out
+    RustString::from_utf8_lossy(&out).into_owned()
 }
 
 fn hex_value(byte: u8) -> Option<u8> {

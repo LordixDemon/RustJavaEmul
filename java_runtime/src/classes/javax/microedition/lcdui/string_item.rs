@@ -6,6 +6,8 @@ use jvm::{ClassInstanceRef, Jvm, Result};
 
 use crate::{RuntimeClassProto, RuntimeContext, classes::java::lang::String};
 
+use super::Font;
+
 // class javax.microedition.lcdui.StringItem
 pub struct StringItem;
 
@@ -27,6 +29,8 @@ impl StringItem {
                 JavaMethodProto::new("getAppearanceMode", "()I", Self::get_appearance_mode, Default::default()),
                 JavaMethodProto::new("getText", "()Ljava/lang/String;", Self::get_text, Default::default()),
                 JavaMethodProto::new("setText", "(Ljava/lang/String;)V", Self::set_text, Default::default()),
+                JavaMethodProto::new("setFont", "(Ljavax/microedition/lcdui/Font;)V", Self::set_font, Default::default()),
+                JavaMethodProto::new("setPreferredSize", "(II)V", Self::set_preferred_size, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("text", "Ljava/lang/String;", Default::default()),
@@ -85,5 +89,13 @@ impl StringItem {
         tracing::debug!("javax.microedition.lcdui.StringItem::setText({this:?}, {text:?})");
 
         jvm.put_field(&mut this, "text", "Ljava/lang/String;", text).await
+    }
+
+    async fn set_font(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>, _font: ClassInstanceRef<Font>) -> Result<()> {
+        Ok(())
+    }
+
+    async fn set_preferred_size(_: &Jvm, _: &mut RuntimeContext, _this: ClassInstanceRef<Self>, _width: i32, _height: i32) -> Result<()> {
+        Ok(())
     }
 }

@@ -24,3 +24,16 @@ async fn test_random() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_next_gaussian() -> Result<()> {
+    let jvm = test_jvm().await?;
+    let random = jvm.new_class("java/util/Random", "(J)V", (1i64,)).await?;
+    let first: f64 = jvm.invoke_virtual(&random, "nextGaussian", "()D", ()).await?;
+    let second: f64 = jvm.invoke_virtual(&random, "nextGaussian", "()D", ()).await?;
+    assert!(first.is_finite());
+    assert!(second.is_finite());
+    assert_ne!(first, second);
+
+    Ok(())
+}

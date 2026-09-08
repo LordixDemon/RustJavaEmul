@@ -1,4 +1,4 @@
-use alloc::{string::String as RustString, string::ToString, vec};
+use alloc::{string::String as RustString, string::ToString, vec, vec::Vec};
 
 use java_class_proto::{JavaFieldProto, JavaMethodProto};
 use java_constants::{FieldAccessFlags, MethodAccessFlags};
@@ -135,20 +135,20 @@ fn normalize_file_path(path: &str) -> RustString {
 
 fn percent_decode(value: &str) -> RustString {
     let bytes = value.as_bytes();
-    let mut out = RustString::with_capacity(value.len());
+    let mut out = Vec::with_capacity(value.len());
     let mut index = 0;
     while index < bytes.len() {
         if bytes[index] == b'%' && index + 2 < bytes.len() {
             if let (Some(high), Some(low)) = (hex_value(bytes[index + 1]), hex_value(bytes[index + 2])) {
-                out.push((high << 4 | low) as char);
+                out.push(high << 4 | low);
                 index += 3;
                 continue;
             }
         }
-        out.push(bytes[index] as char);
+        out.push(bytes[index]);
         index += 1;
     }
-    out
+    RustString::from_utf8_lossy(&out).into_owned()
 }
 
 fn hex_value(byte: u8) -> Option<u8> {

@@ -1,0 +1,31 @@
+# Game files and downloads (huge directory with 114k+ files)
+apk/
+
+# Temporary scratch and investigation artifacts
+scratch/
+
+# Offline tools, parsers and generators
+tools/
+
+# Benchmarks, logs and test data
+benchmarks/
+compat_scan/
+run_logs/
+test_data/
+
+# Web frontend demo
+web/
+
+# Documentation and specifications
+docs/
+
+# CI / GitHub
+.github/
+
+# Root dumps, classfiles and scripts
+*.class
+*.javap.txt
+*.json
+*.bat
+*.txt
+fileprotect.tmp

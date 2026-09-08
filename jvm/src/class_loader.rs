@@ -1,5 +1,6 @@
 use alloc::{boxed::Box, sync::Arc};
 
+use event_listener::Event;
 use parking_lot::RwLock;
 
 use crate::{
@@ -10,7 +11,7 @@ use crate::{
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum InitState {
     NotInitialized,
-    InProgress,
+    InProgress(u64),
     Initialized,
     Erroneous,
 }
@@ -19,7 +20,8 @@ pub(crate) enum InitState {
 pub struct Class {
     pub definition: Box<dyn ClassDefinition>,
     java_class: Arc<RwLock<Option<Box<dyn ClassInstance>>>>,
-    init_state: Arc<RwLock<InitState>>,
+    pub(crate) init_state: Arc<RwLock<InitState>>,
+    pub(crate) init_event: Arc<Event>,
 }
 
 impl Class {
@@ -28,9 +30,11 @@ impl Class {
             definition,
             java_class: Arc::new(RwLock::new(java_class)),
             init_state: Arc::new(RwLock::new(InitState::NotInitialized)),
+            init_event: Arc::new(Event::new()),
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn init_state(&self) -> InitState {
         *self.init_state.read()
     }
@@ -75,7 +79,11 @@ impl ClassLoaderWrapper for BootstrapClassLoaderWrapper<'_> {
         if let Some(definition) = definition {
             let java_class = jvm.register_class(definition.clone(), None).await?;
 
-            Ok(Some(Class::new(definition, java_class)))
+            if let Some(existing) = jvm.get_class(name) {
+                Ok(Some(existing))
+            } else {
+                Ok(Some(Class::new(definition, java_class)))
+            }
         } else {
             Ok(None)
         }
@@ -98,8 +106,12 @@ impl ClassLoaderWrapper for JavaClassLoaderWrapper {
         let class = JavaLangClassLoader::load_class(jvm, &self.class_loader, name).await?;
 
         if let Some(class) = class {
-            let definition = JavaLangClass::to_rust_class(jvm, &class).await?;
-            Ok(Some(Class::new(definition, Some(class))))
+            if let Some(existing) = jvm.get_class(name) {
+                Ok(Some(existing))
+            } else {
+                let definition = JavaLangClass::to_rust_class(jvm, &class).await?;
+                Ok(Some(Class::new(definition, Some(class))))
+            }
         } else {
             Ok(None)
         }

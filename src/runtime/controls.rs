@@ -1,3 +1,4 @@
+use java_runtime::DeviceProfile;
 use winit::keyboard::KeyCode;
 
 pub(super) const CONTROL_PANEL_HEIGHT: usize = 112;
@@ -22,138 +23,180 @@ enum ControlKind {
     Right,
 }
 
-const CONTROL_BUTTONS: &[ControlButton] = &[
-    ControlButton {
-        x: 8,
-        y: 6,
-        width: 48,
-        height: 22,
-        key_code: -6,
-        label: "L",
-        kind: ControlKind::Label,
-    },
-    ControlButton {
-        x: 184,
-        y: 6,
-        width: 48,
-        height: 22,
-        key_code: -7,
-        label: "R",
-        kind: ControlKind::Label,
-    },
-    ControlButton {
-        x: 42,
-        y: 28,
-        width: 28,
-        height: 28,
-        key_code: -1,
-        label: "",
-        kind: ControlKind::Up,
-    },
-    ControlButton {
-        x: 14,
-        y: 56,
-        width: 28,
-        height: 28,
-        key_code: -3,
-        label: "",
-        kind: ControlKind::Left,
-    },
-    ControlButton {
-        x: 42,
-        y: 56,
-        width: 28,
-        height: 28,
-        key_code: -5,
-        label: "OK",
-        kind: ControlKind::Label,
-    },
-    ControlButton {
-        x: 70,
-        y: 56,
-        width: 28,
-        height: 28,
-        key_code: -4,
-        label: "",
-        kind: ControlKind::Right,
-    },
-    ControlButton {
-        x: 42,
-        y: 84,
-        width: 28,
-        height: 28,
-        key_code: -2,
-        label: "",
-        kind: ControlKind::Down,
-    },
-    ControlButton {
-        x: 142,
-        y: 38,
-        width: 32,
-        height: 28,
-        key_code: b'1' as i32,
-        label: "1",
-        kind: ControlKind::Label,
-    },
-    ControlButton {
-        x: 198,
-        y: 38,
-        width: 32,
-        height: 28,
-        key_code: b'3' as i32,
-        label: "3",
-        kind: ControlKind::Label,
-    },
-    ControlButton {
-        x: 142,
-        y: 76,
-        width: 32,
-        height: 28,
-        key_code: b'7' as i32,
-        label: "7",
-        kind: ControlKind::Label,
-    },
-    ControlButton {
-        x: 198,
-        y: 76,
-        width: 32,
-        height: 28,
-        key_code: b'9' as i32,
-        label: "9",
-        kind: ControlKind::Label,
-    },
-];
+fn control_buttons(profile: DeviceProfile) -> [ControlButton; 11] {
+    let keys = profile.key_layout();
+    let (left, right) = match profile {
+        DeviceProfile::Siemens => ("A", "B"),
+        DeviceProfile::Motorola => ("L", "R"),
+        _ => ("L", "R"),
+    };
+    [
+        ControlButton {
+            x: 8,
+            y: 6,
+            width: 48,
+            height: 22,
+            key_code: keys.soft_left,
+            label: left,
+            kind: ControlKind::Label,
+        },
+        ControlButton {
+            x: 184,
+            y: 6,
+            width: 48,
+            height: 22,
+            key_code: keys.soft_right,
+            label: right,
+            kind: ControlKind::Label,
+        },
+        ControlButton {
+            x: 42,
+            y: 28,
+            width: 28,
+            height: 28,
+            key_code: keys.up,
+            label: "",
+            kind: ControlKind::Up,
+        },
+        ControlButton {
+            x: 14,
+            y: 56,
+            width: 28,
+            height: 28,
+            key_code: keys.left,
+            label: "",
+            kind: ControlKind::Left,
+        },
+        ControlButton {
+            x: 42,
+            y: 56,
+            width: 28,
+            height: 28,
+            key_code: keys.fire,
+            label: "OK",
+            kind: ControlKind::Label,
+        },
+        ControlButton {
+            x: 70,
+            y: 56,
+            width: 28,
+            height: 28,
+            key_code: keys.right,
+            label: "",
+            kind: ControlKind::Right,
+        },
+        ControlButton {
+            x: 42,
+            y: 84,
+            width: 28,
+            height: 28,
+            key_code: keys.down,
+            label: "",
+            kind: ControlKind::Down,
+        },
+        ControlButton {
+            x: 142,
+            y: 38,
+            width: 32,
+            height: 28,
+            key_code: b'1' as i32,
+            label: "1",
+            kind: ControlKind::Label,
+        },
+        ControlButton {
+            x: 198,
+            y: 38,
+            width: 32,
+            height: 28,
+            key_code: b'3' as i32,
+            label: "3",
+            kind: ControlKind::Label,
+        },
+        ControlButton {
+            x: 142,
+            y: 76,
+            width: 32,
+            height: 28,
+            key_code: b'7' as i32,
+            label: "7",
+            kind: ControlKind::Label,
+        },
+        ControlButton {
+            x: 198,
+            y: 76,
+            width: 32,
+            height: 28,
+            key_code: b'9' as i32,
+            label: "9",
+            kind: ControlKind::Label,
+        },
+    ]
+}
 
-pub(super) const KEYBOARD_MAPPINGS: &[(KeyCode, i32)] = &[
-    (KeyCode::ArrowUp, -1),
-    (KeyCode::KeyW, -1),
-    (KeyCode::ArrowDown, -2),
-    (KeyCode::KeyS, -2),
-    (KeyCode::ArrowLeft, -3),
-    (KeyCode::KeyA, -3),
-    (KeyCode::ArrowRight, -4),
-    (KeyCode::KeyD, -4),
-    (KeyCode::Enter, -5),
-    (KeyCode::Space, -5),
-    (KeyCode::KeyQ, -6),
-    (KeyCode::KeyE, -7),
-    (KeyCode::Digit0, b'0' as i32),
-    (KeyCode::Digit1, b'1' as i32),
-    (KeyCode::Digit2, b'2' as i32),
-    (KeyCode::Digit3, b'3' as i32),
-    (KeyCode::Digit4, b'4' as i32),
-    (KeyCode::Digit5, b'5' as i32),
-    (KeyCode::Digit6, b'6' as i32),
-    (KeyCode::Digit7, b'7' as i32),
-    (KeyCode::Digit8, b'8' as i32),
-    (KeyCode::Digit9, b'9' as i32),
-];
+fn keypad_mappings() -> &'static [(KeyCode, i32)] {
+    &[
+        (KeyCode::Digit0, b'0' as i32),
+        (KeyCode::Numpad0, b'0' as i32),
+        (KeyCode::Digit1, b'1' as i32),
+        (KeyCode::Numpad1, b'1' as i32),
+        (KeyCode::Digit2, b'2' as i32),
+        (KeyCode::Numpad2, b'2' as i32),
+        (KeyCode::Digit3, b'3' as i32),
+        (KeyCode::Numpad3, b'3' as i32),
+        (KeyCode::Digit4, b'4' as i32),
+        (KeyCode::Numpad4, b'4' as i32),
+        (KeyCode::Digit5, b'5' as i32),
+        (KeyCode::Numpad5, b'5' as i32),
+        (KeyCode::Digit6, b'6' as i32),
+        (KeyCode::Numpad6, b'6' as i32),
+        (KeyCode::Digit7, b'7' as i32),
+        (KeyCode::Numpad7, b'7' as i32),
+        (KeyCode::Digit8, b'8' as i32),
+        (KeyCode::Numpad8, b'8' as i32),
+        (KeyCode::Digit9, b'9' as i32),
+        (KeyCode::Numpad9, b'9' as i32),
+        (KeyCode::NumpadMultiply, b'*' as i32),
+        (KeyCode::NumpadDivide, b'#' as i32),
+        (KeyCode::Minus, b'#' as i32),
+    ]
+}
 
-pub(super) fn draw_control_panel(buffer: &mut [u32], width: usize, top: usize, height: usize, pressed_key: Option<i32>) {
+pub(super) fn keyboard_mappings(profile: DeviceProfile) -> Vec<(KeyCode, i32)> {
+    let keys = profile.key_layout();
+    let mut mappings = vec![
+        (KeyCode::ArrowUp, keys.up),
+        (KeyCode::KeyW, keys.up),
+        (KeyCode::ArrowDown, keys.down),
+        (KeyCode::KeyS, keys.down),
+        (KeyCode::ArrowLeft, keys.left),
+        (KeyCode::KeyA, keys.left),
+        (KeyCode::ArrowRight, keys.right),
+        (KeyCode::KeyD, keys.right),
+        (KeyCode::Enter, keys.fire),
+        (KeyCode::Space, keys.fire),
+        (KeyCode::NumpadEnter, keys.fire),
+        (KeyCode::KeyC, keys.fire),
+        (KeyCode::KeyQ, keys.soft_left),
+        (KeyCode::F1, keys.soft_left),
+        (KeyCode::KeyZ, keys.soft_left),
+        (KeyCode::KeyJ, keys.soft_left),
+        (KeyCode::KeyE, keys.soft_right),
+        (KeyCode::F2, keys.soft_right),
+        (KeyCode::KeyX, keys.soft_right),
+        (KeyCode::KeyK, keys.soft_right),
+    ];
+    if let Some(clear) = keys.clear {
+        mappings.push((KeyCode::Backspace, clear));
+    }
+    mappings.extend_from_slice(keypad_mappings());
+    mappings
+}
+
+pub(super) fn draw_control_panel(buffer: &mut [u32], width: usize, top: usize, height: usize, pressed_key: Option<i32>, profile: DeviceProfile) {
     fill_buffer_rect(buffer, width, 0, top, width, height, 0x14181d);
     fill_buffer_rect(buffer, width, 0, top, width, 2, 0x2d3540);
 
-    for button in CONTROL_BUTTONS {
+    for button in control_buttons(profile) {
         let y = top + button.y;
         let pressed = pressed_key == Some(button.key_code);
         let fill = if pressed { 0x8fc7ff } else { 0xeef3f7 };
@@ -192,13 +235,13 @@ pub(super) fn normalize_mouse_pos(x: f32, y: f32, width: usize, height: usize) -
     (x.min(width.saturating_sub(1)), y.min(height.saturating_sub(1)))
 }
 
-pub(super) fn control_at((x, y): (usize, usize), game_height: usize) -> Option<i32> {
+pub(super) fn control_at((x, y): (usize, usize), game_height: usize, profile: DeviceProfile) -> Option<i32> {
     if y < game_height {
         return None;
     }
 
     let local_y = y - game_height;
-    CONTROL_BUTTONS.iter().find_map(|button| {
+    control_buttons(profile).iter().find_map(|button| {
         let hit_x = x >= button.x && x < button.x + button.width;
         let hit_y = local_y >= button.y && local_y < button.y + button.height;
         if hit_x && hit_y { Some(button.key_code) } else { None }

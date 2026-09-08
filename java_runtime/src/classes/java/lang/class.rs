@@ -1,7 +1,7 @@
-use alloc::vec;
+use alloc::{string::ToString, vec};
 
 use java_class_proto::{JavaFieldProto, JavaMethodProto};
-use java_constants::MethodAccessFlags;
+use java_constants::{ClassAccessFlags, MethodAccessFlags};
 use jvm::{
     ClassInstanceRef, Jvm, Result,
     runtime::{JavaLangClass, JavaLangClassLoader, JavaLangString},
@@ -28,6 +28,11 @@ impl Class {
                 JavaMethodProto::new("<init>", "()V", Self::init, Default::default()),
                 JavaMethodProto::new("getName", "()Ljava/lang/String;", Self::get_name, Default::default()),
                 JavaMethodProto::new("isAssignableFrom", "(Ljava/lang/Class;)Z", Self::is_assignable_from, Default::default()),
+                JavaMethodProto::new("isInterface", "()Z", Self::is_interface, Default::default()),
+                JavaMethodProto::new("isArray", "()Z", Self::is_array, Default::default()),
+                JavaMethodProto::new("isInstance", "(Ljava/lang/Object;)Z", Self::is_instance, Default::default()),
+                JavaMethodProto::new("getSuperclass", "()Ljava/lang/Class;", Self::get_superclass, Default::default()),
+                JavaMethodProto::new("getModifiers", "()I", Self::get_modifiers, Default::default()),
                 JavaMethodProto::new("newInstance", "()Ljava/lang/Object;", Self::new_instance, Default::default()),
                 JavaMethodProto::new(
                     "getResourceAsStream",
@@ -93,10 +98,22 @@ impl Class {
     ) -> Result<ClassInstanceRef<InputStream>> {
         tracing::debug!("java.lang.Class::getResourceAsStream({:?}, {:?})", &this, &name);
 
+        let rust_name = JavaLangString::to_rust_string(jvm, &name).await?;
+        let resolved = if rust_name.starts_with('/') {
+            rust_name.trim_start_matches('/').to_string()
+        } else {
+            let rust_class = JavaLangClass::to_rust_class(jvm, &this).await?;
+            let class_name = rust_class.name();
+            match class_name.rsplit_once('/') {
+                Some((pkg, _)) => alloc::format!("{pkg}/{rust_name}"),
+                None => rust_name,
+            }
+        };
+        let name = JavaLangString::from_rust_string(jvm, &resolved).await?;
+
         let class_loader: ClassInstanceRef<ClassLoader> = jvm.get_field(&this, "classLoader", "Ljava/lang/ClassLoader;").await?;
 
         let class_loader = if class_loader.is_null() {
-            // TODO ClassLoader.getSystemResourceAsStream?
             JavaLangClassLoader::get_system_class_loader(jvm).await?
         } else {
             class_loader.into()
@@ -111,11 +128,47 @@ impl Class {
 
         let rust_name = JavaLangString::to_rust_string(jvm, &name).await?;
         let qualified_name = rust_name.replace('.', "/");
-        let Some(class) = jvm.get_class(&qualified_name) else {
-            return Err(jvm.exception("java/lang/ClassNotFoundException", &rust_name).await);
-        };
-        let class = class.java_class();
+        match jvm.resolve_class(&qualified_name).await {
+            Ok(class) => Ok(class.java_class().into()),
+            Err(jvm::JavaError::JavaException(_)) => Err(jvm.exception("java/lang/ClassNotFoundException", &rust_name).await),
+        }
+    }
 
-        Ok(class.into())
+    async fn is_interface(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
+        let rust_class = JavaLangClass::to_rust_class(jvm, &this).await?;
+        Ok(rust_class.access_flags().contains(ClassAccessFlags::INTERFACE))
+    }
+
+    async fn is_array(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
+        let rust_class = JavaLangClass::to_rust_class(jvm, &this).await?;
+        Ok(rust_class.name().starts_with('['))
+    }
+
+    async fn is_instance(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, obj: ClassInstanceRef<Object>) -> Result<bool> {
+        if obj.is_null() {
+            return Ok(false);
+        }
+        let rust_class = JavaLangClass::to_rust_class(jvm, &this).await?;
+        Ok(jvm.is_instance(&**obj, &rust_class.name()))
+    }
+
+    async fn get_superclass(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Class>> {
+        let rust_class = JavaLangClass::to_rust_class(jvm, &this).await?;
+        if rust_class.name().starts_with('[') {
+            let object = jvm.resolve_class("java/lang/Object").await?;
+            return Ok(object.java_class().into());
+        }
+        match rust_class.super_class_name() {
+            Some(super_name) => {
+                let super_class = jvm.resolve_class(&super_name).await?;
+                Ok(super_class.java_class().into())
+            }
+            None => Ok(None.into()),
+        }
+    }
+
+    async fn get_modifiers(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
+        let rust_class = JavaLangClass::to_rust_class(jvm, &this).await?;
+        Ok(rust_class.access_flags().bits() as i32)
     }
 }

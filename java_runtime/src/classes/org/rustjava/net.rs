@@ -6,3 +6,7 @@ mod jar_url_handler;
 pub use self::{
     file_url_connection::FileURLConnection, file_url_handler::FileURLHandler, jar_url_connection::JarURLConnection, jar_url_handler::JarURLHandler,
 };
+
+pub fn class_protos() -> impl IntoIterator<Item = crate::RuntimeClassProtoFactory> {
+    proto_factories![FileURLConnection, FileURLHandler, JarURLConnection, JarURLHandler]
+}

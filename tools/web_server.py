@@ -6,6 +6,13 @@ import ssl
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
+    extensions_map = {
+        **SimpleHTTPRequestHandler.extensions_map,
+        ".wasm": "application/wasm",
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+    }
+
     def end_headers(self):
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         self.send_header("Pragma", "no-cache")

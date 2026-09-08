@@ -1,8 +1,8 @@
 use alloc::sync::Arc;
+use parking_lot::Mutex;
 use std::{
     fs::{self, OpenOptions},
     io::{self, Read, Seek, Write},
-    sync::Mutex,
 };
 
 use java_runtime::{File, FileSize, FileStat, FileType, IOError, IOResult};
@@ -35,9 +35,7 @@ where
     }
 
     async fn write(&mut self, buf: &[u8]) -> IOResult<usize> {
-        let written = self.write.lock().unwrap().write(buf).unwrap();
-
-        Ok(written)
+        self.write.lock().write(buf).map_err(|_| IOError::Unsupported)
     }
 
     async fn seek(&mut self, _pos: FileSize) -> IOResult<()> {
@@ -90,9 +88,7 @@ where
     R: Read + Send + Sync + 'static,
 {
     async fn read(&mut self, buf: &mut [u8]) -> IOResult<usize> {
-        let read = self.read.lock().unwrap().read(buf).unwrap();
-
-        Ok(read)
+        self.read.lock().read(buf).map_err(|_| IOError::Unsupported)
     }
 
     async fn write(&mut self, _buf: &[u8]) -> IOResult<usize> {
@@ -143,7 +139,7 @@ impl MemoryFile {
 #[async_trait::async_trait]
 impl File for MemoryFile {
     async fn read(&mut self, buf: &mut [u8]) -> IOResult<usize> {
-        let mut pos = self.pos.lock().unwrap();
+        let mut pos = self.pos.lock();
         let offset = (*pos as usize).min(self.data.len());
         let remaining = &self.data[offset..];
         let len = remaining.len().min(buf.len());
@@ -157,12 +153,12 @@ impl File for MemoryFile {
     }
 
     async fn seek(&mut self, pos: FileSize) -> IOResult<()> {
-        *self.pos.lock().unwrap() = pos;
+        *self.pos.lock() = pos;
         Ok(())
     }
 
     async fn tell(&self) -> IOResult<FileSize> {
-        Ok(*self.pos.lock().unwrap())
+        Ok(*self.pos.lock())
     }
 
     async fn set_len(&mut self, _len: FileSize) -> IOResult<()> {
@@ -196,41 +192,37 @@ impl FileImpl {
 #[async_trait::async_trait]
 impl File for FileImpl {
     async fn read(&mut self, buf: &mut [u8]) -> Result<usize, IOError> {
-        let read = self.file.lock().unwrap().read(buf).unwrap();
-
-        Ok(read)
+        self.file.lock().read(buf).map_err(|_| IOError::Unsupported)
     }
 
     async fn write(&mut self, buf: &[u8]) -> Result<usize, IOError> {
-        let write = self.file.lock().unwrap().write(buf).unwrap();
-
-        Ok(write)
+        self.file.lock().write(buf).map_err(|_| IOError::Unsupported)
     }
 
     async fn seek(&mut self, pos: FileSize) -> Result<(), IOError> {
-        self.file.lock().unwrap().seek(io::SeekFrom::Start(pos)).unwrap();
-
-        Ok(())
+        self.file
+            .lock()
+            .seek(io::SeekFrom::Start(pos))
+            .map(|_| ())
+            .map_err(|_| IOError::Unsupported)
     }
 
     async fn tell(&self) -> Result<FileSize, IOError> {
-        let pos = self.file.lock().unwrap().seek(io::SeekFrom::Current(0)).unwrap();
-
-        Ok(pos as FileSize)
+        self.file
+            .lock()
+            .seek(io::SeekFrom::Current(0))
+            .map(|pos| pos as FileSize)
+            .map_err(|_| IOError::Unsupported)
     }
 
     async fn set_len(&mut self, len: FileSize) -> Result<(), IOError> {
-        self.file.lock().unwrap().set_len(len).unwrap();
-
-        Ok(())
+        self.file.lock().set_len(len).map_err(|_| IOError::Unsupported)
     }
 
     async fn metadata(&self) -> Result<FileStat, IOError> {
-        let metadata = self.file.lock().unwrap().metadata().unwrap();
-        let size = metadata.len();
-
+        let metadata = self.file.lock().metadata().map_err(|_| IOError::NotFound)?;
         Ok(FileStat {
-            size,
+            size: metadata.len(),
             r#type: FileType::File,
         })
     }

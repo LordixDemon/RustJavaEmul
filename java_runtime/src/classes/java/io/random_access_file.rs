@@ -64,11 +64,17 @@ impl RandomAccessFile {
 
         let write = mode.contains('w');
 
-        let fd_id = context.open(&name, write).await;
-        if fd_id.is_err() {
-            return Err(jvm.exception("java/io/FileNotFoundException", "File not found").await);
+        let mut fd_id = None;
+        for candidate in File::path_candidates(&name) {
+            if let Ok(fd) = context.open(&candidate, write).await {
+                fd_id = Some(fd);
+                break;
+            }
         }
-        let fd = FileDescriptor::from_fd(jvm, fd_id.unwrap()).await?;
+        let Some(fd_id) = fd_id else {
+            return Err(jvm.exception("java/io/FileNotFoundException", "File not found").await);
+        };
+        let fd = FileDescriptor::from_fd(jvm, fd_id).await?;
         jvm.put_field(&mut this, "fd", "Ljava/io/FileDescriptor;", fd).await?;
 
         Ok(())
@@ -101,6 +107,10 @@ impl RandomAccessFile {
     async fn read(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, buf: ClassInstanceRef<Array<i8>>) -> Result<i32> {
         tracing::debug!("java.io.RandomAccessFile::read({:?}, {:?})", &this, &buf);
 
+        if buf.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "").await);
+        }
+
         let length = jvm.array_length(&buf).await?;
         let read = jvm.invoke_virtual(&this, "read", "([BII)I", (buf, 0, length as i32)).await?;
 
@@ -120,8 +130,11 @@ impl RandomAccessFile {
         let fd = jvm.get_field(&this, "fd", "Ljava/io/FileDescriptor;").await?;
         let mut rust_file = FileDescriptor::file(jvm, context, fd).await?;
 
-        let mut rust_buf = vec![0; length as usize];
-        let read = rust_file.read(&mut rust_buf).await.unwrap();
+        let mut rust_buf = vec![0; length.max(0) as usize];
+        let read = match rust_file.read(&mut rust_buf).await {
+            Ok(read) => read,
+            Err(_) => return Err(jvm.exception("java/io/IOException", "read failed").await),
+        };
 
         jvm.array_raw_buffer_mut(&mut buf).await?.write(offset as _, &rust_buf)?;
 
@@ -150,9 +163,13 @@ impl RandomAccessFile {
         let fd = jvm.get_field(&this, "fd", "Ljava/io/FileDescriptor;").await?;
         let mut rust_file = FileDescriptor::file(jvm, context, fd).await?;
 
-        let mut rust_buf = vec![0; length as usize];
-        jvm.array_raw_buffer(&buf).await?.read(offset as _, &mut rust_buf).unwrap();
-        rust_file.write(&cast_vec(rust_buf)).await.unwrap();
+        let mut rust_buf = vec![0; length.max(0) as usize];
+        if jvm.array_raw_buffer(&buf).await?.read(offset.max(0) as _, &mut rust_buf).is_err() {
+            return Err(jvm.exception("java/io/IOException", "write failed").await);
+        }
+        if rust_file.write(&cast_vec(rust_buf)).await.is_err() {
+            return Err(jvm.exception("java/io/IOException", "write failed").await);
+        }
 
         Ok(())
     }
@@ -163,7 +180,9 @@ impl RandomAccessFile {
         let fd = jvm.get_field(&this, "fd", "Ljava/io/FileDescriptor;").await?;
         let mut rust_file = FileDescriptor::file(jvm, context, fd).await?;
 
-        rust_file.seek(pos as _).await.unwrap();
+        if rust_file.seek(pos as _).await.is_err() {
+            return Err(jvm.exception("java/io/IOException", "seek failed").await);
+        }
 
         Ok(())
     }
@@ -174,7 +193,9 @@ impl RandomAccessFile {
         let fd = jvm.get_field(&this, "fd", "Ljava/io/FileDescriptor;").await?;
         let mut rust_file = FileDescriptor::file(jvm, context, fd).await?;
 
-        rust_file.set_len(new_length as _).await.unwrap();
+        if rust_file.set_len(new_length as _).await.is_err() {
+            return Err(jvm.exception("java/io/IOException", "setLength failed").await);
+        }
 
         Ok(())
     }
@@ -199,7 +220,7 @@ impl RandomAccessFile {
         let fd = jvm.get_field(&this, "fd", "Ljava/io/FileDescriptor;").await?;
         let rust_file = FileDescriptor::file(jvm, context, fd).await?;
 
-        let pos = rust_file.tell().await.unwrap();
+        let pos = rust_file.tell().await.unwrap_or(0);
 
         Ok(pos as i64)
     }

@@ -42,7 +42,14 @@ impl StringBuffer {
                 JavaMethodProto::new("append", "(I)Ljava/lang/StringBuffer;", Self::append_integer, Default::default()),
                 JavaMethodProto::new("append", "(J)Ljava/lang/StringBuffer;", Self::append_long, Default::default()),
                 JavaMethodProto::new("append", "(C)Ljava/lang/StringBuffer;", Self::append_character, Default::default()),
+                JavaMethodProto::new("append", "(F)Ljava/lang/StringBuffer;", Self::append_float, Default::default()),
+                JavaMethodProto::new("append", "(D)Ljava/lang/StringBuffer;", Self::append_double, Default::default()),
                 JavaMethodProto::new("append", "([CII)Ljava/lang/StringBuffer;", Self::append_char_array, Default::default()),
+                JavaMethodProto::new("append", "([C)Ljava/lang/StringBuffer;", Self::append_chars, Default::default()),
+                JavaMethodProto::new("capacity", "()I", Self::capacity, Default::default()),
+                JavaMethodProto::new("ensureCapacity", "(I)V", Self::ensure_capacity_public, Default::default()),
+                JavaMethodProto::new("reverse", "()Ljava/lang/StringBuffer;", Self::reverse, Default::default()),
+                JavaMethodProto::new("getChars", "(II[CI)V", Self::get_chars, Default::default()),
                 JavaMethodProto::new("delete", "(II)Ljava/lang/StringBuffer;", Self::delete, Default::default()),
                 JavaMethodProto::new("deleteCharAt", "(I)Ljava/lang/StringBuffer;", Self::delete_char_at, Default::default()),
                 JavaMethodProto::new(
@@ -51,10 +58,21 @@ impl StringBuffer {
                     Self::insert_string,
                     Default::default(),
                 ),
+                JavaMethodProto::new("insert", "(IC)Ljava/lang/StringBuffer;", Self::insert_char, Default::default()),
+                JavaMethodProto::new("insert", "(I[C)Ljava/lang/StringBuffer;", Self::insert_chars, Default::default()),
+                JavaMethodProto::new("insert", "(II)Ljava/lang/StringBuffer;", Self::insert_int, Default::default()),
+                JavaMethodProto::new("insert", "(IJ)Ljava/lang/StringBuffer;", Self::insert_long, Default::default()),
+                JavaMethodProto::new(
+                    "insert",
+                    "(ILjava/lang/Object;)Ljava/lang/StringBuffer;",
+                    Self::insert_object,
+                    Default::default(),
+                ),
                 JavaMethodProto::new("toString", "()Ljava/lang/String;", Self::to_string, Default::default()),
                 JavaMethodProto::new("setLength", "(I)V", Self::set_length, Default::default()),
                 JavaMethodProto::new("length", "()I", Self::length, Default::default()),
                 JavaMethodProto::new("charAt", "(I)C", Self::char_at, Default::default()),
+                JavaMethodProto::new("setCharAt", "(IC)V", Self::set_char_at, Default::default()),
             ],
             fields: vec![
                 JavaFieldProto::new("value", "[C", Default::default()),
@@ -177,6 +195,36 @@ impl StringBuffer {
         Ok(this)
     }
 
+    async fn append_float(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, value: f32) -> Result<ClassInstanceRef<Self>> {
+        Self::append(jvm, &mut this, &value.to_string()).await?;
+        Ok(this)
+    }
+
+    async fn append_double(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, value: f64) -> Result<ClassInstanceRef<Self>> {
+        Self::append(jvm, &mut this, &value.to_string()).await?;
+        Ok(this)
+    }
+
+    async fn get_chars(
+        jvm: &Jvm,
+        _: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        src_begin: i32,
+        src_end: i32,
+        mut dst: ClassInstanceRef<Array<JavaChar>>,
+        dst_begin: i32,
+    ) -> Result<()> {
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
+        let begin = src_begin.max(0) as usize;
+        let end = src_end.clamp(src_begin, count) as usize;
+        if begin >= end {
+            return Ok(());
+        }
+        let java_value: ClassInstanceRef<Array<JavaChar>> = jvm.get_field(&this, "value", "[C").await?;
+        let chars: Vec<JavaChar> = jvm.load_array(&java_value, begin, end - begin).await?;
+        jvm.store_array(&mut dst, dst_begin.max(0) as usize, chars).await
+    }
+
     async fn append_char_array(
         jvm: &Jvm,
         _: &mut RuntimeContext,
@@ -192,6 +240,37 @@ impl StringBuffer {
 
         Self::append(jvm, &mut this, &string).await?;
 
+        Ok(this)
+    }
+
+    async fn append_chars(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        array: ClassInstanceRef<Array<JavaChar>>,
+    ) -> Result<ClassInstanceRef<Self>> {
+        if array.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "str").await);
+        }
+        let length = jvm.array_length(&array).await? as i32;
+        Self::append_char_array(jvm, context, this, array, 0, length).await
+    }
+
+    async fn capacity(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<i32> {
+        let java_value = jvm.get_field(&this, "value", "[C").await?;
+        Ok(jvm.array_length(&java_value).await? as i32)
+    }
+
+    async fn ensure_capacity_public(jvm: &Jvm, _: &mut RuntimeContext, mut this: ClassInstanceRef<Self>, minimum: i32) -> Result<()> {
+        Self::ensure_capacity(jvm, &mut this, minimum.max(0) as usize).await
+    }
+
+    async fn reverse(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<Self>> {
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
+        let mut java_value: ClassInstanceRef<Array<JavaChar>> = jvm.get_field(&this, "value", "[C").await?;
+        let mut chars: Vec<JavaChar> = jvm.load_array(&java_value, 0, count as usize).await?;
+        chars.reverse();
+        jvm.store_array(&mut java_value, 0, chars).await?;
         Ok(this)
     }
 
@@ -262,6 +341,89 @@ impl StringBuffer {
         Ok(this)
     }
 
+    async fn insert_char(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        offset: i32,
+        ch: JavaChar,
+    ) -> Result<ClassInstanceRef<Self>> {
+        let rust = char::from_u32(ch as u32).unwrap_or('\u{FFFD}').to_string();
+        let java = JavaLangString::from_rust_string(jvm, &rust).await?;
+        Self::insert_string(jvm, context, this, offset, java.into()).await
+    }
+
+    async fn insert_chars(
+        jvm: &Jvm,
+        _: &mut RuntimeContext,
+        mut this: ClassInstanceRef<Self>,
+        offset: i32,
+        chars: ClassInstanceRef<Array<JavaChar>>,
+    ) -> Result<ClassInstanceRef<Self>> {
+        if chars.is_null() {
+            return Err(jvm.exception("java/lang/NullPointerException", "str").await);
+        }
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
+        if offset < 0 || offset > count {
+            return Err(jvm
+                .exception("java/lang/StringIndexOutOfBoundsException", &format!("offset {offset}, length {count}"))
+                .await);
+        }
+        let insert_len = jvm.array_length(&chars).await?;
+        let to_insert: Vec<JavaChar> = jvm.load_array(&chars, 0, insert_len).await?;
+
+        Self::ensure_capacity(jvm, &mut this, count as usize + insert_len).await?;
+
+        let mut java_value: ClassInstanceRef<Array<JavaChar>> = jvm.get_field(&this, "value", "[C").await?;
+        let old_chars: Vec<JavaChar> = jvm.load_array(&java_value, 0, count as _).await?;
+        let mut new_chars = Vec::with_capacity(count as usize + insert_len);
+        new_chars.extend_from_slice(&old_chars[..offset as usize]);
+        new_chars.extend(to_insert);
+        new_chars.extend_from_slice(&old_chars[offset as usize..]);
+
+        jvm.store_array(&mut java_value, 0, new_chars).await?;
+        jvm.put_field(&mut this, "count", "I", count + insert_len as i32).await?;
+
+        Ok(this)
+    }
+
+    async fn insert_int(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        offset: i32,
+        value: i32,
+    ) -> Result<ClassInstanceRef<Self>> {
+        let java = JavaLangString::from_rust_string(jvm, &value.to_string()).await?;
+        Self::insert_string(jvm, context, this, offset, java.into()).await
+    }
+
+    async fn insert_long(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        offset: i32,
+        value: i64,
+    ) -> Result<ClassInstanceRef<Self>> {
+        let java = JavaLangString::from_rust_string(jvm, &value.to_string()).await?;
+        Self::insert_string(jvm, context, this, offset, java.into()).await
+    }
+
+    async fn insert_object(
+        jvm: &Jvm,
+        context: &mut RuntimeContext,
+        this: ClassInstanceRef<Self>,
+        offset: i32,
+        obj: ClassInstanceRef<Object>,
+    ) -> Result<ClassInstanceRef<Self>> {
+        let string = if obj.is_null() {
+            JavaLangString::from_rust_string(jvm, "null").await?
+        } else {
+            jvm.invoke_virtual(&obj, "toString", "()Ljava/lang/String;", ()).await?
+        };
+        Self::insert_string(jvm, context, this, offset, string.into()).await
+    }
+
     async fn to_string(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<ClassInstanceRef<String>> {
         tracing::debug!("java.lang.StringBuffer::toString({:?})", &this);
 
@@ -327,5 +489,16 @@ impl StringBuffer {
         let char_at: JavaChar = jvm.load_array(&java_value, index as _, 1).await?.into_iter().next().unwrap();
 
         Ok(char_at)
+    }
+
+    async fn set_char_at(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, index: i32, ch: JavaChar) -> Result<()> {
+        let count: i32 = jvm.get_field(&this, "count", "I").await?;
+        if index < 0 || index >= count {
+            return Err(jvm
+                .exception("java/lang/StringIndexOutOfBoundsException", &format!("index {index}, length {count}"))
+                .await);
+        }
+        let mut java_value: ClassInstanceRef<Array<JavaChar>> = jvm.get_field(&this, "value", "[C").await?;
+        jvm.store_array(&mut java_value, index as usize, vec![ch]).await
     }
 }

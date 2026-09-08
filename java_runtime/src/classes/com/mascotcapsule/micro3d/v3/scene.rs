@@ -344,7 +344,7 @@ fn should_use_implicit_indexed_color_key(tri: &RenderTri, textures: &[Option<Nat
 }
 
 fn uv_to_texel(uv: i32, size: i32) -> i32 {
-    (uv.clamp(0, 255) * (size - 1).max(0) / 255).clamp(0, size - 1)
+    uv.clamp(0, (size - 1).max(0))
 }
 
 fn is_dark_rgb(color: i32) -> bool {

@@ -1,6 +1,10 @@
 use alloc::boxed::Box;
 
-use crate::{Result, class_instance::ClassInstance, jvm::Jvm};
+use crate::{
+    Result,
+    class_instance::{ClassInstance, ClassInstanceRef},
+    jvm::Jvm,
+};
 
 use super::JavaLangString;
 
@@ -8,11 +12,14 @@ pub struct JavaLangClassLoader;
 
 impl JavaLangClassLoader {
     pub async fn get_system_class_loader(jvm: &Jvm) -> Result<Box<dyn ClassInstance>> {
-        let system_class_loader = jvm
+        let system_class_loader: ClassInstanceRef<()> = jvm
             .invoke_static("java/lang/ClassLoader", "getSystemClassLoader", "()Ljava/lang/ClassLoader;", ())
             .await?;
 
-        Ok(system_class_loader)
+        match system_class_loader.instance {
+            Some(loader) => Ok(loader),
+            None => Err(jvm.exception("java/lang/NullPointerException", "system class loader").await),
+        }
     }
 
     #[allow(clippy::borrowed_box)]

@@ -1,11 +1,7 @@
 #![cfg_attr(not(feature = "desktop-window"), allow(dead_code))]
 
 use std::{
-    env,
-    sync::{
-        OnceLock,
-        atomic::{AtomicU64, Ordering},
-    },
+    sync::atomic::{AtomicU64, Ordering},
     time::{Duration, Instant},
 };
 
@@ -81,8 +77,7 @@ impl Drop for Timer {
 
 #[inline]
 pub fn enabled() -> bool {
-    static ENABLED: OnceLock<bool> = OnceLock::new();
-    *ENABLED.get_or_init(|| env::var_os("RUSTJAVA_PROFILE").is_some())
+    crate::config::get().timing_enabled
 }
 
 #[inline]

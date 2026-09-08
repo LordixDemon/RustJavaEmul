@@ -9,6 +9,31 @@ use crate::{
     classes::{java::lang::String, javax::microedition::lcdui::Graphics},
 };
 
+static LAST_FRAME_PRESENT_MS: parking_lot::Mutex<u64> = parking_lot::Mutex::new(0);
+
+pub(crate) async fn pace_game_frame(context: &mut RuntimeContext) {
+    let target_fps = context.target_frame_rate() as u64;
+    if target_fps == 0 {
+        return;
+    }
+    let target_interval_ms = 1000 / target_fps;
+    let now = context.now();
+    let delay_ms = {
+        let mut last = LAST_FRAME_PRESENT_MS.lock();
+        if *last != 0 && now < *last + target_interval_ms {
+            let delay = (*last + target_interval_ms) - now;
+            *last += target_interval_ms;
+            Some(delay)
+        } else {
+            *last = now;
+            None
+        }
+    };
+    if let Some(delay_ms) = delay_ms {
+        context.sleep(core::time::Duration::from_millis(delay_ms)).await;
+    }
+}
+
 // class javax.microedition.lcdui.Canvas
 pub struct Canvas;
 
@@ -41,6 +66,7 @@ impl Canvas {
                 JavaMethodProto::new("pointerReleased", "(II)V", Self::pointer_released, Default::default()),
                 JavaMethodProto::new("pointerDragged", "(II)V", Self::pointer_dragged, Default::default()),
                 JavaMethodProto::new("sizeChanged", "(II)V", Self::size_changed, Default::default()),
+                JavaMethodProto::new_abstract("paint", "(Ljavax/microedition/lcdui/Graphics;)V", MethodAccessFlags::ABSTRACT),
             ],
             fields: vec![
                 JavaFieldProto::new("UP", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
@@ -64,6 +90,8 @@ impl Canvas {
                 JavaFieldProto::new("KEY_NUM9", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
                 JavaFieldProto::new("KEY_STAR", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
                 JavaFieldProto::new("KEY_POUND", "I", FieldAccessFlags::STATIC | FieldAccessFlags::FINAL),
+                JavaFieldProto::new("repaintPending", "Z", Default::default()),
+                JavaFieldProto::new("isPainting", "Z", Default::default()),
             ],
             access_flags: Default::default(),
         }
@@ -104,7 +132,7 @@ impl Canvas {
         Ok(())
     }
 
-    async fn repaint(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<()> {
+    async fn repaint(jvm: &Jvm, context: &mut RuntimeContext, mut this: ClassInstanceRef<Self>) -> Result<()> {
         tracing::trace!("javax.microedition.lcdui.Canvas::repaint({this:?})");
 
         let class_name = this.class_definition().name();
@@ -117,39 +145,13 @@ impl Canvas {
             return Ok(());
         }
 
-        let paints_to_back_buffer = jvm.is_instance(displayable, "javax/microedition/lcdui/game/GameCanvas");
-        let graphics: ClassInstanceRef<Graphics> = if paints_to_back_buffer {
-            jvm.invoke_virtual(&this, "getGraphics", "()Ljavax/microedition/lcdui/Graphics;", ())
-                .await?
-        } else {
-            jvm.new_class("javax/microedition/lcdui/Graphics", "()V", ()).await?.into()
-        };
-        tracing::info!(
-            target: "rustjava_render",
-            "canvas.repaint.paint class={} target={}",
-            class_name,
-            if paints_to_back_buffer { "gamecanvas-backbuffer" } else { "screen" }
-        );
-
-        let _: () = jvm
-            .invoke_virtual(&this, "paint", "(Ljavax/microedition/lcdui/Graphics;)V", (graphics,))
-            .await?;
-
-        if jvm
-            .get_class(&class_name)
-            .is_some_and(|class| class.definition.field("f", "Z", true).is_some())
-        {
-            jvm.put_static_field(&class_name, "f", "Z", true).await?;
-        }
-        if paints_to_back_buffer {
-            tracing::info!(target: "rustjava_render", "canvas.repaint.flushGameCanvas class={}", class_name);
-            let _: () = jvm.invoke_virtual(&this, "flushGraphics", "()V", ()).await?;
-        } else {
-            tracing::info!(target: "rustjava_render", "canvas.repaint.present class={}", class_name);
-            context.screen_present();
+        jvm.put_field(&mut this, "repaintPending", "Z", true).await?;
+        let is_painting: bool = jvm.get_field(&this, "isPainting", "Z").await.unwrap_or(false);
+        if is_painting {
+            return Ok(());
         }
 
-        Ok(())
+        Self::do_paint(jvm, context, &mut this).await
     }
 
     async fn repaint_region(
@@ -167,10 +169,80 @@ impl Canvas {
         Ok(())
     }
 
-    async fn service_repaints(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<()> {
+    async fn service_repaints(jvm: &Jvm, context: &mut RuntimeContext, mut this: ClassInstanceRef<Self>) -> Result<()> {
         tracing::trace!("javax.microedition.lcdui.Canvas::serviceRepaints({this:?})");
 
-        let _: () = jvm.invoke_virtual(&this, "repaint", "()V", ()).await?;
+        let pending: bool = jvm.get_field(&this, "repaintPending", "Z").await.unwrap_or(false);
+        if !pending {
+            return Ok(());
+        }
+        let is_painting: bool = jvm.get_field(&this, "isPainting", "Z").await.unwrap_or(false);
+        if is_painting {
+            return Ok(());
+        }
+
+        Self::do_paint(jvm, context, &mut this).await
+    }
+
+    async fn do_paint(jvm: &Jvm, context: &mut RuntimeContext, this: &mut ClassInstanceRef<Self>) -> Result<()> {
+        let is_painting: bool = jvm.get_field(this, "isPainting", "Z").await.unwrap_or(false);
+        if is_painting {
+            jvm.put_field(this, "repaintPending", "Z", true).await?;
+            return Ok(());
+        }
+        jvm.put_field(this, "isPainting", "Z", true).await?;
+        jvm.put_field(this, "repaintPending", "Z", false).await?;
+
+        let class_name = this.class_definition().name();
+        let Some(displayable) = this.instance.as_deref() else {
+            let _ = jvm.put_field(this, "isPainting", "Z", false).await;
+            return Ok(());
+        };
+
+        let paints_to_back_buffer = jvm.is_instance(displayable, "javax/microedition/lcdui/game/GameCanvas");
+        if !paints_to_back_buffer {
+            pace_game_frame(context).await;
+        }
+
+        let graphics: ClassInstanceRef<Graphics> = if paints_to_back_buffer {
+            match jvm.invoke_virtual(this, "getGraphics", "()Ljavax/microedition/lcdui/Graphics;", ()).await {
+                Ok(g) => g,
+                Err(e) => {
+                    let _ = jvm.put_field(this, "isPainting", "Z", false).await;
+                    return Err(e);
+                }
+            }
+        } else {
+            match jvm.new_class("javax/microedition/lcdui/Graphics", "()V", ()).await {
+                Ok(g) => g.into(),
+                Err(e) => {
+                    let _ = jvm.put_field(this, "isPainting", "Z", false).await;
+                    return Err(e);
+                }
+            }
+        };
+        tracing::info!(
+            target: "rustjava_render",
+            "canvas.repaint.paint class={} target={}",
+            class_name,
+            if paints_to_back_buffer { "gamecanvas-backbuffer" } else { "screen" }
+        );
+
+        let paint_result: Result<()> = jvm
+            .invoke_virtual(this, "paint", "(Ljavax/microedition/lcdui/Graphics;)V", (graphics,))
+            .await;
+
+        let _ = jvm.put_field(this, "isPainting", "Z", false).await;
+
+        paint_result?;
+
+        if paints_to_back_buffer {
+            tracing::info!(target: "rustjava_render", "canvas.repaint.flushGameCanvas class={}", class_name);
+            let _: () = jvm.invoke_virtual(this, "flushGraphics", "()V", ()).await?;
+        } else {
+            tracing::info!(target: "rustjava_render", "canvas.repaint.present class={}", class_name);
+            context.screen_present();
+        }
 
         Ok(())
     }
@@ -190,13 +262,13 @@ impl Canvas {
     async fn has_pointer_events(_: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
         tracing::trace!("javax.microedition.lcdui.Canvas::hasPointerEvents({this:?})");
 
-        Ok(false)
+        Ok(true)
     }
 
     async fn has_pointer_motion_events(_: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
         tracing::trace!("javax.microedition.lcdui.Canvas::hasPointerMotionEvents({this:?})");
 
-        Ok(false)
+        Ok(true)
     }
 
     async fn has_repeat_events(_: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>) -> Result<bool> {
@@ -217,71 +289,22 @@ impl Canvas {
         Ok(context.screen_height())
     }
 
-    async fn get_game_action(_: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, key_code: i32) -> Result<i32> {
+    async fn get_game_action(_: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>, key_code: i32) -> Result<i32> {
         tracing::trace!("javax.microedition.lcdui.Canvas::getGameAction({this:?}, {key_code:?})");
 
-        Ok(match key_code {
-            -1 => 1,
-            -3 => 2,
-            -4 => 5,
-            -2 => 6,
-            -5 => 8,
-            -6 | 49 => 9,
-            -7 | 51 => 10,
-            50 => 1,
-            52 => 2,
-            54 => 5,
-            56 => 6,
-            53 => 8,
-            55 => 11,
-            57 => 12,
-            _ => 0,
-        })
+        Ok(context.device_profile().key_layout().game_action(key_code))
     }
 
-    async fn get_key_code(_: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, game_action: i32) -> Result<i32> {
+    async fn get_key_code(_: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>, game_action: i32) -> Result<i32> {
         tracing::trace!("javax.microedition.lcdui.Canvas::getKeyCode({this:?}, {game_action:?})");
 
-        Ok(match game_action {
-            1 => -1,
-            2 => -3,
-            5 => -4,
-            6 => -2,
-            8 => -5,
-            9 => -6,
-            10 => -7,
-            11 => 55,
-            12 => 57,
-            _ => 0,
-        })
+        Ok(context.device_profile().key_layout().key_code_for_action(game_action))
     }
 
-    async fn get_key_name(jvm: &Jvm, _: &mut RuntimeContext, this: ClassInstanceRef<Self>, key_code: i32) -> Result<ClassInstanceRef<String>> {
+    async fn get_key_name(jvm: &Jvm, context: &mut RuntimeContext, this: ClassInstanceRef<Self>, key_code: i32) -> Result<ClassInstanceRef<String>> {
         tracing::trace!("javax.microedition.lcdui.Canvas::getKeyName({this:?}, {key_code:?})");
 
-        let name = match key_code {
-            -1 => "UP",
-            -2 => "DOWN",
-            -3 => "LEFT",
-            -4 => "RIGHT",
-            -5 => "FIRE",
-            -6 => "SOFT1",
-            -7 => "SOFT2",
-            35 => "#",
-            42 => "*",
-            48 => "0",
-            49 => "1",
-            50 => "2",
-            51 => "3",
-            52 => "4",
-            53 => "5",
-            54 => "6",
-            55 => "7",
-            56 => "8",
-            57 => "9",
-            _ => "",
-        };
-
+        let name = context.device_profile().key_layout().key_name(key_code);
         Ok(JavaLangString::from_rust_string(jvm, name).await?.into())
     }
 

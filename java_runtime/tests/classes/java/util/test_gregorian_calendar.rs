@@ -52,3 +52,13 @@ async fn test_gregorian_calendar() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_calendar_set_on_fresh_instance_is_lenient() -> Result<()> {
+    let jvm = test_jvm().await?;
+    let calendar = jvm.new_class("java/util/GregorianCalendar", "()V", ()).await?;
+    let _: () = jvm.invoke_virtual(&calendar, "set", "(II)V", (1, 2020)).await?;
+    let year: i32 = jvm.invoke_virtual(&calendar, "get", "(I)I", (1,)).await?;
+    assert_eq!(2020, year);
+    Ok(())
+}
